@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: cart_cart_items_filtered.xsp.out 134 2005-02-06 22:02:44Z claco $ -->
+<!-- $Id: cart_cart_items_filtered.xsp.out 163 2005-02-12 04:03:09Z claco $ -->
 <body>
 	<cart>
-		<count>2</count>
+		<count>3</count>
 		<description>My New Shopping Cart</description>
-		<id>FBC4A843-2667-48ED-AA9F-EF4B52537E7</id>
+		<id>FBC4A843-2667-48ED-AA9F-EF4B52537E72</id>
 		<name>New Cart</name>
 		<shopper>FE816B07-7E3D-4A00-97D4-667FEA60F767</shopper>
 		<subtotal>15.54</subtotal>

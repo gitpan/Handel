@@ -35,6 +35,13 @@ BEGIN {
     "Unknown restore mode" =>
         "Mode inconnu de restauration",
 
+    ## Taglib exceptions
+    "Tag '[_1]' not valid inside of other Handel tags" =>
+        "L'étiquette '[_1] 'peut intérieur inadmissible d'autres étiquettes de Handel",
+
+    "Tag '[_1]' not valid here" =>
+        "Étiquette '[_1]' inadmissible ici",
+
     ## naughty bits
     "has invalid value" =>
         "a la valeur inadmissible",
@@ -52,7 +59,7 @@ Handel::L10N::fr - French Language Pack for Handel
 
 =head1 VERSION
 
-    $Id: fr.pm 32 2004-12-31 02:12:21Z claco $
+    $Id: fr.pm 160 2005-02-11 03:12:50Z claco $
 
 =head1 AUTHOR
 

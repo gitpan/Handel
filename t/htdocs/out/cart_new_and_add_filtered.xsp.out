@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: cart_new_and_add_filtered.xsp.out 91 2005-01-30 03:21:36Z claco $ -->
+<!-- $Id: cart_new_and_add_filtered.xsp.out 157 2005-02-11 03:10:52Z claco $ -->
 <body>
 	<cart>
 		<item>
 			<description>My New Item</description>
 			<id>78F6AE28-55D3-4CB7-9D63-93EA608478FC</id>
-			<quantity><cart:quantity/></quantity>
-			<price><cart:price/></price>
+			<price>1.23</price>
+			<quantity>2</quantity>
 			<sku>NEWSKU123</sku>
 			<total>2.46</total>
 		</item>

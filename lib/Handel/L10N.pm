@@ -15,9 +15,9 @@ BEGIN {
     _AUTO => 1
 );
 
-$handle = __PACKAGE__->get_handle();
-
 sub translate {
+    my $handle = __PACKAGE__->get_handle();
+
     return $handle->maketext(@_);
 };
 
@@ -30,7 +30,7 @@ Handel::L10N - Localization module for Handel
 
 =head1 VERSION
 
-    $Id: L10N.pm 53 2004-12-31 23:13:51Z claco $
+    $Id: L10N.pm 159 2005-02-11 03:12:19Z claco $
 
 =head1 SYNOPSIS
 

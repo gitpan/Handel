@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: cart_carts_item_filtered.xsp.out 135 2005-02-07 02:19:48Z claco $ -->
+<!-- $Id: cart_carts_item_filtered.xsp.out 170 2005-02-13 01:49:10Z claco $ -->
 <body>
 	<cart>
 		<count>2</count>
@@ -10,7 +10,7 @@
 		<subtotal>5.55</subtotal>
 		<type>0</type>
 		<item>
-			<description>Description 1</description>
+			<description>Description 2</description>
 			<id>1A43BAF1-AFDF-4E92-AFA1-8C4EFE61B399</id>
 			<price>2.22</price>
 			<quantity>2</quantity>

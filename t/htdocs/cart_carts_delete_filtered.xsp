@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: cart_carts_delete_filtered.xsp 91 2005-01-30 03:21:36Z claco $ -->
+<!-- $Id: cart_carts_delete_filtered.xsp 170 2005-02-13 01:49:10Z claco $ -->
 <xsp:page
 	xmlns:xsp="http://apache.org/xsp/core/v1"
 	xmlns:cart="http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Cart"
@@ -81,7 +81,7 @@
 					<shopper><cart:shopper/></shopper>
 					<subtotal><cart:subtotal/></subtotal>
 					<type><cart:type/></type>
-					<cart:delete sku="NEW123"/>
+					<cart:delete sku="NEWSKU123"/>
 					<count><cart:count/></count>
 					<subtotal><cart:subtotal/></subtotal>
 				</cart>

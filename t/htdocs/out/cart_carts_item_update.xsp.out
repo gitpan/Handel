@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: cart_carts_item_update.xsp.out 135 2005-02-07 02:19:48Z claco $ -->
+<!-- $Id: cart_carts_item_update.xsp.out 170 2005-02-13 01:49:10Z claco $ -->
 <body>
 	<cart>
-		<count>2</count>
+		<count>1</count>
 		<description>My New Shopping Cart</description>
 		<id>DDD936A1-9CA7-4910-8EAC-828856A826BF</id>
 		<name>New Cart</name>
@@ -28,7 +28,7 @@
 		<subtotal>9.99</subtotal>
 	</cart>
 	<cart>
-		<count>2</count>
+		<count>1</count>
 		<description>My New Shopping Cart 2</description>
 		<id>675040CE-6543-48DD-B781-05648D643C82</id>
 		<name>New Cart 2</name>
