@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: xsp_cart.t 168 2005-02-13 01:47:26Z claco $
+# $Id: xsp_cart.t 177 2005-02-15 04:25:33Z claco $
 use strict;
 use warnings;
 require Test::More;
@@ -64,7 +64,7 @@ my @tests = (
 
 use Apache::TestUtil;
 Apache::TestRequest->import(qw(GET));
-Apache::Test::plan(tests => (scalar @tests * 2),
+Apache::Test::plan(tests => ((scalar @tests * 2) + 2),
     need('AxKit', 'mod_perl', need_apache(1), need_lwp())
 );
 
@@ -82,6 +82,10 @@ my $docroot = Apache::Test::vars('documentroot');
     executesql($db, $create);
     #executesql($db, $data);
 };
+
+my $r = GET('cart_uuid.xsp');
+ok($r->code == 200);
+ok($r->content =~ /(<p>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}<\/p>){2}/i);
 
 foreach (@tests) {
     my $r = GET($_);

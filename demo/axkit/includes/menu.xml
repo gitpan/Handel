@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: menu.xml 179 2005-02-15 04:29:33Z claco $ -->
+<ul>
+	<li><a href="index.xsp">Home</a></li>
+	<li><a href="products.xsp">Products</a></li>
+	<li><a href="cart.xsp">View Cart</a></li>
+</ul>
