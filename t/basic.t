@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: basic.t 26 2004-12-31 02:06:43Z claco $
+# $Id: basic.t 61 2005-01-10 02:20:36Z claco $
 use strict;
 use warnings;
 use Test::More tests => 12;
@@ -18,8 +18,14 @@ BEGIN {
     use_ok('Handel::L10N::fr');
 
     SKIP: {
-        skip 'AxKit not installed', 1 unless eval 'use AxKit';
+        eval 'use Apache::AxKit::Language::XSP';
+        skip 'AxKit not installed', 1 if $@;
 
-        use_ok('AxKit::XSP::Handle::Cart');
+        {
+            ##
+            no strict;
+            no warnings;
+            use_ok('AxKit::XSP::Handel::Cart');
+        };
     };
 };

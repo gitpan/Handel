@@ -40,7 +40,7 @@ Handel::Constants - Common constants used in Handel
 
 =head1 VERSION
 
-    $Id: Constants.pm 45 2004-12-31 20:37:34Z claco $
+    $Id: Constants.pm 53 2004-12-31 23:13:51Z claco $
 
 =head1 SYNOPSIS
 
@@ -57,10 +57,10 @@ Handel::Constants - Common constants used in Handel
 =head1 DESCRIPTION
 
 C<Handel::Constants> contains a set of constants used throughout C<Handel>. It
-may be useful (or even a good iead) to use these in your code. :-)
+may be useful (or even a good idea) to use these in your code. :-)
 
 By default, C<Handel::Constants> export C<nothing>. Use can use the export tags
-below to export all or only vertain groups of constants.
+below to export all or only certain groups of constants.
 
 =head1 CONSTANTS
 

@@ -6,14 +6,35 @@ BEGIN {
     use base 'Class::DBI';
     use Handel::Exception;
     use Handel::L10N qw(translate);
+
 };
 
-my $db_driver  = $ENV{'db_driver'} || 'mysql';
-my $db_host    = $ENV{'db_host'}   || 'localhost';
-my $db_port    = $ENV{'db_port'}   || 3306;
-my $db_name    = $ENV{'db_name'}   || 'commerce';
-my $db_user    = $ENV{'db_user'}   || 'commerce';
-my $db_pass    = $ENV{'db_pass'}   || 'commerce';
+my $db_driver;
+my $db_host;
+my $db_port;
+my $db_name;
+my $db_user;
+my $db_pass;
+
+if ($ENV{MOD_PERL}) {
+    use Apache;
+    my $r = Apache->request;
+
+    $db_driver = $r->dir_config('db_driver') || '';
+    $db_host   = $r->dir_config('db_host')   || '';
+    $db_port   = $r->dir_config('db_port')   || '';
+    $db_name   = $r->dir_config('db_name')   || '';
+    $db_user   = $r->dir_config('db_user')   || '';
+    $db_pass   = $r->dir_config('db_pass')   || '';
+} else {
+    $db_driver = $ENV{'db_driver'} || '';
+    $db_host   = $ENV{'db_host'}   || '';
+    $db_port   = $ENV{'db_port'}   || '';
+    $db_name   = $ENV{'db_name'}   || '';
+    $db_user   = $ENV{'db_user'}   || '';
+    $db_pass   = $ENV{'db_pass'}   || '';
+};
+
 my $datasource = "dbi:$db_driver:dbname=$db_name";
 
 if ($db_host) {
@@ -103,7 +124,7 @@ Handel::DBI - Base DBI class used by cart/order objects
 
 =head1 VERSION
 
-    $Id: DBI.pm 30 2004-12-31 02:11:29Z claco $
+    $Id: DBI.pm 59 2005-01-10 02:17:30Z claco $
 
 =head1 DESCRIPTION
 
@@ -131,7 +152,7 @@ as well
 =head2 C<has_wildcard>
 
 Inspects the supplied search filter to determine whether it contains wildcard
-searching. Retuns 1 if the filter contains SQL wildcards, other it returns
+searching. Returns 1 if the filter contains SQL wildcards, other it returns
 C<undef>.
 
     has_wildcard({sku => '1234'}); # 1
@@ -150,7 +171,7 @@ variables:
 
 =item C<db_driver>
 
-The name of the DBD driver. Defailts to C<mysql>.
+The name of the DBD driver. Defaults to C<mysql>.
 
 =item C<db_host>
 
