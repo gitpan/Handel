@@ -1,4 +1,4 @@
-# $Id: Cart.pm 4 2004-12-28 03:01:15Z claco $
+# $Id: Cart.pm 6 2004-12-28 23:33:59Z claco $
 package AxKit::XSP::Handel::Cart;
 use strict;
 

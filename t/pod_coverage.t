@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: pod_coverage.t 4 2004-12-28 03:01:15Z claco $
+# $Id: pod_coverage.t 6 2004-12-28 23:33:59Z claco $
 use Test::More;
 
 eval 'use Test::Pod::Coverage 1.04';

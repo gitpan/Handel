@@ -1,4 +1,4 @@
-# $Id: Exception.pm 4 2004-12-28 03:01:15Z claco $
+# $Id: Exception.pm 6 2004-12-28 23:33:59Z claco $
 package Handel::Exception;
 use strict;
 use warnings;

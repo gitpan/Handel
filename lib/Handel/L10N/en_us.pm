@@ -1,4 +1,4 @@
-# $Id: en_us.pm 4 2004-12-28 03:01:15Z claco $
+# $Id: en_us.pm 6 2004-12-28 23:33:59Z claco $
 package Handel::L10N::en_us;
 use strict;
 use warnings;

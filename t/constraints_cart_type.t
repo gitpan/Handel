@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: constraints_cart_type.t 4 2004-12-28 03:01:15Z claco $
+# $Id: constraints_cart_type.t 6 2004-12-28 23:33:59Z claco $
 use Test::More tests => 7;
 
 BEGIN {

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: dbi.t 4 2004-12-28 03:01:15Z claco $
+# $Id: dbi.t 6 2004-12-28 23:33:59Z claco $
 use Test::More tests => 4;
 
 BEGIN {
