@@ -10,9 +10,10 @@ sub new {
     my $self = bless {_CONTEXT => $context}, ref($class) || $class;
 
     foreach my $const (@Handel::Constants::EXPORT_OK) {
-        $self->{$const} = Handel::Constants->$const;
+        if ($const =~ /^[A-Z]{1}/) {
+            $self->{$const} = Handel::Constants->$const;
+        };
     };
-
     return $self;
 };
 
@@ -50,7 +51,7 @@ Template::Plugin::Handel::Cart - Template Toolkit plugin for shopping cart
 
 =head1 VERSION
 
-    $Id: Cart.pm 241 2005-02-27 03:48:23Z claco $
+    $Id: Cart.pm 250 2005-02-28 02:44:50Z claco $
 
 =head1 SYNOPSIS
 

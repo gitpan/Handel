@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: xsp_cart.t 232 2005-02-22 02:47:29Z claco $
+# $Id: xsp_cart.t 253 2005-02-28 02:52:03Z claco $
 use strict;
 use warnings;
 require Test::More;
@@ -96,6 +96,7 @@ foreach (@tests) {
 
     my ($ok, $response, $file) = comp_to_file($r->content, "$docroot/axkit/out/$_.out");
 
+    t_debug($_);
     t_debug("HTTP Status: " . $r->code);
     t_debug("Expected:\n", $file);
     t_debug("Received:\n", $response);

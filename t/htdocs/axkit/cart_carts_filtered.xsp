@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: cart_carts_filtered.xsp 223 2005-02-21 22:43:08Z claco $ -->
+<!-- $Id: cart_carts_filtered.xsp 252 2005-02-28 02:50:15Z claco $ -->
 <xsp:page
 	xmlns:xsp="http://apache.org/xsp/core/v1"
 	xmlns:cart="http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Cart"
@@ -10,7 +10,7 @@
 			<cart:description>My First Shopping Cart</cart:description>
 			<cart:name>New Cart 1</cart:name>
 			<cart:shopper>26959682-3113-4A48-95BB-F98ABD273FBD</cart:shopper>
-			<cart:type>1</cart:type>
+			<cart:type>CART_TYPE_SAVED</cart:type>
 			<cart:no-results><message>Error adding cart</message></cart:no-results>
 		</cart:new>
 		<cart:new>
@@ -30,7 +30,7 @@
 			<cart:no-results><message>Error adding cart</message></cart:no-results>
 		</cart:new>
 
-		<cart:carts type="1">
+		<cart:carts type="CART_TYPE_SAVED">
 			<cart:filter name="shopper">26959682-3113-4A48-95BB-F98ABD273FBD</cart:filter>
 			<cart:results>
 				<cart>

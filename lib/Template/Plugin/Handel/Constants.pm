@@ -9,7 +9,9 @@ sub new {
     my $self = bless {_CONTEXT => $context}, ref($class) || $class;
 
     foreach my $const (@Handel::Constants::EXPORT_OK) {
-        $self->{$const} = Handel::Constants->$const;
+        if ($const =~ /^[A-Z]{1}/) {
+            $self->{$const} = Handel::Constants->$const;
+        };
     };
 
     return $self;
@@ -30,7 +32,7 @@ Template::Plugin::Handel::Constants - Template Toolkit plugin for Handel constan
 
 =head1 VERSION
 
-    $Id: Constants.pm 204 2005-02-20 19:33:40Z claco $
+    $Id: Constants.pm 250 2005-02-28 02:44:50Z claco $
 
 =head1 SYNOPSIS
 

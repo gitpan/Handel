@@ -28,6 +28,7 @@ use constant RETURNAS_ARRAY    => 2;
                 RETURNAS_ITERATOR
                 RETURNAS_LIST
                 RETURNAS_ARRAY
+                str_to_const
 );
 
 %EXPORT_TAGS =
@@ -45,6 +46,12 @@ use constant RETURNAS_ARRAY    => 2;
         )]
     );
 
+sub str_to_const {
+    my $str = shift;
+
+    return __PACKAGE__->can($str) ? __PACKAGE__->$str : undef ;
+};
+
 1;
 __END__
 
@@ -54,7 +61,7 @@ Handel::Constants - Common constants used in Handel
 
 =head1 VERSION
 
-    $Id: Constants.pm 216 2005-02-21 01:12:26Z claco $
+    $Id: Constants.pm 249 2005-02-28 02:43:21Z claco $
 
 =head1 SYNOPSIS
 
@@ -75,6 +82,14 @@ may be useful (or even a good idea) to use these in your code. :-)
 
 By default, C<Handel::Constants> export C<nothing>. Use can use the export tags
 below to export all or only certain groups of constants.
+
+=head1 METHODS
+
+=head2 str_to_const($)
+
+Converts a string version of a constant into that constants value.
+
+    print str_to_const('CART_TYPE_SAVED');  ## prints 1
 
 =head1 CONSTANTS
 
