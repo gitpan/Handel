@@ -5,7 +5,10 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS);
 
 BEGIN {
     use base 'Exporter';
+    use Handel::ConfigReader;
     use Handel::Constants qw(:cart);
+    use Handel::Exception;
+    use Handel::L10N qw(translate);
 };
 
 @EXPORT_OK = qw(&constraint_quantity
@@ -17,7 +20,21 @@ BEGIN {
 %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 sub constraint_quantity {
-    my $value = shift;
+    my ($value, $object, $column, $changing) = @_;
+
+    my $cfg    = Handel::ConfigReader->new();
+    my $max    = $cfg->get('HandelMaxQuantity');
+    my $action = $cfg->get('HandelMaxQuantityAction');
+
+    if ($action =~ /^exception$/i && $max) {
+        throw Handel::Exception::Constraint( -details =>
+            translate('The quantity requested ([_1]) is greater than the maximum quantity allowed ([_2])', $value, $max)
+        ) if $value > $max;
+    } elsif ($action =~ /^adjust$/i && $max) {
+        if (ref($object) && $value) {
+            $changing->{'quantity'} = $max if $value > $max;
+        };
+    };
 
     return ($value =~ /^\d+$/ && $value > 0);
 };
@@ -59,7 +76,7 @@ Handel::Constraints - Common database constraints used to validate input data
 
 =head1 VERSION
 
-    $Id: Constraints.pm 53 2004-12-31 23:13:51Z claco $
+    $Id: Constraints.pm 263 2005-03-01 04:29:49Z claco $
 
 =head1 SYNOPSIS
 

@@ -25,6 +25,9 @@ BEGIN {
     "Required modules not found" =>
         "Modules requis non trouvés",
 
+    "The quantity requested ([_1]) is greater than the maximum quantity allowed ([_2])" =>
+        "La quantité a demandé ([_1]) est plus grande que la quantité maximum a permis ([_2])",
+
     ## param 1 violations
     "Param 1 is not a HASH reference" =>
         "Le param 1 n'est pas une référence d'cInformations PARASITES",
@@ -59,7 +62,7 @@ Handel::L10N::fr - French Language Pack for Handel
 
 =head1 VERSION
 
-    $Id: fr.pm 160 2005-02-11 03:12:50Z claco $
+    $Id: fr.pm 261 2005-03-01 04:28:18Z claco $
 
 =head1 AUTHOR
 
