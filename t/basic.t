@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: basic.t 87 2005-01-30 03:04:21Z claco $
+# $Id: basic.t 186 2005-02-18 03:58:15Z claco $
 use strict;
 use warnings;
-use Test::More tests => 12;
+use Test::More tests => 13;
 
 BEGIN {
     use_ok('Handel');
@@ -27,5 +27,12 @@ BEGIN {
             no warnings;
             use_ok('AxKit::XSP::Handel::Cart');
         };
+    };
+
+    SKIP: {
+        eval 'use Template 2.07';
+        skip 'Template Toolkit not installed', 1 if $@;
+
+        use_ok('Template::Plugin::Handel::Cart');
     };
 };

@@ -1,0 +1,5 @@
+[%# $Id: index.tt2 188 2005-02-18 04:00:54Z claco $ %]
+[% META title='Home' %]
+[% INCLUDE header.tt2 %]
+
+[% INCLUDE footer.tt2 %]
