@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use vars qw($VERSION);
 
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 1;
 __END__
@@ -14,7 +14,7 @@ Handel - Simple commerce framework with AxKit/TT2 support
 
 =head1 VERSION
 
-    $Id: Handel.pm 217 2005-02-21 01:12:48Z claco $
+    $Id: Handel.pm 227 2005-02-22 02:37:20Z claco $
 
 =head1 DESCRIPTION
 
