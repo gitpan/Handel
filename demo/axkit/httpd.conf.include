@@ -1,4 +1,4 @@
-# $Id: httpd.conf.include 190 2005-02-18 04:02:49Z claco $
+# $Id: httpd.conf.include 477 2005-03-22 00:48:11Z claco $
 # Don't forget to change DocumentRoot, ErrorLog, db_name
 # and 'use lib' to match your system setup!!!!!
 
@@ -19,8 +19,8 @@ Listen 9001
 	AxLogDeclines	On
 	AxDebugLevel	10
 	AxStackTrace	On
-	PerlSetVar		db_name				C:\Development\CPAN\Handel\demo\cart.db
-	PerlSetVar		db_driver			"SQLite"
+	PerlSetVar		HandelDBIName		C:\Development\CPAN\Handel\demo\cart.db
+	PerlSetVar		HandelDBIDriver		"SQLite"
 
 	AxAddProcessor	application/x-xsp	.
 	AxAddStyleMap	application/x-xsp	Apache::AxKit::Language::XSP

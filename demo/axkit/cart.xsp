@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: cart.xsp 189 2005-02-18 04:02:04Z claco $ -->
+<!-- $Id: cart.xsp 477 2005-03-22 00:48:11Z claco $ -->
 <?xml-stylesheet href="NULL" type="application/x-xsp"?>
 <?xml-stylesheet href="style/xsl/cart.xsl" type="text/xsl" media="all"?>
 <?xml-stylesheet href="style/xsl/to_xhtml.xsl" type="text/xsl" media="screen"?>
@@ -75,13 +75,13 @@
 											<id><cart:id/></id>
 											<sku><cart:sku/></sku>
 											<description><cart:description/></description>
-											<price><cart:price/></price>
+											<price><cart:price format="1" options="FMT_COMMON"/></price>
 											<quantity><cart:quantity/></quantity>
-											<total><cart:total/></total>
+											<total><cart:total format="1" options="FMT_COMMON"/> (<cart:total format="1" options="FMT_SYMBOL" convert="1" to="JPY"/>)</total>
 										</item>
 									</cart:results>
 								</cart:items>
-								<subtotal><cart:subtotal/></subtotal>
+								<subtotal><cart:subtotal format="1" options="FMT_COMMON"/> (<cart:subtotal format="1" options="FMT_SYMBOL" convert="1" to="JPY"/>)</subtotal>
 							</cart>
 						</cart:results>
 						<cart:no-results>
