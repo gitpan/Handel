@@ -1,8 +1,10 @@
 #!perl -wT
-# $Id: pod_coverage.t 6 2004-12-28 23:33:59Z claco $
+# $Id: pod_coverage.t 16 2004-12-30 05:02:52Z claco $
 use Test::More;
 
 eval 'use Test::Pod::Coverage 1.04';
 plan skip_all => 'Test::Pod::Coverage 1.04 not installed' if $@;
 
-all_pod_coverage_ok();
+my $trustme = { trustme => [qr/^new$/] };
+
+all_pod_coverage_ok($trustme);

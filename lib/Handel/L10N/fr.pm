@@ -1,4 +1,3 @@
-# $Id: fr.pm 6 2004-12-28 23:33:59Z claco $
 package Handel::L10N::fr;
 use strict;
 use warnings;
@@ -24,7 +23,11 @@ __END__
 
 =head1 NAME
 
-Handel::L10N::fr - French Language Pack
+Handel::L10N::fr - French Language Pack for Handel
+
+=head1 VERSION
+
+    $Id: fr.pm 21 2004-12-30 05:06:55Z claco $
 
 =head1 AUTHOR
 
