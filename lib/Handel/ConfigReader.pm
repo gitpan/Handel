@@ -1,3 +1,4 @@
+# $Id: ConfigReader.pm 380 2005-03-10 02:59:51Z claco $
 package Handel::ConfigReader;
 use strict;
 use warnings;
@@ -68,10 +69,6 @@ Handel::ConfigReader - Read in Handel configuration settings
 
     my $cfg = Handel::ConfigReader-new();
     my $setting = $cfg->get('HandelMaxQuantity');
-
-=head1 VERSION
-
-    $Id: ConfigReader.pm 285 2005-03-04 02:29:22Z claco $
 
 =head1 DESCRIPTION
 
@@ -154,5 +151,5 @@ options using C<|>.
 
     Christopher H. Laco
     CPAN ID: CLACO
-    cpan@chrislaco.com
+    claco@chrislaco.com
     http://today.icantfocus.com/blog/

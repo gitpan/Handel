@@ -1,3 +1,4 @@
+# $Id: Item.pm 380 2005-03-10 02:59:51Z claco $
 package Handel::Cart::Item;
 use strict;
 use warnings;
@@ -55,10 +56,6 @@ __END__
 =head1 NAME
 
 Handel::Cart::Item - Module representing an indivudal shopping cart line item
-
-=head1 VERSION
-
-    $Id: Item.pm 282 2005-03-04 02:26:59Z claco $
 
 =head1 SYNOPSIS
 
@@ -151,7 +148,7 @@ L<Handel::Cart>
 
     Christopher H. Laco
     CPAN ID: CLACO
-    cpan@chrislaco.com
+    claco@chrislaco.com
     http://today.icantfocus.com/blog/
 
 

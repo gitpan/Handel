@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 357 2005-03-06 21:46:27Z claco $
+# $Id: Makefile.PL 380 2005-03-10 02:59:51Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -57,7 +57,7 @@ if ($^O eq 'MSWin32') {
 WriteMakefile(
     NAME         => 'Handel',
     VERSION_FROM => 'lib/Handel.pm',
-    AUTHOR       => 'Christopher H. Laco (cpan@chrislaco.com)',
+    AUTHOR       => 'Christopher H. Laco <claco@chrislaco.com>',
     ABSTRACT     => 'Simple ecommerce framework with AxKit support',
     PREREQ_PM    => {
         'Class::DBI'       => '0.96',

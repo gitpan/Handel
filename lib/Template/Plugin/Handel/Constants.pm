@@ -1,3 +1,4 @@
+# $Id: Constants.pm 380 2005-03-10 02:59:51Z claco $
 package Template::Plugin::Handel::Constants;
 use strict;
 use warnings;
@@ -30,10 +31,6 @@ __END__
 
 Template::Plugin::Handel::Constants - Template Toolkit plugin for Handel constants
 
-=head1 VERSION
-
-    $Id: Constants.pm 250 2005-02-28 02:44:50Z claco $
-
 =head1 SYNOPSIS
 
     [% USE hdl = Handel.Constants %]
@@ -54,5 +51,5 @@ L<Handel::Constants>
 
     Christopher H. Laco
     CPAN ID: CLACO
-    cpan@chrislaco.com
+    claco@chrislaco.com
     http://today.icantfocus.com/blog/

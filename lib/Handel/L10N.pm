@@ -1,3 +1,4 @@
+# $Id: L10N.pm 380 2005-03-10 02:59:51Z claco $
 package Handel::L10N;
 use strict;
 use warnings;
@@ -27,10 +28,6 @@ __END__
 =head1 NAME
 
 Handel::L10N - Localization module for Handel
-
-=head1 VERSION
-
-    $Id: L10N.pm 159 2005-02-11 03:12:19Z claco $
 
 =head1 SYNOPSIS
 
@@ -71,9 +68,5 @@ L<Locale::Maketext>, L<Handel::L10N::us_en>, L<Handel::L10N::fr>
 
     Christopher H. Laco
     CPAN ID: CLACO
-    cpan@chrislaco.com
+    claco@chrislaco.com
     http://today.icantfocus.com/blog/
-
-
-
-

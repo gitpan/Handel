@@ -1,3 +1,4 @@
+# $Id: en_us.pm 380 2005-03-10 02:59:51Z claco $
 package Handel::L10N::en_us;
 use strict;
 use warnings;
@@ -19,13 +20,9 @@ __END__
 
 Handel::L10N::en_us - US English Language Pack for Handel
 
-=head1 VERSION
-
-    $Id: en_us.pm 33 2004-12-31 02:12:40Z claco $
-
 =head1 AUTHOR
 
     Christopher H. Laco
     CPAN ID: CLACO
-    cpan@chrislaco.com
+    claco@chrislaco.com
     http://today.icantfocus.com/blog/

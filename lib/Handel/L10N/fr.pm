@@ -1,3 +1,4 @@
+# $Id: fr.pm 431 2005-03-18 02:08:34Z claco $
 package Handel::L10N::fr;
 use strict;
 use warnings;
@@ -38,6 +39,9 @@ BEGIN {
     "Unknown restore mode" =>
         "Mode inconnu de restauration",
 
+    "Currency code '[_1]' is invalid or malformed" =>
+        "Le code '[_1]' de devise est inadmissible ou mal formé",
+
     ## Taglib exceptions
     "Tag '[_1]' not valid inside of other Handel tags" =>
         "L'étiquette '[_1] 'peut intérieur inadmissible d'autres étiquettes de Handel",
@@ -60,13 +64,9 @@ __END__
 
 Handel::L10N::fr - French Language Pack for Handel
 
-=head1 VERSION
-
-    $Id: fr.pm 261 2005-03-01 04:28:18Z claco $
-
 =head1 AUTHOR
 
     Christopher H. Laco
     CPAN ID: CLACO
-    cpan@chrislaco.com
+    claco@chrislaco.com
     http://today.icantfocus.com/blog/
