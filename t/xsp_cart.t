@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: xsp_cart.t 139 2005-02-08 02:54:33Z claco $
+# $Id: xsp_cart.t 150 2005-02-08 23:32:28Z claco $
 use strict;
 use warnings;
 require Test::More;
@@ -15,7 +15,7 @@ Test::More::plan(skip_all =>
     'DBD::SQLite not installed') if $@;
 
 Test::More::plan(skip_all =>
-    'XSP Taglib is incomplete!');
+    'Taglib unusable. Rewrite in progress.');
 
 ## test new/add first so we can use them to test everything else
 my @tests = (
@@ -61,6 +61,8 @@ my @tests = (
     'cart_carts_no_results.xsp',
     'cart_carts_save.xsp',
     'cart_carts_update.xsp',
+    'cart_new_minimal.xsp',
+    'cart_new_no_results_trigger.xsp',
 );
 
 use Apache::TestUtil;

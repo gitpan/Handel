@@ -58,6 +58,20 @@ sub new {
         -text => 'The argument supplied is invalid or of the wrong type', @_ );
 };
 
+package Handel::Exception::Taglib;
+use strict;
+use warnings;
+
+BEGIN {
+    use base 'Handel::Exception';
+};
+
+sub new {
+    my $class = shift;
+    return $class->SUPER::new(
+        -text => 'The tag is out of scope or missing required child tags', @_ );
+};
+
 1;
 __END__
 
@@ -67,7 +81,7 @@ Handel::Exception - Exceptions used within Handel
 
 =head1 VERSION
 
-    $Id: Exception.pm 53 2004-12-31 23:13:51Z claco $
+    $Id: Exception.pm 148 2005-02-08 23:30:09Z claco $
 
 =head1 SYNOPSIS
 
