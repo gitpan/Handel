@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_restore.t 26 2004-12-31 02:06:43Z claco $
+# $Id: cart_restore.t 88 2005-01-30 03:06:07Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -7,7 +7,7 @@ use Test::More;
 BEGIN {
     eval 'require DBD::SQLite';
     if($@) {
-        plan skip_all => 'SQLite not installed';
+        plan skip_all => 'DBD::SQLite not installed';
     } else {
         plan tests => 4;
     };

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: basic.t 61 2005-01-10 02:20:36Z claco $
+# $Id: basic.t 87 2005-01-30 03:04:21Z claco $
 use strict;
 use warnings;
 use Test::More tests => 12;
@@ -22,7 +22,7 @@ BEGIN {
         skip 'AxKit not installed', 1 if $@;
 
         {
-            ##
+            ## squelch AxKit strict/warnings
             no strict;
             no warnings;
             use_ok('AxKit::XSP::Handel::Cart');

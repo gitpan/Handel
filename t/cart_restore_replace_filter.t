@@ -1,15 +1,15 @@
 #!perl -wT
-# $Id: cart_restore_replace_filter.t 26 2004-12-31 02:06:43Z claco $
+# $Id: cart_restore_replace_filter.t 88 2005-01-30 03:06:07Z claco $
 use strict;
 use warnings;
 use Test::More;
 use lib 't/lib';
-use Handel::TestHelper;
+use Handel::TestHelper qw(executesql);
 
 BEGIN {
     eval 'require DBD::SQLite';
     if($@) {
-        plan skip_all => 'SQLite not installed';
+        plan skip_all => 'DBD::SQLite not installed';
     } else {
         plan tests => 77;
     };
@@ -28,8 +28,8 @@ BEGIN {
     my $data    = 't/sql/cart_fake_data.sql';
 
     unlink $dbfile;
-    Handel::TestHelper::executesql($db, $create);
-    Handel::TestHelper::executesql($db, $data);
+    executesql($db, $create);
+    executesql($db, $data);
 
     local $^W = 0;
     Handel::DBI->connection($db);

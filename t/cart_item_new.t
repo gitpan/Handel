@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_item_new.t 44 2004-12-31 20:35:50Z claco $
+# $Id: cart_item_new.t 100 2005-02-03 02:22:22Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,6 @@ BEGIN {
     use_ok('Handel::Constraints', 'constraint_uuid');
     use_ok('Handel::Exception', ':try');
 };
-
 
 ## test for Handel::Exception::Argument where first param is not a hashref
 {
@@ -40,5 +39,3 @@ BEGIN {
     is($item->description, 'My SKU');
     is($item->total, 2.46);
 };
-
-

@@ -1,17 +1,13 @@
 #!perl -wT
-# $Id: l10n.t 41 2004-12-31 20:33:10Z claco $
+# $Id: l10n.t 88 2005-01-30 03:06:07Z claco $
 use strict;
 use warnings;
 use Test::More tests => 11;
+use utf8;
 
 BEGIN {
     use_ok('Handel::L10N', 'translate');
     use_ok('Handel::Exception', ':try');
-
-    if ($] > 5.007) {
-        require utf8;
-        utf8->import;
-    };
 };
 
 

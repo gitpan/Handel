@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: dbi.t 26 2004-12-31 02:06:43Z claco $
+# $Id: dbi.t 100 2005-02-03 02:22:22Z claco $
 use strict;
 use warnings;
 use Test::More tests => 4;
