@@ -5,6 +5,7 @@ use warnings;
 BEGIN {
     use base 'Class::DBI';
     use Handel::Exception;
+    use Handel::L10N qw(translate);
 };
 
 my $db_driver  = $ENV{'db_driver'} || 'mysql';
@@ -32,13 +33,14 @@ sub _croak {
     if ($method eq 'validate_column_values') {
         my $data = $info{data};
         throw Handel::Exception::Constraint(
-            -details => join(' has invalid value , ', keys %$data)
+            -details =>
+            join(' ' . translate('has invalid value') . ', ', keys %$data)
         );
     } elsif ($method eq 'create') {
         my $details;
 
         if ($message =~ /insert new.*column\s+(.*)\s+is not unique/) {
-            $details = "$1 value already exists";
+            $details = translate("[_1] value already exists", $1);
         } else {
             $details = $message;
         };
@@ -92,6 +94,7 @@ __END__
 =head1 NAME
 
 Handel::DBI - Base DBI class used by cart/order objects
+
 =head1 SYNOPSIS
 
     use Handel::DBI;
@@ -100,7 +103,7 @@ Handel::DBI - Base DBI class used by cart/order objects
 
 =head1 VERSION
 
-    $Id: DBI.pm 20 2004-12-30 05:06:44Z claco $
+    $Id: DBI.pm 30 2004-12-31 02:11:29Z claco $
 
 =head1 DESCRIPTION
 

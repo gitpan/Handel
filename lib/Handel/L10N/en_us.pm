@@ -1,6 +1,7 @@
 package Handel::L10N::en_us;
 use strict;
 use warnings;
+use utf8;
 use vars qw(%Lexicon);
 
 BEGIN {
@@ -8,7 +9,7 @@ BEGIN {
 };
 
 %Lexicon = (
-
+    Language => 'English',
 );
 
 1;
@@ -20,7 +21,7 @@ Handel::L10N::en_us - US English Language Pack for Handel
 
 =head1 VERSION
 
-    $Id: en_us.pm 21 2004-12-30 05:06:55Z claco $
+    $Id: en_us.pm 33 2004-12-31 02:12:40Z claco $
 
 =head1 AUTHOR
 

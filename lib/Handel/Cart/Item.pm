@@ -21,7 +21,8 @@ sub new {
     my ($self, $data) = @_;
 
     throw Handel::Exception::Argument( -details =>
-       'Param 1 is not a HASH reference.') unless ref($data) eq 'HASH';
+        translate('Param 1 is not a HASH reference') . '.') unless
+            ref($data) eq 'HASH';
 
     if (!defined($data->{'id'}) || !constraint_uuid($data->{'id'})) {
         $data->{'id'} = $self->uuid;
@@ -44,7 +45,7 @@ Handel::Cart::Item - Module representing an indivudal shopping cart line item
 
 =head1 VERSION
 
-    $Id: Item.pm 22 2004-12-30 05:07:08Z claco $
+    $Id: Item.pm 34 2004-12-31 02:13:03Z claco $
 
 =head1 SYNOPSIS
 

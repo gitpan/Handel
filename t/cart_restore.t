@@ -1,5 +1,7 @@
 #!perl -wT
-# $Id: cart_restore.t 6 2004-12-28 23:33:59Z claco $
+# $Id: cart_restore.t 26 2004-12-31 02:06:43Z claco $
+use strict;
+use warnings;
 use Test::More;
 
 BEGIN {

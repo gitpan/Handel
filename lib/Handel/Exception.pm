@@ -13,13 +13,13 @@ sub new {
     my $class = shift;
     my %args  = @_;
     my $text  = translate(
-        $args{-text} || 'An unspecified error has ocurred'
+        $args{-text} || 'An unspecified error has occurred'
     );
 
     if ( defined( $args{-details} ) ) {
         $text .= ': ' . $args{-details};
     } else {
-        $text .= '.';
+        # $text .= '.';
     };
 
     ## don't pass the original text
@@ -67,7 +67,7 @@ Handel::Exception - Exceptions used within Handel
 
 =head1 VERSION
 
-    $Id: Exception.pm 20 2004-12-30 05:06:44Z claco $
+    $Id: Exception.pm 29 2004-12-31 02:10:21Z claco $
 
 =head1 SYNOPSIS
 

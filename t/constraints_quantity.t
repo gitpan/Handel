@@ -1,5 +1,7 @@
 #!perl -wT
-# $Id: constraints_quantity.t 6 2004-12-28 23:33:59Z claco $
+# $Id: constraints_quantity.t 26 2004-12-31 02:06:43Z claco $
+use strict;
+use warnings;
 use Test::More tests => 7;
 
 BEGIN {

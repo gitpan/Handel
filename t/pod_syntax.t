@@ -1,5 +1,7 @@
 #!perl -wT
-# $Id: pod_syntax.t 6 2004-12-28 23:33:59Z claco $
+# $Id: pod_syntax.t 26 2004-12-31 02:06:43Z claco $
+use strict;
+use warnings;
 use Test::More;
 
 eval 'use Test::Pod 1.00';

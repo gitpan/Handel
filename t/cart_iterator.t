@@ -1,5 +1,7 @@
 #!perl -wT
-# $Id: cart_iterator.t 8 2004-12-29 03:24:24Z claco $
+# $Id: cart_iterator.t 26 2004-12-31 02:06:43Z claco $
+use strict;
+use warnings;
 use Test::More;
 use lib 't/lib';
 use Handel::TestHelper;
