@@ -1,4 +1,4 @@
-[%# $Id: cart_items_filtered.tt2 244 2005-02-27 03:50:56Z claco $ %]
+[%# $Id: cart_items_filtered.tt2 361 2005-03-08 23:29:53Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
     [% IF (cart = hcart.create({
@@ -45,7 +45,7 @@
 			<shopper>[% cart.shopper %]</shopper>
 			<subtotal>[% cart.subtotal %]</subtotal>
 			<type>[% cart.type %]</type>
-			[% FOREACH item IN cart.items({sku => 'SKU%'}) %]
+			[% FOREACH item = cart.items({sku => 'SKU%'}) %]
 				<item>
 					<description>[% item.description %]</description>
 					<id>[% item.id %]</id>

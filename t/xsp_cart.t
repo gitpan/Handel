@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: xsp_cart.t 353 2005-03-06 21:43:16Z claco $
+# $Id: xsp_cart.t 363 2005-03-09 03:16:37Z claco $
 use strict;
 use warnings;
 require Test::More;
@@ -66,7 +66,8 @@ my @tests = (
     'cart_currency_format.xsp',
 );
 
-use Apache::TestUtil;
+require Apache::TestUtil;
+Apache::TestUtil->import(qw(t_debug));
 Apache::TestRequest->import(qw(GET));
 Apache::Test::plan(tests => ((scalar @tests * 2) + 2),
     need('AxKit', 'mod_perl', need_apache(1), need_lwp())
@@ -90,7 +91,7 @@ my $r = GET('/axkit/cart_uuid.xsp');
 ok($r->code == 200);
 ok($r->content =~ /(<p>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}<\/p>){2}/i);
 
-foreach (@tests) {
+LOOP: foreach (@tests) {
     my $r = GET("/axkit/$_");
 
     ok($r->code == 200);
@@ -101,6 +102,15 @@ foreach (@tests) {
     t_debug("HTTP Status: " . $r->code);
     t_debug("Expected:\n", $file);
     t_debug("Received:\n", $response);
+
+    ## This is a hack, but hey, it's just one test right?
+    if ($_ =~ /currency/) {
+        SKIP: {
+            eval 'use Locale::Currency::Format';
+            Apache::Test::skip('Locale::Currency::Format not installed', 2) if $@;
+            next LOOP if $@;
+        };
+    };
 
     ok($ok);
 };
