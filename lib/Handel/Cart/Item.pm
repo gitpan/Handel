@@ -5,6 +5,7 @@ use warnings;
 BEGIN {
     use base 'Handel::DBI';
     use Handel::Constraints qw(:all);
+    use Handel::L10N qw(translate);
 };
 
 __PACKAGE__->table('cart_items');
@@ -45,7 +46,7 @@ Handel::Cart::Item - Module representing an indivudal shopping cart line item
 
 =head1 VERSION
 
-    $Id: Item.pm 34 2004-12-31 02:13:03Z claco $
+    $Id: Item.pm 46 2004-12-31 20:38:58Z claco $
 
 =head1 SYNOPSIS
 

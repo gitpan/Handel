@@ -36,11 +36,11 @@ __END__
 
 =head1 NAME
 
-Handel::Constants - Common constats used in Handel
+Handel::Constants - Common constants used in Handel
 
 =head1 VERSION
 
-    $Id: Constants.pm 19 2004-12-30 05:06:16Z claco $
+    $Id: Constants.pm 45 2004-12-31 20:37:34Z claco $
 
 =head1 SYNOPSIS
 

@@ -1,13 +1,17 @@
 #!perl -wT
-# $Id: l10n.t 25 2004-12-31 02:05:52Z claco $
+# $Id: l10n.t 41 2004-12-31 20:33:10Z claco $
 use strict;
 use warnings;
-use utf8;
 use Test::More tests => 11;
 
 BEGIN {
     use_ok('Handel::L10N', 'translate');
     use_ok('Handel::Exception', ':try');
+
+    if ($] > 5.007) {
+        require utf8;
+        utf8->import;
+    };
 };
 
 
@@ -91,5 +95,3 @@ BEGIN {
             "L'argument fourni est inadmissible ou du type inapproprié: Le param 1 n'est pas une référence d'cInformations PARASITES.");
     };
 };
-
-
