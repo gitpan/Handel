@@ -54,7 +54,7 @@ Handel::Constants - Common constants used in Handel
 
 =head1 VERSION
 
-    $Id: Constants.pm 205 2005-02-20 19:35:28Z claco $
+    $Id: Constants.pm 216 2005-02-21 01:12:26Z claco $
 
 =head1 SYNOPSIS
 
@@ -82,7 +82,7 @@ below to export all or only certain groups of constants.
 
 All items in the saved cart will be appended to the list of items in the current
 cart. No effort will be made to merge items with the same SKU and duplicates
-will be ignored.
+will be left as seperate items.
 
 =head2 C<CART_MODE_MERGE>
 
