@@ -1,7 +1,7 @@
-[%# $Id: cart_fetch.tt2 244 2005-02-27 03:50:56Z claco $ %]
+[%# $Id: cart_fetch.tt2 276 2005-03-02 02:24:49Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
-    [% FOREACH cart IN hcart.fetch %]
+    [% FOREACH cart = hcart.fetch %]
 		<cart>
 			<count>[% cart.count %]</count>
 			<description>[% cart.description %]</description>

@@ -11,12 +11,12 @@ BEGIN {
 };
 
 my $cfg = Handel::ConfigReader->new();
-my $db_driver = $cfg->get('db_driver');
-my $db_host   = $cfg->get('db_host');
-my $db_port   = $cfg->get('db_port');
-my $db_name   = $cfg->get('db_name');
-my $db_user   = $cfg->get('db_user');
-my $db_pass   = $cfg->get('db_pass');
+my $db_driver = $cfg->{'db_driver'};
+my $db_host   = $cfg->{'db_host'};
+my $db_port   = $cfg->{'db_port'};
+my $db_name   = $cfg->{'db_name'};
+my $db_user   = $cfg->{'db_user'};
+my $db_pass   = $cfg->{'db_pass'};
 
 my $datasource = "dbi:$db_driver:dbname=$db_name";
 
@@ -118,7 +118,7 @@ Handel::DBI - Base DBI class used by cart/order objects
 
 =head1 VERSION
 
-    $Id: DBI.pm 264 2005-03-01 04:30:09Z claco $
+    $Id: DBI.pm 274 2005-03-02 02:22:05Z claco $
 
 =head1 DESCRIPTION
 

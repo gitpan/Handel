@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: config.t 267 2005-03-01 04:31:59Z claco $
+# $Id: config.t 278 2005-03-02 02:26:28Z claco $
 use strict;
 use warnings;
-use Test::More tests => 4;
+use Test::More tests => 9;
 
 BEGIN {
     use_ok('Handel::ConfigReader');
@@ -13,6 +13,19 @@ isa_ok($cfg, 'Handel::ConfigReader');
 
 {
     local $ENV{'MySetting'} = 23;
+    ok(exists $cfg->{'MySetting'});
     is($cfg->get('MySetting'), $ENV{'MySetting'});
     is($cfg->get('MyOtherSetting', 25), 25);
+
+    ok(!exists $cfg->{'JunkSetting'});
+};
+
+
+## test defaults and their way through get/tied hash
+{
+    local $Handel::ConfigReader::Defaults{'MyDefault'} = 'Default';
+
+    ok(exists $cfg->{'MyDefault'});
+    is($cfg->get('MyDefault'), 'Default');
+    is($cfg->{'MyDefault'}, 'Default');
 };

@@ -23,8 +23,8 @@ sub constraint_quantity {
     my ($value, $object, $column, $changing) = @_;
 
     my $cfg    = Handel::ConfigReader->new();
-    my $max    = $cfg->get('HandelMaxQuantity');
-    my $action = $cfg->get('HandelMaxQuantityAction');
+    my $max    = $cfg->{'HandelMaxQuantity'};
+    my $action = $cfg->{'HandelMaxQuantityAction'};
 
     if ($action =~ /^exception$/i && $max) {
         throw Handel::Exception::Constraint( -details =>
@@ -76,7 +76,7 @@ Handel::Constraints - Common database constraints used to validate input data
 
 =head1 VERSION
 
-    $Id: Constraints.pm 263 2005-03-01 04:29:49Z claco $
+    $Id: Constraints.pm 274 2005-03-02 02:22:05Z claco $
 
 =head1 SYNOPSIS
 
