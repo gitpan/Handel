@@ -1,4 +1,3 @@
-# $Id: Cart.pm 175 2005-02-15 04:24:08Z claco $
 package AxKit::XSP::Handel::Cart;
 use strict;
 use warnings;
@@ -638,6 +637,10 @@ __END__
 =head1 NAME
 
 AxKit::XSP::Handel::Cart - AxKit XSP Shopping Cart Taglib
+
+=head1 VERSION
+
+    $Id: Cart.pm 207 2005-02-20 19:36:48Z claco $
 
 =head1 SYNOPSIS
 
