@@ -1,105 +1,81 @@
 #!perl -wT
-# $Id: tt2_cart.t 229 2005-02-22 02:39:34Z claco $
+# $Id: tt2_cart.t 243 2005-02-27 03:49:59Z claco $
 use strict;
 use warnings;
-require Test::More;
+use Test::More;
 use lib 't/lib';
 use Handel::TestHelper qw(executesql comp_to_file);
+use Handel::DBI;
 
-eval 'use Apache::Test 1.16';
-Test::More::plan(skip_all =>
-    'Apache::Test 1.16 not installed') if $@;
+eval 'use Template 2.07';
+    plan(skip_all => 'Template Toolkit 2.07 not installed') if $@;
 
 eval 'use DBD::SQLite';
-Test::More::plan(skip_all =>
-    'DBD::SQLite not installed') if $@;
+    plan(skip_all => 'DBD::SQLite not installed') if $@;
+
 
 ## test new/add first so we can use them to test everything else
 ## convert these to TT2
 my @tests = (
-#    'cart_new.xsp',
-#    'cart_new_filtered.xsp',
-#    'cart_new_and_add.xsp',
-#    'cart_new_and_add_filtered.xsp',
-#    'cart_cart.xsp',
-#    'cart_cart_add.xsp',
-#    'cart_cart_add_filtered.xsp',
-#    'cart_cart_clear.xsp',
-#    'cart_cart_delete.xsp',
-#    'cart_cart_delete_filtered.xsp',
-#    'cart_cart_filtered.xsp',
-#    'cart_cart_filtered_no_results.xsp',
-#    'cart_cart_item.xsp',
-#    'cart_cart_item_filtered.xsp',
-#    'cart_cart_item_filtered_no_results.xsp',
-#    'cart_cart_item_update.xsp',
-#    'cart_cart_items.xsp',
-#    'cart_cart_items_filtered.xsp',
-#    'cart_cart_items_filtered_no_results.xsp',
-#    'cart_cart_items_update.xsp',
-#    'cart_cart_no_results.xsp',
-#    'cart_cart_save.xsp',
-#    'cart_cart_update.xsp',
-#    'cart_carts.xsp',
-#    'cart_carts_add.xsp',
-#    'cart_carts_add_filtered.xsp',
-#    'cart_carts_clear.xsp',
-#    'cart_carts_delete.xsp',
-#    'cart_carts_delete_filtered.xsp',
-#    'cart_carts_filtered.xsp',
-#    'cart_carts_filtered_no_results.xsp',
-#    'cart_carts_item.xsp',
-#    'cart_carts_item_filtered.xsp',
-#    'cart_carts_item_filtered_no_results.xsp',
-#    'cart_carts_item_update.xsp',
-#    'cart_carts_items.xsp',
-#    'cart_carts_items_filtered.xsp',
-#    'cart_carts_items_filtered_no_results.xsp',
-#    'cart_carts_items_update.xsp',
-#    'cart_carts_no_results.xsp',
-#    'cart_carts_save.xsp',
-#    'cart_carts_update.xsp',
-#    'cart_new_minimal.xsp',
-#    'cart_new_no_results_trigger.xsp',
-#    'cart_restore_append.xsp',
-#    'cart_restore_replace.xsp',
-#    'cart_restore_merge.xsp'
+    'cart_create.tt2',
+    'cart_create_and_add.tt2',
+    'cart_fetch.tt2',
+    'cart_fetch_as_array.tt2',
+    'cart_fetch_as_iterator.tt2',
+    'cart_fetch_filtered.tt2',
+    'cart_fetch_filtered_no_results.tt2',
+    'cart_add.tt2',
+    'cart_clear.tt2',
+    'cart_delete.tt2',
+    'cart_update.tt2',
+    'cart_save.tt2',
+    'cart_items.tt2',
+    'cart_items_as_array.tt2',
+    'cart_items_as_iterator.tt2',
+    'cart_items_filtered.tt2',
+    'cart_items_filtered_no_results.tt2',
+    'cart_items_update.tt2',
+    'cart_restore_append.tt2',
+    'cart_restore_replace.tt2',
+    'cart_restore_merge.tt2',
 );
 
-use Apache::TestUtil;
-Apache::TestRequest->import(qw(GET));
-Apache::Test::plan(tests => ((scalar @tests * 2) + 2),
-    need('Apache::Template', 'mod_perl', need_apache(1), need_lwp())
-);
-
-my $docroot = Apache::Test::vars('documentroot');
 
 ## Setup SQLite DB for tests
 {
-
-    my $dbfile  = "$docroot/cart.db";
+    my $dbfile  = "t/htdocs/cart.db";
     my $db      = "dbi:SQLite:dbname=$dbfile";
     my $create  = 't/sql/cart_create_table.sql';
     my $data    = 't/sql/cart_fake_data.sql';
 
     unlink $dbfile;
     executesql($db, $create);
+
+    local $^W = 0;
+    Handel::DBI->connection($db);
 };
 
-my $r = GET('/tt2/cart_uuid.tt2');
-ok($r->code == 200);
-ok($r->content =~ /(.*<p>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}<\/p>.*){2}/is);
+plan(tests => (scalar @tests) + 1);
+
+my $tt      = Template->new() || die 'Error creating Template';
+my $docroot = 't/htdocs/tt2';
+my $output  = '';
+
+## test uuid ouput format
+$tt->process("$docroot/cart_uuid.tt2", undef, \$output);
+ok($output =~ /(.*<p>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}<\/p>.*){2}/is);
 
 foreach (@tests) {
-    my $r = GET("/tt2/$_");
+    my $output = '';
+    $tt->process("$docroot/$_", undef, \$output);
 
-    ok($r->code == 200);
+    my ($ok, $response, $file) = comp_to_file($output, "$docroot/out/$_.out");
 
-    my ($ok, $response, $file) = comp_to_file($r->content, "$docroot/out/tt2/$_.out");
-
-    t_debug("HTTP Status: " . $r->code);
-    t_debug("Expected:\n", $file);
-    t_debug("Received:\n", $response);
+    if (!$ok) {
+        diag("Error:\n" . $tt->error) if $tt->error;
+        diag("Expected:\n", $file);
+        diag("Received:\n", $response);
+    };
 
     ok($ok);
 };

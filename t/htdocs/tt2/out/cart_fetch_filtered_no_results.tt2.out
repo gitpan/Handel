@@ -1,0 +1,4 @@
+[%# $Id: cart_fetch_filtered_no_results.tt2.out 244 2005-02-27 03:50:56Z claco $ %]
+<body>
+	<message>Could not find cart</message>
+</body>

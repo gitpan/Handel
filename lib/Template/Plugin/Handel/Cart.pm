@@ -3,10 +3,15 @@ use strict;
 use warnings;
 use base 'Template::Plugin';
 use Handel::Cart;
+use Handel::Constants ();
 
 sub new {
     my ($class, $context, @params) = @_;
     my $self = bless {_CONTEXT => $context}, ref($class) || $class;
+
+    foreach my $const (@Handel::Constants::EXPORT_OK) {
+        $self->{$const} = Handel::Constants->$const;
+    };
 
     return $self;
 };
@@ -45,7 +50,7 @@ Template::Plugin::Handel::Cart - Template Toolkit plugin for shopping cart
 
 =head1 VERSION
 
-    $Id: Cart.pm 203 2005-02-20 19:32:40Z claco $
+    $Id: Cart.pm 241 2005-02-27 03:48:23Z claco $
 
 =head1 SYNOPSIS
 
@@ -65,6 +70,12 @@ minor exceptions noted below.
 
 Since C<new> and C<load> are used by TT2 to load plugins, Handel::Carts
 C<new> and C<load> can be accesed using C<create> and C<fetch>.
+
+C<Handel::Constants> are now imported into this module automatically in C<0.08>.
+
+    [% USE hc = Handel.Cart %]
+    [% cart = hc.create(...) %]
+    [% cart.type(hc.CART_TYPE_TEMP) %]
 
 =head1 CAVEATS
 
@@ -95,14 +106,13 @@ manner.
 
 For example:
 
-    [% carts = Handel.Carts.fetch() %]
+    [% carts = Handel.Cart.fetch() %]
 
 returns an array reference sinceit's not clear at this point what you really want.
 To counteract this behaviour, you can use C<RETURNAS> constants to specify the exact
 output desired:
 
-    [% USE hdl = Handel.Constants %]
-    [% carts = Handel.cart.fetch(undef, hdl.RETURNAS_ITERATOR) %]
+    [% carts = Handel.Cart.fetch(undef, Handel.Cart.RETURNAS_ITERATOR) %]
 
 This will force a return of a C<Handel::Iterator> in scalar context. Then you can
 simply loop through the iterator:
@@ -145,7 +155,7 @@ C<create> or C<load> to return a new cart object, iterator, or array of carts.
     [% IF (cart = Handel.Cart.create({
         shopper => '12345678-9876-5432-1234-567890987654',
         name    => 'My New Cart',
-        description =>'Favorite Items'})) %}
+        description =>'Favorite Items'})) %]
 
         [% cart.name %]
         ...

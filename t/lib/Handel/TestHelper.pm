@@ -1,4 +1,4 @@
-# $Id: TestHelper.pm 131 2005-02-06 21:59:10Z claco $
+# $Id: TestHelper.pm 242 2005-02-27 03:49:30Z claco $
 package Handel::TestHelper;
 use strict;
 use warnings;
@@ -40,7 +40,11 @@ sub comp_to_file {
         $contents =~ s/\n//g;
         $contents =~ s/\s//g;
         $contents =~ s/\t//g;
+
+        # remove the tt2 and xml Ids
         $contents =~ s/<!--.*-->//;
+        $contents =~ s/\[%#.*%\]//;
+
         undef $fh;
 
         if ($string eq $contents) {

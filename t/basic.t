@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: basic.t 208 2005-02-20 19:37:17Z claco $
+# $Id: basic.t 239 2005-02-24 02:07:29Z claco $
 use strict;
 use warnings;
 use Test::More tests => 14;
@@ -31,7 +31,7 @@ BEGIN {
 
     SKIP: {
         eval 'use Template 2.07';
-        skip 'Template Toolkit not installed', 2 if $@;
+        skip 'Template Toolkit 2.07 not installed', 2 if $@;
 
         use_ok('Template::Plugin::Handel::Cart');
         use_ok('Template::Plugin::Handel::Constants');

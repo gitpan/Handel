@@ -9,7 +9,7 @@ BEGIN {
 };
 
 __PACKAGE__->table('cart_items');
-__PACKAGE__->autoupdate(0);
+__PACKAGE__->autoupdate(1);
 __PACKAGE__->iterator_class('Handel::Iterator');
 __PACKAGE__->columns( All => qw(id cart sku quantity price description) );
 __PACKAGE__->columns( Essential => qw(id cart sku quantity price description) );
@@ -46,7 +46,7 @@ Handel::Cart::Item - Module representing an indivudal shopping cart line item
 
 =head1 VERSION
 
-    $Id: Item.pm 60 2005-01-10 02:18:33Z claco $
+    $Id: Item.pm 240 2005-02-27 03:47:24Z claco $
 
 =head1 SYNOPSIS
 
