@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: tt2_cart.t 243 2005-02-27 03:49:59Z claco $
+# $Id: tt2_cart.t 288 2005-03-04 02:31:32Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -72,6 +72,7 @@ foreach (@tests) {
     my ($ok, $response, $file) = comp_to_file($output, "$docroot/out/$_.out");
 
     if (!$ok) {
+        diag("Test: $_");
         diag("Error:\n" . $tt->error) if $tt->error;
         diag("Expected:\n", $file);
         diag("Received:\n", $response);
