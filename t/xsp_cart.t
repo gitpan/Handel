@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: xsp_cart.t 253 2005-02-28 02:52:03Z claco $
+# $Id: xsp_cart.t 353 2005-03-06 21:43:16Z claco $
 use strict;
 use warnings;
 require Test::More;
@@ -62,7 +62,8 @@ my @tests = (
     'cart_new_no_results_trigger.xsp',
     'cart_restore_append.xsp',
     'cart_restore_replace.xsp',
-    'cart_restore_merge.xsp'
+    'cart_restore_merge.xsp',
+    'cart_currency_format.xsp',
 );
 
 use Apache::TestUtil;
