@@ -1,4 +1,4 @@
-# $Id: Exception.pm 478 2005-03-22 00:50:54Z claco $
+# $Id: Exception.pm 495 2005-05-30 01:38:24Z claco $
 package Handel::Exception;
 use strict;
 use warnings;
@@ -71,6 +71,34 @@ sub new {
     my $class = shift;
     return $class->SUPER::new(
         -text => 'The tag is out of scope or missing required child tags', @_ );
+};
+
+package Handel::Exception::Order;
+use strict;
+use warnings;
+
+BEGIN {
+    use base 'Handel::Exception';
+};
+
+sub new {
+    my $class = shift;
+    return $class->SUPER::new(
+        -text => 'An error occurred while while creating or validating the current order', @_ );
+};
+
+package Handel::Exception::Checkout;
+use strict;
+use warnings;
+
+BEGIN {
+    use base 'Handel::Exception';
+};
+
+sub new {
+    my $class = shift;
+    return $class->SUPER::new(
+        -text => 'An error occurred during the checkout process', @_ );
 };
 
 1;

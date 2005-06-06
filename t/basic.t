@@ -1,13 +1,15 @@
 #!perl -wT
-# $Id: basic.t 289 2005-03-04 02:31:57Z claco $
+# $Id: basic.t 498 2005-06-05 23:58:29Z claco $
 use strict;
 use warnings;
-use Test::More tests => 15;
+use Test::More tests => 19;
 
 BEGIN {
     use_ok('Handel');
     use_ok('Handel::Cart');
     use_ok('Handel::Cart::Item');
+    use_ok('Handel::Checkout');
+    use_ok('Handel::Checkout::Plugin');
     use_ok('Handel::Constants');
     use_ok('Handel::Constraints');
     use_ok('Handel::Currency');
@@ -17,6 +19,8 @@ BEGIN {
     use_ok('Handel::L10N');
     use_ok('Handel::L10N::en_us');
     use_ok('Handel::L10N::fr');
+    use_ok('Handel::Order');
+    use_ok('Handel::Order::Item');
 
     SKIP: {
         eval 'use Apache::AxKit::Language::XSP';

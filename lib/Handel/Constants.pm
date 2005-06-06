@@ -1,4 +1,4 @@
-# $Id: Constants.pm 478 2005-03-22 00:50:54Z claco $
+# $Id: Constants.pm 495 2005-05-30 01:38:24Z claco $
 package Handel::Constants;
 use strict;
 use warnings;
@@ -15,20 +15,50 @@ use constant CART_MODE_REPLACE => 1;
 use constant CART_TYPE_TEMP    => 0;
 use constant CART_TYPE_SAVED   => 1;
 
+use constant ORDER_TYPE_TEMP   => 0;
+use constant ORDER_TYPE_SAVED  => 0;
+
 use constant RETURNAS_AUTO     => 0;
 use constant RETURNAS_ITERATOR => 1;
 use constant RETURNAS_LIST     => 2;
 use constant RETURNAS_ARRAY    => 2;
+
+use constant CHECKOUT_PHASE_INITIALIZE => 1;
+use constant CHECKOUT_PHASE_VALIDATE   => 2;
+use constant CHECKOUT_PHASE_AUTHORIZE  => 4;
+use constant CHECKOUT_PHASE_DELIVER    => 8;
+use constant CHECKOUT_DEFAULT_PHASES   => [CHECKOUT_PHASE_VALIDATE,
+                                           CHECKOUT_PHASE_AUTHORIZE,
+                                           CHECKOUT_PHASE_DELIVER];
+
+use constant CHECKOUT_STATUS_OK        => 1;
+use constant CHECKOUT_STATUS_ERROR     => 2;
+
+use constant CHECKOUT_HANDLER_OK       => 1;
+use constant CHECKOUT_HANDLER_DECLINE  => 2;
+use constant CHECKOUT_HANDLER_ERROR    => 4;
 
 @EXPORT_OK = qw(CART_MODE_APPEND
                 CART_MODE_MERGE
                 CART_MODE_REPLACE
                 CART_TYPE_SAVED
                 CART_TYPE_TEMP
+                ORDER_TYPE_TEMP
+                ORDER_TYPE_SAVED
                 RETURNAS_AUTO
                 RETURNAS_ITERATOR
                 RETURNAS_LIST
                 RETURNAS_ARRAY
+                CHECKOUT_PHASE_INITIALIZE
+                CHECKOUT_PHASE_VALIDATE
+                CHECKOUT_PHASE_AUTHORIZE
+                CHECKOUT_PHASE_DELIVER
+                CHECKOUT_DEFAULT_PHASES
+                CHECKOUT_STATUS_OK
+                CHECKOUT_STATUS_ERROR
+                CHECKOUT_HANDLER_OK
+                CHECKOUT_HANDLER_DECLINE
+                CHECKOUT_HANDLER_ERROR
                 str_to_const
 );
 
@@ -40,10 +70,24 @@ use constant RETURNAS_ARRAY    => 2;
                      CART_TYPE_SAVED
                      CART_TYPE_TEMP
         )],
+        order => [ qw(ORDER_TYPE_TEMP
+                      ORDER_TYPE_SAVED
+        )],
         returnas => [ qw(RETURNAS_AUTO
-                        RETURNAS_ITERATOR
-                        RETURNAS_LIST
-                        RETURNAS_ARRAY
+                         RETURNAS_ITERATOR
+                         RETURNAS_LIST
+                         RETURNAS_ARRAY
+        )],
+        checkout => [ qw(CHECKOUT_PHASE_INITIALIZE
+                         CHECKOUT_PHASE_VALIDATE
+                         CHECKOUT_PHASE_AUTHORIZE
+                         CHECKOUT_PHASE_DELIVER
+                         CHECKOUT_DEFAULT_PHASES
+                         CHECKOUT_STATUS_OK
+                         CHECKOUT_STATUS_ERROR
+                         CHECKOUT_HANDLER_OK
+                         CHECKOUT_HANDLER_DECLINE
+                         CHECKOUT_HANDLER_ERROR
         )]
     );
 

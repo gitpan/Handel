@@ -1,4 +1,4 @@
-# $Id: Constraints.pm 432 2005-03-18 02:09:30Z claco $
+# $Id: Constraints.pm 499 2005-06-06 00:00:02Z claco $
 package Handel::Constraints;
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS);
 BEGIN {
     use base 'Exporter';
     use Handel::ConfigReader;
-    use Handel::Constants qw(:cart);
+    use Handel::Constants qw(:cart :checkout);
     use Handel::Exception;
     use Handel::L10N qw(translate);
 };
@@ -17,6 +17,7 @@ BEGIN {
                 &constraint_uuid
                 &constraint_cart_type
                 &constraint_currency_code
+                &constraint_checkout_phase
 );
 
 %EXPORT_TAGS = (all => \@EXPORT_OK);
@@ -87,6 +88,18 @@ sub constraint_currency_code {
     return 1;
 };
 
+sub constraint_checkout_phase {
+    my $value = shift || 0;
+
+    return if $value !~ /[0-9]/;
+
+    if ($value != CHECKOUT_PHASE_INITIALIZE && $value != CHECKOUT_PHASE_VALIDATE &&
+        $value != CHECKOUT_PHASE_AUTHORIZE && $value != CHECKOUT_PHASE_DELIVER) {
+        return 0;
+    };
+    return 1;
+};
+
 1;
 __END__
 
@@ -152,6 +165,11 @@ If C<Locale::Currency> is not installed, it simply checks that the code
 conforms to:
 
     /^[A-Z]{3}$/
+
+=head2 constraint_checkout_phase
+
+Returns 1 if the value passed is one of the C<CHECKOUT_PHASE_*> constants,
+otherwise it returns C<undef>.
 
 =head1 EXPORT_TAGS
 

@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 448 2005-03-18 03:00:35Z claco $
+# $Id: Makefile.PL 491 2005-05-11 01:43:39Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -60,10 +60,11 @@ WriteMakefile(
     AUTHOR       => 'Christopher H. Laco <claco@chrislaco.com>',
     ABSTRACT     => 'Simple ecommerce framework with AxKit support',
     PREREQ_PM    => {
-        'Class::DBI'       => '0.96',
-        'DBI'              => '1.36',
-        'Error'            => '0.14',
-        'Locale::Maketext' => '1.06',
+        'Class::DBI'        => '0.96',
+        'DBI'               => '1.36',
+        'Error'             => '0.14',
+        'Locale::Maketext'  => '1.06',
+        'Module::Pluggable' => '2.8',
         %modules
     },
     (ExtUtils::MakeMaker->VERSION >= 6.11) ?
