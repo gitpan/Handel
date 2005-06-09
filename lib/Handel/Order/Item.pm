@@ -1,4 +1,4 @@
-# $Id: Item.pm 502 2005-06-06 00:07:51Z claco $
+# $Id: Item.pm 508 2005-06-08 03:18:02Z claco $
 package Handel::Order::Item;
 use strict;
 use warnings;
@@ -13,14 +13,14 @@ BEGIN {
 __PACKAGE__->table('order_items');
 __PACKAGE__->autoupdate(0);
 __PACKAGE__->iterator_class('Handel::Iterator');
-__PACKAGE__->columns(All => qw(id order sku quantity price description total));
-__PACKAGE__->columns(Essential => qw(id order sku quantity price description total));
+__PACKAGE__->columns(All => qw(id orderid sku quantity price description total));
+__PACKAGE__->columns(Essential => qw(id orderid sku quantity price description total));
 __PACKAGE__->has_a(price => 'Handel::Currency');
 __PACKAGE__->has_a(total => 'Handel::Currency');
 __PACKAGE__->add_constraint('quantity', quantity => \&constraint_quantity);
 __PACKAGE__->add_constraint('price',    price    => \&constraint_price);
 __PACKAGE__->add_constraint('id',       id       => \&constraint_uuid);
-__PACKAGE__->add_constraint('order',    order    => \&constraint_uuid);
+__PACKAGE__->add_constraint('orderid',  orderid  => \&constraint_uuid);
 __PACKAGE__->add_constraint('total',    total    => \&constraint_price);
 
 

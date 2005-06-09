@@ -1,4 +1,4 @@
-# $Id: Cart.pm 504 2005-06-06 00:09:34Z claco $
+# $Id: Cart.pm 519 2005-06-09 01:41:51Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
@@ -53,7 +53,12 @@ sub add {
 
         return $self->add_to__items($data);
     } else {
-        my %copy = %{$data};
+        my %copy;
+
+        foreach ($data->columns) {
+            next if $_ =~ /^(id|cart)$/i;
+            $copy{$_} = $data->$_;
+        };
 
         $copy{'id'} = $self->uuid;
 
@@ -365,7 +370,7 @@ containing all items.
 
     my $iterator = $cart->items;
     while (my $item = $iterator->next) {
-        print $cart->sku;
+        print $item->sku;
     };
 
     my @items = $cart->items;

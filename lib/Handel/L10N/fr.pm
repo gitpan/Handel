@@ -1,4 +1,4 @@
-# $Id: fr.pm 501 2005-06-06 00:01:51Z claco $
+# $Id: fr.pm 518 2005-06-09 01:41:02Z claco $
 package Handel::L10N::fr;
 use strict;
 use warnings;
@@ -39,7 +39,7 @@ BEGIN {
     "Param 1 is not a HASH reference" =>
         "Le param 1 n'est pas une référence d'cInformations PARASITES",
 
-    "Param 1 is not a HASH reference or Handel::Cart" =>
+    "Cart reference is not a HASH reference or Handel::Cart" =>
         "Le param 1 n'est pas une référence d'cInformations PARASITES ou un Handel::Cart",
 
     "Param 1 is not a HASH reference or Handel::Cart::Item" =>
@@ -93,7 +93,7 @@ __END__
 
 =head1 NAME
 
-Handel::L10N::fr - French Language Pack for Handel
+Handel::L10N::fr - Handel Language Pack: French
 
 =head1 AUTHOR
 

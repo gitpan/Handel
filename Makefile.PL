@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 491 2005-05-11 01:43:39Z claco $
+# $Id: Makefile.PL 526 2005-06-09 01:52:32Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -73,5 +73,5 @@ WriteMakefile(
     dist => {
         PREOP => 'pod2text lib/Handel.pm > $(DISTVNAME)/README',
     },
-    clean => { FILES => 'smoke-report-* t/cart*.db t/TEST t/SMOKE t/logs t/htdocs/cart*.db' }
+    clean => { FILES => 'smoke-report-* t/cart*.db t/order*.db t/TEST t/SMOKE t/logs t/htdocs/cart*.db' }
 );

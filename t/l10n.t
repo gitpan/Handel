@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: l10n.t 156 2005-02-11 03:10:03Z claco $
+# $Id: l10n.t 516 2005-06-08 23:03:48Z claco $
 use strict;
 use warnings;
 use Test::More tests => 11;
@@ -13,6 +13,7 @@ BEGIN {
 
 ## Check simple translation through Handel::L10N
 {
+    local %ENV = ();
     local $ENV{'LANG'} = 'en';
     is(translate('Language'), "English");
 
@@ -23,6 +24,7 @@ BEGIN {
 
 ## Test translation in exceptions
 {
+    local %ENV = ();
     local $ENV{'LANG'} = 'fr';
 
     ## check the stock exceptions
@@ -79,6 +81,7 @@ BEGIN {
 
 ## test translation within another module that uses the exceptions
 {
+    local %ENV = ();
     local $ENV{'LANG'} = 'fr';
 
     require Handel::Cart;

@@ -1,4 +1,4 @@
-# $Id: DBI.pm 478 2005-03-22 00:50:54Z claco $
+# $Id: DBI.pm 521 2005-06-09 01:43:13Z claco $
 package Handel::DBI;
 use strict;
 use warnings;
@@ -54,14 +54,6 @@ sub _croak {
 
     return;
 };
-
-sub accessor_name {
-    my ($class, $column) = @_;
-
-    $column =~ s/^(price)$/_$1/;
-
-    return $column;
-}
 
 sub has_wildcard {
     my $filter = shift;
