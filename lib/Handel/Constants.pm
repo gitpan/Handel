@@ -1,4 +1,4 @@
-# $Id: Constants.pm 495 2005-05-30 01:38:24Z claco $
+# $Id: Constants.pm 536 2005-06-22 23:41:59Z claco $
 package Handel::Constants;
 use strict;
 use warnings;
@@ -16,7 +16,7 @@ use constant CART_TYPE_TEMP    => 0;
 use constant CART_TYPE_SAVED   => 1;
 
 use constant ORDER_TYPE_TEMP   => 0;
-use constant ORDER_TYPE_SAVED  => 0;
+use constant ORDER_TYPE_SAVED  => 1;
 
 use constant RETURNAS_AUTO     => 0;
 use constant RETURNAS_ITERATOR => 1;
