@@ -1,4 +1,4 @@
-# $Id: Plugin.pm 500 2005-06-06 00:01:01Z claco $
+# $Id: Plugin.pm 546 2005-06-25 02:09:11Z claco $
 package Handel::Checkout::Plugin;
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ sub new {
     my ($class, $ctx) = @_;
     my $self = bless {}, ref $class || $class;
 
-    $self->init;
+    $self->init($ctx);
 
     return $self;
 };
