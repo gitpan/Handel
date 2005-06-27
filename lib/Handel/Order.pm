@@ -1,4 +1,4 @@
-# $Id: Order.pm 548 2005-06-25 02:10:13Z claco $
+# $Id: Order.pm 565 2005-06-27 11:46:58Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -41,7 +41,7 @@ __PACKAGE__->add_constraint('tax',      tax      => \&constraint_price);
 __PACKAGE__->add_constraint('total',    total    => \&constraint_price);
 
 sub new {
-    my ($self, $data) = @_;
+    my ($self, $data, $noprocess) = @_;
 
     throw Handel::Exception::Argument(
         -details => translate('Param 1 is not a HASH reference') . '.') unless
@@ -102,16 +102,20 @@ sub new {
         $order->add_to__items(\%copy);
     };
     $order->subtotal($subtotal);
+    $order->update;
 
+    unless ($noprocess) {
+        my $checkout = Handel::Checkout->new;
+        $checkout->order($order);
 
-    my $checkout = Handel::Checkout->new();
-
-    my $status = $checkout->process($order, CHECKOUT_PHASE_INITIALIZE);
-    if ($status == CHECKOUT_STATUS_OK) {
-        $checkout->order->update;
-    } else {
-        $order->delete;
-        undef $order;
+        my $status = $checkout->process([CHECKOUT_PHASE_INITIALIZE]);
+        if ($status == CHECKOUT_STATUS_OK) {
+            $checkout->order->update;
+        } else {
+            $order->delete;
+            undef $order;
+        };
+        undef $checkout;
     };
 
     return $order;
@@ -235,9 +239,14 @@ B<NOTE:> The only required hash key is C<cart>. C<new> will copy the specified
 carts items inthe the order items. C<cart> can be an already existing
 Handel::Cart object, of a hash reference of search critera, or a cart id (uuid).
 
+When creating a new order from a cart, C<new> will automatically create a
+new Handel::Checkout process and process C<CHECKOUT_PHASE_INITIALIZE> on the
+new order. This can be disabled by passing any true value in the second option
+C<noprocess>.
+
 =over
 
-=item C<Handel::Order-E<gt>new(\%data)>
+=item C<Handel::Order-E<gt>new(\%data [, $noprocess])>
 
     my $order = Handel::Order->new({
         shopper => '10020400-E260-11CF-AE68-00AA004A34D5',
