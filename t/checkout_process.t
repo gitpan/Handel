@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_process.t 571 2005-07-09 02:20:20Z claco $
+# $Id: checkout_process.t 580 2005-07-09 16:29:25Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -7,12 +7,9 @@ use lib 't/lib';
 use Handel::TestHelper qw(executesql);
 
 BEGIN {
-    #diag "Waiting on Module::Pluggable 2.9 Taint Fixes";
     eval 'require DBD::SQLite';
-    eval 'use Module::Pluggable 2.9';
     if($@) {
-        #plan skip_all => 'DBD::SQLite not installed';
-        plan skip_all => 'Module::Pluggable 2.9 not installed';
+        plan skip_all => 'DBD::SQLite not installed';
     } else {
         plan tests => 13;
     };

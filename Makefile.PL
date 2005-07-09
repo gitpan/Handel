@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 566 2005-06-27 11:47:42Z claco $
+# $Id: Makefile.PL 582 2005-07-09 16:30:54Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -64,7 +64,7 @@ WriteMakefile(
         'DBI'               => '1.36',
         'Error'             => '0.14',
         'Locale::Maketext'  => '1.06',
-        'Module::Pluggable' => '2.8',
+        'Module::Pluggable' => '2.9',
         %modules
     },
     (ExtUtils::MakeMaker->VERSION >= 6.11) ?
