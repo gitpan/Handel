@@ -1,4 +1,4 @@
-# $Id: First.pm 551 2005-06-25 02:18:04Z claco $
+# $Id: First.pm 577 2005-07-09 02:23:55Z claco $
 package Handel::TestPlugins::First;
 use strict;
 use warnings;
@@ -34,6 +34,8 @@ sub handler {
     my ($self, $ctx) = @_;
 
     $self->{'handler_called'}++;
+
+    return CHECKOUT_STATUS_OK;
 };
 
 1;

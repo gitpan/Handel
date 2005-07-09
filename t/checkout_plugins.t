@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_plugins.t 560 2005-06-27 11:35:51Z claco $
+# $Id: checkout_plugins.t 571 2005-07-09 02:20:20Z claco $
 use strict;
 use warnings;
 use lib 't/lib';
@@ -12,7 +12,7 @@ BEGIN {
 };
 
 SKIP: {
-    diag "Waiting on Module::Pluggable 2.9 Taint Fixes";
+    #diag "Waiting on Module::Pluggable 2.9 Taint Fixes";
     eval 'use Module::Pluggable 2.9';
     skip 'Module::Pluggable 2.9 not installed', 234 if $@;
 

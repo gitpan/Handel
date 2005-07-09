@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_cart.t 558 2005-06-27 11:34:42Z claco $
+# $Id: checkout_cart.t 571 2005-07-09 02:20:20Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -7,16 +7,17 @@ use lib 't/lib';
 use Handel::TestHelper qw(executesql);
 
 BEGIN {
-    diag "Waiting on Module::Pluggable 2.9 Taint Fixes";
-    #eval 'require DBD::SQLite';
+    #diag "Waiting on Module::Pluggable 2.9 Taint Fixes";
+    eval 'require DBD::SQLite';
     eval 'use Module::Pluggable 2.9';
     if($@) {
-        #plan skip_all => 'DBD::SQLite not installed';
+        plan skip_all => 'DBD::SQLite not installed';
         plan skip_all => 'Module::Pluggable 2.9 not installed';
     } else {
-        plan tests => 68;
+        plan tests => 69;
     };
 
+    use_ok('Handel::Checkout');
     use_ok('Handel::Cart');
     use_ok('Handel::Constants', qw(:order :returnas));
     use_ok('Handel::Exception', ':try');
