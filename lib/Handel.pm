@@ -1,10 +1,10 @@
-# $Id: Handel.pm 581 2005-07-09 16:29:59Z claco $
+# $Id: Handel.pm 585 2005-07-15 02:08:22Z claco $
 package Handel;
 use strict;
 use warnings;
 use vars qw($VERSION);
 
-$VERSION = '0.17';
+$VERSION = '0.17_01';
 
 1;
 __END__

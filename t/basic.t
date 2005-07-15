@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: basic.t 498 2005-06-05 23:58:29Z claco $
+# $Id: basic.t 590 2005-07-15 02:12:09Z claco $
 use strict;
 use warnings;
-use Test::More tests => 19;
+use Test::More tests => 20;
 
 BEGIN {
     use_ok('Handel');
@@ -31,6 +31,7 @@ BEGIN {
             no strict;
             no warnings;
             use_ok('AxKit::XSP::Handel::Cart');
+            use_ok('AxKit::XSP::Handel::Order');
         };
     };
 

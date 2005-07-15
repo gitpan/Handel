@@ -1,4 +1,4 @@
-# $Id: Item.pm 508 2005-06-08 03:18:02Z claco $
+# $Id: Item.pm 588 2005-07-15 02:10:14Z claco $
 package Handel::Order::Item;
 use strict;
 use warnings;
@@ -43,6 +43,32 @@ Handel::Order::Item - Module representing an indivudal order line item
         print $item->price;
         print $item->total;
     };
+
+=head1 METHOS
+
+=head2 description
+
+Gets/sets the item description
+
+=head2 id
+
+Gets/sets the item id
+
+=head2 price
+
+Gets/sets the item price
+
+=head2 quantity
+
+Gets/sets the item quantity
+
+=head2 sku
+
+Gets/sets the item sku
+
+=head2 total
+
+Gets/sets the item total
 
 =head1 AUTHOR
 
