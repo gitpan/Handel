@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_item_new.t 611 2005-07-29 02:04:28Z claco $
+# $Id: order_item_new.t 623 2005-07-29 02:14:29Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -7,15 +7,16 @@ use Test::More;
 BEGIN {
     plan tests => 19;
 
-    use_ok('Handel::Cart::Item');
+    use_ok('Handel::Order::Item');
     use_ok('Handel::Constraints', 'constraint_uuid');
     use_ok('Handel::Exception', ':try');
 };
 
+
 ## test for Handel::Exception::Argument where first param is not a hashref
 {
     try {
-        my $item = Handel::Cart::Item->new(sku => 'FOO');
+        my $item = Handel::Order::Item->new(sku => 'FOO');
 
         fail;
     } catch Handel::Exception::Argument with {
@@ -26,15 +27,16 @@ BEGIN {
 };
 
 
-## create a new cart item object
+## create a new order item object
 {
-    my $item = Handel::Cart::Item->new({
+    my $item = Handel::Order::Item->new({
         sku         => 'sku1234',
         price       => 1.23,
         quantity    => 2,
-        description => 'My SKU'
+        description => 'My SKU',
+        total       => 2.46
     });
-    isa_ok($item, 'Handel::Cart::Item');
+    isa_ok($item, 'Handel::Order::Item');
     ok(constraint_uuid($item->id));
     is($item->sku, 'sku1234');
     is($item->price, 1.23);

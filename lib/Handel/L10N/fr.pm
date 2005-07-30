@@ -1,4 +1,4 @@
-# $Id: fr.pm 573 2005-07-09 02:21:04Z claco $
+# $Id: fr.pm 596 2005-07-29 01:41:54Z claco $
 package Handel::L10N::fr;
 use strict;
 use warnings;
@@ -44,6 +44,9 @@ BEGIN {
 
     "Param 1 is not a HASH reference or Handel::Cart::Item" =>
         "Le param 1 n'est pas une référence d'cInformations PARASITES ou un Handel::Cart::Item",
+
+    "Param 1 is not a HASH reference, Handel::Order::Item or Handel::Cart::Item" =>
+        "Le param 1 n'est pas une référence d'cInformations PARASITES, Handel::Order::Item ou un Handel::Cart::Item",
 
     "Unknown restore mode" =>
         "Mode inconnu de restauration",

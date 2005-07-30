@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: l10n.t 516 2005-06-08 23:03:48Z claco $
+# $Id: l10n.t 618 2005-07-29 02:09:56Z claco $
 use strict;
 use warnings;
 use Test::More tests => 11;
@@ -88,9 +88,13 @@ BEGIN {
 
     try {
         my $cart = Handel::Cart->new(name => 'nothashref');
+
+        fail;
     } catch Handel::Exception with {
         my $E = shift;
         is ($E->text,
             "L'argument fourni est inadmissible ou du type inapproprié: Le param 1 n'est pas une référence d'cInformations PARASITES.");
+    } otherwise {
+        fail;
     };
 };

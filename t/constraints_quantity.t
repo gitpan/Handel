@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: constraints_quantity.t 268 2005-03-01 04:32:25Z claco $
+# $Id: constraints_quantity.t 616 2005-07-29 02:08:26Z claco $
 use strict;
 use warnings;
 use Test::More tests => 13;
@@ -26,6 +26,8 @@ ok(constraint_quantity(1),          'numeric quantity');
 
     try {
         constraint_quantity(6);
+
+        fail;
     } catch Handel::Exception::Constraint with {
         pass;
     } otherwise {

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_restore.t 88 2005-01-30 03:06:07Z claco $
+# $Id: cart_restore.t 612 2005-07-29 02:05:17Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -22,6 +22,8 @@ BEGIN {
 {
     try {
         Handel::Cart->restore(id => '1234');
+
+        fail;
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {
@@ -36,6 +38,8 @@ BEGIN {
     try {
         my $fakeitem = bless {}, 'FakeItem';
         Handel::Cart->restore($fakeitem);
+
+        fail;
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {

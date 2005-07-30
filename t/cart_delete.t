@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_delete.t 88 2005-01-30 03:06:07Z claco $
+# $Id: cart_delete.t 610 2005-07-29 02:03:43Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -40,6 +40,8 @@ BEGIN {
 {
     try {
         Handel::Cart->delete(id => '1234');
+
+        fail;
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {
@@ -65,8 +67,8 @@ BEGIN {
         id => '22222222-2222-2222-2222-222222222222'
     });
     isa_ok($recart, 'Handel::Cart');
-    is($cart->count, 0);
-    is($cart->subtotal, 0.00);
+    is($recart->count, 0);
+    is($recart->subtotal, 0.00);
 };
 
 
@@ -87,6 +89,6 @@ BEGIN {
         id => '11111111-1111-1111-1111-111111111111'
     });
     isa_ok($recart, 'Handel::Cart');
-    is($cart->count, 0);
-    is($cart->subtotal, 0.00);
+    is($recart->count, 0);
+    is($recart->subtotal, 0.00);
 };

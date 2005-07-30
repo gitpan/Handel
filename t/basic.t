@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: basic.t 590 2005-07-15 02:12:09Z claco $
+# $Id: basic.t 607 2005-07-29 02:00:09Z claco $
 use strict;
 use warnings;
 use Test::More tests => 20;
@@ -24,7 +24,7 @@ BEGIN {
 
     SKIP: {
         eval 'use Apache::AxKit::Language::XSP';
-        skip 'AxKit not installed', 1 if $@;
+        skip 'AxKit not installed', 2 if $@;
 
         {
             ## squelch AxKit strict/warnings

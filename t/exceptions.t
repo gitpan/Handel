@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: exceptions.t 24 2004-12-31 02:05:32Z claco $
+# $Id: exceptions.t 618 2005-07-29 02:09:56Z claco $
 use strict;
 use warnings;
 use Test::More tests => 3;
@@ -12,13 +12,13 @@ BEGIN {
 ## verify -text and -details propagation
 {
     try {
-        throw Handel::Exception::Argument(-text => 'foo')
+        throw Handel::Exception::Argument(-text => 'foo');
     } catch Handel::Exception with {
         is(shift->text, 'foo')
     };
 
     try {
-        throw Handel::Exception::Argument(-text => 'foo', -details => 'details')
+        throw Handel::Exception::Argument(-text => 'foo', -details => 'details');
     } catch Handel::Exception with {
         is(shift->text, 'foo: details')
     };

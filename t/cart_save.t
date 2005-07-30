@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_save.t 88 2005-01-30 03:06:07Z claco $
+# $Id: cart_save.t 613 2005-07-29 02:05:57Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -45,6 +45,8 @@ BEGIN {
 
     try {
         $cart->type('abc');
+
+        fail;
     } catch Handel::Exception::Constraint with {
         pass;
     } otherwise {

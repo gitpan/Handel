@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_add.t 88 2005-01-30 03:06:07Z claco $
+# $Id: cart_add.t 608 2005-07-29 02:01:46Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -41,6 +41,8 @@ BEGIN {
 {
     try {
         my $newitem = Handel::Cart->add(id => '1234');
+
+        fail;
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {
@@ -55,6 +57,8 @@ BEGIN {
     try {
         my $fakeitem = bless {}, 'FakeItem';
         my $newitem = Handel::Cart->add($fakeitem);
+
+        fail;
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {

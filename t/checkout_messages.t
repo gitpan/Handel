@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_messages.t 580 2005-07-09 16:29:25Z claco $
+# $Id: checkout_messages.t 614 2005-07-29 02:06:47Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -25,6 +25,8 @@ BEGIN {
         my $checkout = Handel::Checkout->new({pluginpaths => 'Handel::LOADNOTHING'});
 
         $checkout->add_message([1, 2, 3]);
+
+        fail;
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {
@@ -40,6 +42,8 @@ BEGIN {
         my $checkout = Handel::Checkout->new({pluginpaths => 'Handel::LOADNOTHING'});
 
         $checkout->add_message($fake);
+
+        fail;
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {

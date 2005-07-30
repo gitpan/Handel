@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_clear.t 609 2005-07-29 02:02:37Z claco $
+# $Id: order_clear.t 623 2005-07-29 02:14:29Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,21 +11,21 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 8;
+        plan tests =>8;
     };
 
-    use_ok('Handel::Cart');
-    use_ok('Handel::Constants', ':cart');
+    use_ok('Handel::Order');
+    use_ok('Handel::Constants', ':order');
     use_ok('Handel::Exception', ':try');
 };
 
 
 ## Setup SQLite DB for tests
 {
-    my $dbfile  = 't/cart_clear.db';
+    my $dbfile  = 't/order_clear.db';
     my $db      = "dbi:SQLite:dbname=$dbfile";
-    my $create  = 't/sql/cart_create_table.sql';
-    my $data    = 't/sql/cart_fake_data.sql';
+    my $create  = 't/sql/order_create_table.sql';
+    my $data    = 't/sql/order_fake_data.sql';
 
     unlink $dbfile;
     executesql($db, $create);
@@ -36,21 +36,21 @@ BEGIN {
 };
 
 
-## Clear cart contents and validate counts
+## Clear order contents and validate counts
 {
-    my $cart = Handel::Cart->load({
+    my $order = Handel::Order->load({
         id => '11111111-1111-1111-1111-111111111111'
     });
-    isa_ok($cart, 'Handel::Cart');
-    ok($cart->count >= 1);
+    isa_ok($order, 'Handel::Order');
+    ok($order->count >= 1);
 
-    $cart->clear;
-    is($cart->count, 0);
+    $order->clear;
+    is($order->count, 0);
 
-    my $recart = Handel::Cart->load({
+    my $reorder = Handel::Order->load({
         id => '11111111-1111-1111-1111-111111111111'
     });
-    isa_ok($recart, 'Handel::Cart');
+    isa_ok($reorder, 'Handel::Order');
 
-    is($recart->count, 0);
+    is($reorder->count, 0);
 };

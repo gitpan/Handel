@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_order.t 580 2005-07-09 16:29:25Z claco $
+# $Id: checkout_order.t 614 2005-07-29 02:06:47Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -42,6 +42,8 @@ BEGIN {
         my $checkout = Handel::Checkout->new;
 
         $checkout->order('1234');
+
+        fail;
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {
@@ -54,6 +56,8 @@ BEGIN {
 {
     try {
         my $checkout = Handel::Checkout->new({order => '1234'});
+
+        fail;
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {
@@ -68,6 +72,8 @@ BEGIN {
         my $checkout = Handel::Checkout->new;
         my $fake = bless {}, 'MyObject::Foo';
         $checkout->order($fake);
+
+        fail;
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {
@@ -81,6 +87,8 @@ BEGIN {
     try {
         my $fake = bless {}, 'MyObject::Foo';
         my $checkout = Handel::Checkout->new({order => $fake});
+
+        fail;
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {

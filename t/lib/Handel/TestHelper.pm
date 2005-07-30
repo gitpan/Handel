@@ -1,4 +1,4 @@
-# $Id: TestHelper.pm 242 2005-02-27 03:49:30Z claco $
+# $Id: TestHelper.pm 604 2005-07-29 01:51:08Z claco $
 package Handel::TestHelper;
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ use FileHandle;
 use vars qw(@EXPORT_OK);
 use base 'Exporter';
 
-@EXPORT_OK = qw(executesql comp_to_file);
+@EXPORT_OK = qw(executesql comp_to_file preparetables);
 
 sub executesql {
     my ($db, $sqlfile) = @_;
@@ -20,6 +20,57 @@ sub executesql {
         $dbh->do($_);
     };
     close SQL;
+    $dbh->disconnect;
+    undef $dbh;
+};
+
+sub preparetables {
+    my ($db, $groups, $populate) = @_;
+    my %tables = (
+        cart => {
+            exists => 'cart',
+            create => 'cart_create_table.sql',
+            data   => 'cart_fake_data.sql',
+            delete => 'cart_delete_data.sql'
+        },
+        order => {
+            exists => 'orders',
+            create => 'order_create_table.sql',
+            data   => 'order_fake_data.sql',
+            delete => 'order_delete_data.sql'
+        }
+    );
+
+    return unless scalar @{$groups};
+
+    my $dbh = DBI->connect($db);
+    foreach my $group (@{$groups}) {
+        return unless exists $tables{$group};
+
+        my $data = $tables{$group};
+        my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='" . $data->{'exists'} . "'");
+
+        if ($count == 0) {
+            open SQL, "< t/sql/" . $data->{'create'};
+            while (<SQL>) {
+                $dbh->do($_);
+            };
+            close SQL;
+        } elsif ($count == 1) {
+            open SQL, "< t/sql/" . $data->{'delete'};
+            while (<SQL>) {
+                $dbh->do($_);
+            };
+            close SQL;
+        };
+        if ($populate) {
+            open SQL, "< t/sql/" . $data->{'data'};
+            while (<SQL>) {
+                $dbh->do($_);
+            };
+            close SQL;
+        };
+    };
     $dbh->disconnect;
     undef $dbh;
 };
