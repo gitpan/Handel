@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: order_new_filtered.xsp 640 2005-08-03 02:17:41Z claco $ -->
+<!-- $Id: order_order_items_filtered.xsp 643 2005-08-04 23:55:14Z claco $ -->
 <xsp:page
 	xmlns:xsp="http://apache.org/xsp/core/v1"
 	xmlns:order="http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order"
 >
 	<body>
-		<order:new id="0C383BC4-4FB0-4DBD-B5FF-65A6D914E496" shopper="15B27423-D3F0-4506-AB90-67D1689BE932">
-			<order:type>ORDER_TYPE_SAVED</order:type>
-			<order:cart type="CART_TYPE_TEMP">
-				<order:filter name="id">11111111-1111-1111-1111-111111111111</order:filter>
-			</order:cart>
+		<order:new>
+			<order:id>FBC4A843-2667-48ED-AA9F-EF4B52537E72</order:id>
+			<order:shopper>FE816B07-7E3D-4A00-97D4-667FEA60F767</order:shopper>
+			<order:type>ORDER_TYPE_TEMP</order:type>
 			<order:billtofirstname>Christopher</order:billtofirstname>
 			<order:billtolastname>Laco</order:billtolastname>
 			<order:billtoaddress1>BillToAddress1</order:billtoaddress1>
@@ -46,6 +45,18 @@
 			<order:subtotal>37.95</order:subtotal>
 			<order:total>37.95</order:total>
 			<order:updated>20050716T201234Z</order:updated>
+			<order:results>
+				<order:add id="8CB01B28-CF5A-4F4E-B7B7-CFF9F0ACA534" sku="NEWSKU1" price="1.11" quantity="1" description="Description 1" total="1.11"/>
+				<order:add id="46C2D004-4694-4C66-B901-8E2CEE6CB9FD" sku="SKU2" price="2.22" quantity="2" description="Description 2" total="4.44"/>
+				<order:add id="C9036322-4F7B-4B21-9084-46017927718B" sku="SKU3" price="3.33" quantity="3" description="Description 3" total="9.99"/>
+			</order:results>
+			<order:no-results>
+				<message>Error creating order</message>
+			</order:no-results>
+		</order:new>
+
+		<order:order type="ORDER_TYPE_TEMP">
+			<order:filter name="id">FBC4A843-2667-48ED-AA9F-EF4B52537E72</order:filter>
 			<order:results>
 				<order>
 					<count><order:count/></count>
@@ -88,11 +99,27 @@
 					<subtotal><order:subtotal/></subtotal>
 					<total><order:total/></total>
 					<updated><order:updated/></updated>
+					<order:items>
+						<order:filter name="sku">SKU%</order:filter>
+						<order:results>
+							<item>
+								<description><order:description/></description>
+								<id><order:id/></id>
+								<price><order:price/></price>
+								<quantity><order:quantity/></quantity>
+								<sku><order:sku/></sku>
+								<total><order:total/></total>
+							</item>
+						</order:results>
+						<order:no-results>
+							<message>Order item not found</message>
+						</order:no-results>
+					</order:items>
 				</order>
 			</order:results>
 			<order:no-results>
-				<message>Error creating order</message>
+				<message>Could not find order</message>
 			</order:no-results>
-		</order:new>
+		</order:order>
 	</body>
 </xsp:page>

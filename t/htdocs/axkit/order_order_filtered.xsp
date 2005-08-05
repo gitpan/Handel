@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: order_new_filtered.xsp 640 2005-08-03 02:17:41Z claco $ -->
+<!-- $Id: order_order_filtered.xsp 641 2005-08-04 01:09:22Z claco $ -->
 <xsp:page
 	xmlns:xsp="http://apache.org/xsp/core/v1"
 	xmlns:order="http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order"
 >
 	<body>
-		<order:new id="0C383BC4-4FB0-4DBD-B5FF-65A6D914E496" shopper="15B27423-D3F0-4506-AB90-67D1689BE932">
+		<order:new>
+			<order:id>D65692C4-B043-43A7-BFAA-D5326C099B71</order:id>
+			<order:shopper>A29DD9DD-58B9-4436-81AC-784CE7E88F78</order:shopper>
 			<order:type>ORDER_TYPE_SAVED</order:type>
-			<order:cart type="CART_TYPE_TEMP">
-				<order:filter name="id">11111111-1111-1111-1111-111111111111</order:filter>
-			</order:cart>
 			<order:billtofirstname>Christopher</order:billtofirstname>
 			<order:billtolastname>Laco</order:billtolastname>
 			<order:billtoaddress1>BillToAddress1</order:billtoaddress1>
@@ -46,6 +45,13 @@
 			<order:subtotal>37.95</order:subtotal>
 			<order:total>37.95</order:total>
 			<order:updated>20050716T201234Z</order:updated>
+			<order:no-results>
+				<message>Error creating order</message>
+			</order:no-results>
+		</order:new>
+
+		<order:order type="ORDER_TYPE_SAVED">
+			<order:filter name="id">D65692C4-B043-43A7-BFAA-D5326C099B71</order:filter>
 			<order:results>
 				<order>
 					<count><order:count/></count>
@@ -91,8 +97,8 @@
 				</order>
 			</order:results>
 			<order:no-results>
-				<message>Error creating order</message>
+				<message>Could not find order</message>
 			</order:no-results>
-		</order:new>
+		</order:order>
 	</body>
 </xsp:page>

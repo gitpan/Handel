@@ -1,4 +1,4 @@
-# $Id: Item.pm 597 2005-07-29 01:42:32Z claco $
+# $Id: Item.pm 650 2005-08-05 00:45:21Z claco $
 package Handel::Order::Item;
 use strict;
 use warnings;
@@ -11,7 +11,7 @@ BEGIN {
 };
 
 __PACKAGE__->table('order_items');
-__PACKAGE__->autoupdate(0);
+__PACKAGE__->autoupdate(1);
 __PACKAGE__->iterator_class('Handel::Iterator');
 __PACKAGE__->columns(All => qw(id orderid sku quantity price description total));
 __PACKAGE__->columns(Essential => qw(id orderid sku quantity price description total));

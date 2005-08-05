@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: xsp_cart.t 621 2005-07-29 02:12:40Z claco $
+# $Id: xsp_cart.t 657 2005-08-05 02:26:24Z claco $
 use strict;
 use warnings;
 require Test::More;
@@ -80,7 +80,7 @@ my $docroot = Apache::Test::vars('documentroot');
     my $dbfile  = "$docroot/xsp.db";
     my $db      = "dbi:SQLite:dbname=$dbfile";
 
-    preparetables($db, [qw(cart)]);
+    preparetables($db, [qw(cart order)]);
 };
 
 my $r = GET('/axkit/cart_uuid.xsp');

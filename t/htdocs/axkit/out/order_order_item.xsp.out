@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: order_new_filtered.xsp.out 640 2005-08-03 02:17:41Z claco $ -->
+<!-- $Id: order_order_item.xsp.out 643 2005-08-04 23:55:14Z claco $ -->
 <body>
 	<order>
 		<count>2</count>
-		<id>0C383BC4-4FB0-4DBD-B5FF-65A6D914E496</id>
-		<shopper>15B27423-D3F0-4506-AB90-67D1689BE932</shopper>
-		<type>1</type>
+		<id>BD40D1CB-7D85-4F47-867A-925E111EB2FC</id>
+		<shopper>0CA564F1-EFBC-490F-8586-198FD14E97F8</shopper>
+		<type>0</type>
 		<billtofirstname>Christopher</billtofirstname>
 		<billtolastname>Laco</billtolastname>
 		<billtoaddress1>BillToAddress1</billtoaddress1>
@@ -39,8 +39,16 @@
 		<shiptonightphone>5-555-555-5555</shiptonightphone>
 		<shiptofax>6-666-666-6666</shiptofax>
 		<shiptoemail>chrislaco@hotmail.com</shiptoemail>
-		<subtotal>5.55</subtotal>
+		<subtotal>37.95</subtotal>
 		<total>37.95</total>
 		<updated>20050716T201234Z</updated>
+		<item>
+			<description>Description 1</description>
+			<id>EF254990-53FB-46DA-8B8A-A287698D3E64</id>
+			<price>1.11</price>
+			<quantity>1</quantity>
+			<sku>SKU1</sku>
+			<total>1.11</total>
+		</item>
 	</order>
 </body>

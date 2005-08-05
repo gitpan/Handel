@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: order_new_filtered.xsp.out 640 2005-08-03 02:17:41Z claco $ -->
+<!-- $Id: order_order_item_filtered_no_results.xsp.out 643 2005-08-04 23:55:14Z claco $ -->
 <body>
 	<order>
 		<count>2</count>
-		<id>0C383BC4-4FB0-4DBD-B5FF-65A6D914E496</id>
-		<shopper>15B27423-D3F0-4506-AB90-67D1689BE932</shopper>
-		<type>1</type>
+		<id>D0D99C10-2A0B-4E1C-9944-A79F8DBEC6EA</id>
+		<shopper>BDD084CA-FBAF-48C4-A9F2-E5DCCAEDCDFE</shopper>
+		<type>0</type>
 		<billtofirstname>Christopher</billtofirstname>
 		<billtolastname>Laco</billtolastname>
 		<billtoaddress1>BillToAddress1</billtoaddress1>
@@ -39,8 +39,9 @@
 		<shiptonightphone>5-555-555-5555</shiptonightphone>
 		<shiptofax>6-666-666-6666</shiptofax>
 		<shiptoemail>chrislaco@hotmail.com</shiptoemail>
-		<subtotal>5.55</subtotal>
+		<subtotal>37.95</subtotal>
 		<total>37.95</total>
 		<updated>20050716T201234Z</updated>
+		<message>Order item not found</message>
 	</order>
 </body>

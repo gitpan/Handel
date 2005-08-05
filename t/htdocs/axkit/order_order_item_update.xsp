@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: order_new_filtered.xsp 640 2005-08-03 02:17:41Z claco $ -->
+<!-- $Id: order_order_item_update.xsp 643 2005-08-04 23:55:14Z claco $ -->
 <xsp:page
 	xmlns:xsp="http://apache.org/xsp/core/v1"
 	xmlns:order="http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order"
 >
 	<body>
-		<order:new id="0C383BC4-4FB0-4DBD-B5FF-65A6D914E496" shopper="15B27423-D3F0-4506-AB90-67D1689BE932">
-			<order:type>ORDER_TYPE_SAVED</order:type>
-			<order:cart type="CART_TYPE_TEMP">
-				<order:filter name="id">11111111-1111-1111-1111-111111111111</order:filter>
-			</order:cart>
+		<order:new>
+			<order:id>EC53E087-381B-4267-B021-B94963F95187</order:id>
+			<order:shopper>6317D584-7EEF-4D16-8FCA-C37568F09DCF</order:shopper>
+			<order:type>ORDER_TYPE_TEMP</order:type>
 			<order:billtofirstname>Christopher</order:billtofirstname>
 			<order:billtolastname>Laco</order:billtolastname>
 			<order:billtoaddress1>BillToAddress1</order:billtoaddress1>
@@ -46,6 +45,17 @@
 			<order:subtotal>37.95</order:subtotal>
 			<order:total>37.95</order:total>
 			<order:updated>20050716T201234Z</order:updated>
+			<order:results>
+				<order:add id="18C9050C-1973-4A56-A7C6-F609BD204898" sku="SKU1" price="1.11" quantity="1" description="Description 1" total="1.11"/>
+				<order:add id="C2B8F092-2AAF-4D59-845F-2A119E4408B5" sku="SKU2" price="2.22" quantity="2" description="Description 2" total="4.44"/>
+			</order:results>
+			<order:no-results>
+				<message>Error creating order</message>
+			</order:no-results>
+		</order:new>
+
+		<order:order type="ORDER_TYPE_TEMP">
+			<order:filter name="id">EC53E087-381B-4267-B021-B94963F95187</order:filter>
 			<order:results>
 				<order>
 					<count><order:count/></count>
@@ -88,11 +98,42 @@
 					<subtotal><order:subtotal/></subtotal>
 					<total><order:total/></total>
 					<updated><order:updated/></updated>
+					<order:item id="18C9050C-1973-4A56-A7C6-F609BD204898">
+						<order:filter name="sku">SKU1</order:filter>
+						<order:results>
+							<item>
+								<description><order:description/></description>
+								<id><order:id/></id>
+								<price><order:price/></price>
+								<quantity><order:quantity/></quantity>
+								<sku><order:sku/></sku>
+								<total><order:total/></total>
+							</item>
+							<order:update>
+								<order:description>My Updated Item</order:description>
+								<order:price>3.33</order:price>
+								<order:quantity>3</order:quantity>
+								<order:sku>UPDATED123</order:sku>
+								<order:total>9.99</order:total>
+							</order:update>
+							<item>
+								<description><order:description/></description>
+								<id><order:id/></id>
+								<price><order:price/></price>
+								<quantity><order:quantity/></quantity>
+								<sku><order:sku/></sku>
+								<total><order:total/></total>
+							</item>
+						</order:results>
+						<order:no-results>
+							<message>Order item not found</message>
+						</order:no-results>
+					</order:item>
 				</order>
 			</order:results>
 			<order:no-results>
-				<message>Error creating order</message>
+				<message>Could not find order</message>
 			</order:no-results>
-		</order:new>
+		</order:order>
 	</body>
 </xsp:page>

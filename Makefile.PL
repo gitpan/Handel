@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 634 2005-07-30 15:46:30Z claco $
+# $Id: Makefile.PL 656 2005-08-05 00:50:48Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -12,6 +12,18 @@ if (Test::More->VERSION < 0.48) {
     print "Class::DBI/IMA::DBI. Please consider updating Test::More\n";
     print "to version 0.48 or greater if you experience test failures\n";
     print "with 'attemt to free unreferenced scalar' errors.\n";
+    print "----------------------------------------------------------\n";
+    sleep 5;
+};
+
+eval 'require Handel';
+if (!$@ && Handel->VERSION eq '0.17') {
+    print "\a\a\a\a\a";
+    print "----------------------------------------------------------\n";
+    print "BREAKING API CHANGES!!!!\n\n";
+    print "Handel::Order >= 0.18 is incompatable with Handel::Order\n";
+    print "version 0.17 only. Earlier versions of Handel without\n";
+    print "Handel::ORder arenot effected.\n";
     print "----------------------------------------------------------\n";
     sleep 5;
 };

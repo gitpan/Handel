@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: order_new_filtered.xsp 640 2005-08-03 02:17:41Z claco $ -->
+<!-- $Id: order_order_add_filtered.xsp 641 2005-08-04 01:09:22Z claco $ -->
 <xsp:page
 	xmlns:xsp="http://apache.org/xsp/core/v1"
 	xmlns:order="http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order"
 >
 	<body>
-		<order:new id="0C383BC4-4FB0-4DBD-B5FF-65A6D914E496" shopper="15B27423-D3F0-4506-AB90-67D1689BE932">
-			<order:type>ORDER_TYPE_SAVED</order:type>
-			<order:cart type="CART_TYPE_TEMP">
-				<order:filter name="id">11111111-1111-1111-1111-111111111111</order:filter>
-			</order:cart>
+		<order:new>
+			<order:id>D0EF03E8-2FCE-4E66-BE83-241BC316B381</order:id>
+			<order:shopper>41612C26-C655-4FF6-8FA8-35D8DC07AEF6</order:shopper>
+			<order:type>ORDER_TYPE_TEMP</order:type>
 			<order:billtofirstname>Christopher</order:billtofirstname>
 			<order:billtolastname>Laco</order:billtolastname>
 			<order:billtoaddress1>BillToAddress1</order:billtoaddress1>
@@ -94,5 +93,74 @@
 				<message>Error creating order</message>
 			</order:no-results>
 		</order:new>
+
+		<order:order type="ORDER_TYPE_TEMP">
+			<order:filter name="id">D0EF03E8-2FCE-4E66-BE83-241BC316B381</order:filter>
+			<order:results>
+				<order:add quantity="3" price="3.33" sku="NEWSKU789">
+					<order:description>My New Item</order:description>
+					<order:id>C3496D46-508D-44B2-B0E5-E53B9B9E10F0</order:id>
+					<order:total>9.99</order:total>
+					<order:results>
+						<addeditem>
+							<description><order:description/></description>
+							<id><order:id/></id>
+							<price><order:price/></price>
+							<quantity><order:quantity/></quantity>
+							<sku><order:sku/></sku>
+							<total><order:total/></total>
+						</addeditem>
+					</order:results>
+					<order:no-results>
+						<message>New item not added</message>
+					</order:no-results>
+				</order:add>
+				<order>
+					<count><order:count/></count>
+					<id><order:id/></id>
+					<shopper><order:shopper/></shopper>
+					<type><order:type/></type>
+					<billtofirstname><order:billtofirstname/></billtofirstname>
+					<billtolastname><order:billtolastname/></billtolastname>
+					<billtoaddress1><order:billtoaddress1/></billtoaddress1>
+					<billtoaddress2><order:billtoaddress2/></billtoaddress2>
+					<billtoaddress3><order:billtoaddress3/></billtoaddress3>
+					<billtocity><order:billtocity/></billtocity>
+					<billtostate><order:billtostate/></billtostate>
+					<billtozip><order:billtozip/></billtozip>
+					<billtocountry><order:billtocountry/></billtocountry>
+					<billtodayphone><order:billtodayphone/></billtodayphone>
+					<billtonightphone><order:billtonightphone/></billtonightphone>
+					<billtofax><order:billtofax/></billtofax>
+					<billtoemail><order:billtoemail/></billtoemail>
+					<comments><order:comments/></comments>
+					<created><order:created/></created>
+					<handling><order:handling/></handling>
+					<number><order:number/></number>
+					<shipmethod><order:shipmethod/></shipmethod>
+					<shipping><order:shipping/></shipping>
+					<shiptosameasbillto><order:shiptosameasbillto/></shiptosameasbillto>
+					<shiptofirstname><order:shiptofirstname/></shiptofirstname>
+					<shiptolastname><order:shiptolastname/></shiptolastname>
+					<shiptoaddress1><order:shiptoaddress1/></shiptoaddress1>
+					<shiptoaddress2><order:shiptoaddress2/></shiptoaddress2>
+					<shiptoaddress3><order:shiptoaddress3/></shiptoaddress3>
+					<shiptocity><order:shiptocity/></shiptocity>
+					<shiptostate><order:shiptostate/></shiptostate>
+					<shiptozip><order:shiptozip/></shiptozip>
+					<shiptocountry><order:shiptocountry/></shiptocountry>
+					<shiptodayphone><order:shiptodayphone/></shiptodayphone>
+					<shiptonightphone><order:shiptonightphone/></shiptonightphone>
+					<shiptofax><order:shiptofax/></shiptofax>
+					<shiptoemail><order:shiptoemail/></shiptoemail>
+					<subtotal><order:subtotal/></subtotal>
+					<total><order:total/></total>
+					<updated><order:updated/></updated>
+				</order>
+			</order:results>
+			<order:no-results>
+				<message>Could not find order</message>
+			</order:no-results>
+		</order:order>
 	</body>
 </xsp:page>
