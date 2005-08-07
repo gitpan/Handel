@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: order_order_delete_filtered.xsp.out 641 2005-08-04 01:09:22Z claco $ -->
+<!-- $Id: order_order_delete_filtered.xsp.out 664 2005-08-07 00:09:32Z claco $ -->
 <body>
 	<order>
 		<count>2</count>
@@ -41,6 +41,7 @@
 		<shiptoemail>chrislaco@hotmail.com</shiptoemail>
 		<subtotal>37.95</subtotal>
 		<total>37.95</total>
+		<tax>6.66</tax>
 		<updated>20050716T201234Z</updated>
 	</order>
 
@@ -84,6 +85,7 @@
 		<shiptoemail>chrislaco@hotmail.com</shiptoemail>
 		<subtotal>37.95</subtotal>
 		<total>37.95</total>
+		<tax>6.66</tax>
 		<updated>20050716T201234Z</updated>
 		<count>1</count>
 		<id>69B4404C-6346-4FFA-8D73-220F5D65A952</id>
@@ -124,6 +126,7 @@
 		<shiptoemail>chrislaco@hotmail.com</shiptoemail>
 		<subtotal>37.95</subtotal>
 		<total>37.95</total>
+		<tax>6.66</tax>
 		<updated>20050716T201234Z</updated>
 	</order>
 </body>

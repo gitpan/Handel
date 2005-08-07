@@ -1,10 +1,10 @@
-# $Id: Handel.pm 658 2005-08-05 02:27:03Z claco $
+# $Id: Handel.pm 672 2005-08-07 00:28:33Z claco $
 package Handel;
 use strict;
 use warnings;
 use vars qw($VERSION);
 
-$VERSION = '0.17_04';
+$VERSION = '0.17_05';
 
 1;
 __END__
@@ -58,6 +58,8 @@ even process() call can have it's own uniquie order processing pipeline.
 =item Public Wiki/Docs site.
 
 =item Get someone to actually use the damn thing. :-)
+
+=item abstract schema into SQL::Translator scripts
 
 =back
 

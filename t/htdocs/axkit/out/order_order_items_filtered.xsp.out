@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: order_order_items_filtered.xsp.out 643 2005-08-04 23:55:14Z claco $ -->
+<!-- $Id: order_order_items_filtered.xsp.out 664 2005-08-07 00:09:32Z claco $ -->
 <body>
 	<order>
 		<count>3</count>
@@ -41,6 +41,7 @@
 		<shiptoemail>chrislaco@hotmail.com</shiptoemail>
 		<subtotal>37.95</subtotal>
 		<total>37.95</total>
+		<tax>6.66</tax>
 		<updated>20050716T201234Z</updated>
 		<item>
 			<description>Description 2</description>

@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 595 2005-07-29 01:40:42Z claco $
+# $Id: Checkout.pm 674 2005-08-07 00:32:53Z claco $
 package AxKit::XSP::Handel::Checkout;
 use strict;
 use warnings;
@@ -35,7 +35,7 @@ Add the namespace to your XSP file and use the tags:
     <xsp:page
          language="Perl"
          xmlns:xsp="http://apache.org/xsp/core/v1"
-         xmlns:order="http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Checkout"
+         xmlns:checkout="http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Checkout"
     >
 
 =head1 DESCRIPTION
