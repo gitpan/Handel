@@ -1,10 +1,11 @@
-# $Id: Order.pm 652 2005-08-05 00:48:45Z claco $
+# $Id: Order.pm 682 2005-08-07 18:53:31Z claco $
 package Handel::Order;
 use strict;
 use warnings;
 
 BEGIN {
     use base 'Handel::DBI';
+    use Handel::Cart;
     use Handel::Checkout;
     use Handel::Constants qw(:checkout :returnas :order);
     use Handel::Constraints qw(:all);

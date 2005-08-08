@@ -1,0 +1,4 @@
+[%# $Id: order_fetch_filtered_no_results.tt2.out 681 2005-08-07 18:52:35Z claco $ %]
+<body>
+	<message>Could not find order</message>
+</body>

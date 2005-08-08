@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: tt2_cart.t 687 2005-08-08 01:29:23Z claco $
+# $Id: tt2_order.t 686 2005-08-08 01:29:00Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -17,27 +17,24 @@ eval 'use DBD::SQLite';
 ## test new/add first so we can use them to test everything else
 ## convert these to TT2
 my @tests = (
-    'cart_create.tt2',
-    'cart_create_and_add.tt2',
-    'cart_fetch.tt2',
-    'cart_fetch_as_array.tt2',
-    'cart_fetch_as_iterator.tt2',
-    'cart_fetch_filtered.tt2',
-    'cart_fetch_filtered_no_results.tt2',
-    'cart_add.tt2',
-    'cart_clear.tt2',
-    'cart_delete.tt2',
-    'cart_update.tt2',
-    'cart_save.tt2',
-    'cart_items.tt2',
-    'cart_items_as_array.tt2',
-    'cart_items_as_iterator.tt2',
-    'cart_items_filtered.tt2',
-    'cart_items_filtered_no_results.tt2',
-    'cart_items_update.tt2',
-    'cart_restore_append.tt2',
-    'cart_restore_replace.tt2',
-    'cart_restore_merge.tt2',
+    'order_create.tt2',
+    'order_create_cart.tt2',
+    'order_create_and_add.tt2',
+    'order_fetch.tt2',
+    'order_fetch_as_array.tt2',
+    'order_fetch_as_iterator.tt2',
+    'order_fetch_filtered.tt2',
+    'order_fetch_filtered_no_results.tt2',
+    'order_add.tt2',
+    'order_clear.tt2',
+    'order_delete.tt2',
+    'order_update.tt2',
+    'order_items.tt2',
+    'order_items_as_array.tt2',
+    'order_items_as_iterator.tt2',
+    'order_items_filtered.tt2',
+    'order_items_filtered_no_results.tt2',
+    'order_items_update.tt2'
 );
 
 ## Setup SQLite DB for tests
@@ -46,7 +43,8 @@ my @tests = (
     my $db      = "dbi:SQLite:dbname=$dbfile";
 
     unlink $dbfile;
-    preparetables($db, ['cart']);
+    preparetables($db, ['cart'], 1);
+    preparetables($db, ['order']);
 
     local $^W = 0;
     Handel::DBI->connection($db);
@@ -59,7 +57,7 @@ my $docroot = 't/htdocs/tt2';
 my $output  = '';
 
 ## test uuid ouput format
-$tt->process("$docroot/cart_uuid.tt2", undef, \$output);
+$tt->process("$docroot/order_uuid.tt2", undef, \$output);
 ok($output =~ /(.*<p>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}<\/p>.*){2}/is);
 
 foreach (@tests) {
