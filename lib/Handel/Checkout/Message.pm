@@ -1,14 +1,21 @@
-# $Id: Message.pm 576 2005-07-09 02:23:04Z claco $
+# $Id: Message.pm 694 2005-08-10 01:26:47Z claco $
 package Handel::Checkout::Message;
 use strict;
 use warnings;
 use vars '$AUTOLOAD';
+use overload '""' => \&stringify, fallback => 1;
 
 sub new {
     my ($class, %args) = @_;
     my $self = bless \%args, ref $class || $class;
 
     return $self;
+};
+
+sub stringify {
+    my $self = shift;
+
+    return $self->text || $self;
 };
 
 sub AUTOLOAD {

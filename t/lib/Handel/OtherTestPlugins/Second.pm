@@ -1,4 +1,4 @@
-# $Id: Second.pm 577 2005-07-09 02:23:55Z claco $
+# $Id: Second.pm 707 2005-08-10 01:42:14Z claco $
 package Handel::OtherTestPlugins::Second;
 use strict;
 use warnings;
@@ -35,7 +35,7 @@ sub handler {
 
     $self->{'handler_called'}++;
 
-    return CHECKOUT_STATUS_OK;
+    return CHECKOUT_HANDLER_OK;
 };
 
 1;
