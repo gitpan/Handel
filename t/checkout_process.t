@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_process.t 702 2005-08-10 01:32:21Z claco $
+# $Id: checkout_process.t 716 2005-08-11 01:30:01Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 26;
+        plan tests => 32;
     };
 
     use_ok('Handel::Checkout');
@@ -162,4 +162,39 @@ BEGIN {
     my @messages = $checkout->messages;
     is(scalar @messages, 1);
     ok($messages[0] =~ /ValidateError/);
+};
+
+
+## Check stash writes and lifetime
+{
+    my $order = Handel::Order->new({});
+        $order->add({
+            sku      => 'SKU1',
+            quantity => 1,
+            price    => 1.11
+        });
+        $order->add({
+            sku      => 'SKU2',
+            quantity => 2,
+            price    => 2.22
+        });
+
+    my $checkout = Handel::Checkout->new({
+        pluginpaths => 'Handel::TestPipeline',
+        loadplugins => ['Handel::TestPipeline::WriteToStash',
+                        'Handel::TestPipeline::ReadFromStash'],
+        phases      => CHECKOUT_ALL_PHASES,
+        order       => $order
+    });
+
+    is($checkout->process, CHECKOUT_STATUS_OK);
+    is($checkout->stash->{'WriteToStash'}, 'WrittenToStash');
+
+    my %plugins = map { ref $_ => $_ } $checkout->plugins;
+    is(scalar keys %plugins, 2);
+    ok(exists $plugins{'Handel::TestPipeline::ReadFromStash'});
+    is($plugins{'Handel::TestPipeline::ReadFromStash'}->{'ReadFromStash'}, 'WrittenToStash');
+
+    my @messages = $checkout->messages;
+    is(scalar @messages, 0);
 };

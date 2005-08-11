@@ -1,4 +1,4 @@
-# $Id: DBI.pm 699 2005-08-10 01:30:21Z claco $
+# $Id: DBI.pm 711 2005-08-11 01:26:49Z claco $
 package Handel::DBI;
 use strict;
 use warnings;
@@ -66,31 +66,7 @@ sub has_wildcard {
 };
 
 sub uuid {
-    my $uuidstring = '';
-
-    if (eval{require UUID}) {
-        my $uuid;
-        UUID::generate($uuid);
-        UUID::unparse($uuid, $uuidstring);
-    } elsif (eval{require Data::UUID}) {
-        my $ug = Data::UUID->new;
-        my $uuid = $ug->create;
-        $uuidstring = $ug->to_string($uuid);
-    } elsif (eval{
-            # for some reason 'no warnings' won't squelch
-            # the 'too late for INIT' warning in Win32::API::Type
-            local $^W = 0;
-            require Win32::Guidgen;
-        }) {
-        $uuidstring = Win32::Guidgen::create();
-    } elsif (eval{require Win32API::GUID}) {
-        $uuidstring = Win32API::GUID::CreateGuid();
-    } else {
-        throw Handel::Exception(
-            -text => 'Required modules not found',
-            -details => 'UUID/Data::UUID'
-        );
-    };
+    my $uuidstring = Handel::newuuid;
 
     $uuidstring =~ s/^{//;
     $uuidstring =~ s/}$//;

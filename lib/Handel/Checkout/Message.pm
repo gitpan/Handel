@@ -1,4 +1,4 @@
-# $Id: Message.pm 694 2005-08-10 01:26:47Z claco $
+# $Id: Message.pm 710 2005-08-11 01:26:06Z claco $
 package Handel::Checkout::Message;
 use strict;
 use warnings;
@@ -58,6 +58,8 @@ Handel::Checkout::Message - Checkout Pipeline Process Message
 Handel::Checkout::Message is just a simple blessed hash to hold any and every
 property you throw at it. It is autoloaded, so any instance method simple loads
 or sets the corresponding key value in the hash.
+
+Handel::Checkout::Message stringifies to text() if available, otherwise it returns $self.
 
 =head1 CONSTRUCTOR
 
