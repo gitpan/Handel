@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: tt2_cart.t 750 2005-08-21 00:11:06Z claco $
+# $Id: tt2_checkout.t 750 2005-08-21 00:11:06Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -17,27 +17,11 @@ eval 'use DBD::SQLite';
 ## test new/add first so we can use them to test everything else
 ## convert these to TT2
 my @tests = (
-    'cart_create.tt2',
-    'cart_create_and_add.tt2',
-    'cart_fetch.tt2',
-    'cart_fetch_as_array.tt2',
-    'cart_fetch_as_iterator.tt2',
-    'cart_fetch_filtered.tt2',
-    'cart_fetch_filtered_no_results.tt2',
-    'cart_add.tt2',
-    'cart_clear.tt2',
-    'cart_delete.tt2',
-    'cart_update.tt2',
-    'cart_save.tt2',
-    'cart_items.tt2',
-    'cart_items_as_array.tt2',
-    'cart_items_as_iterator.tt2',
-    'cart_items_filtered.tt2',
-    'cart_items_filtered_no_results.tt2',
-    'cart_items_update.tt2',
-    'cart_restore_append.tt2',
-    'cart_restore_replace.tt2',
-    'cart_restore_merge.tt2',
+    'checkout_plugins.tt2',
+    'checkout_phases.tt2',
+    'checkout_messages.tt2',
+    'checkout_process.tt2',
+    'checkout_order.tt2'
 );
 
 ## Setup SQLite DB for tests
@@ -46,21 +30,17 @@ my @tests = (
     my $db      = "dbi:SQLite:dbname=$dbfile";
 
     unlink $dbfile;
-    preparetables($db, ['cart']);
+    preparetables($db, [qw(cart order)], 1);
 
     local $^W = 0;
     Handel::DBI->connection($db);
 };
 
-plan(tests => (scalar @tests) + 1);
+plan(tests => scalar @tests);
 
 my $tt      = Template->new() || die 'Error creating Template';
 my $docroot = 't/htdocs/tt2';
 my $output  = '';
-
-## test uuid ouput format
-$tt->process("$docroot/cart_uuid.tt2", undef, \$output);
-ok($output =~ /(.*<p>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}<\/p>.*){2}/is);
 
 foreach my $test (@tests) {
     my $output = '';

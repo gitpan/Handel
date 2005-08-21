@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: checkout_phases.xsp 729 2005-08-19 02:35:22Z claco $ -->
+<xsp:page
+	xmlns:xsp="http://apache.org/xsp/core/v1"
+	xmlns:checkout="http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Checkout"
+>
+	<body>
+		<checkout:new>
+			<phases>
+				<checkout:phases>
+					<phase><checkout:phase/></phase>
+				</checkout:phases>
+			</phases>
+		</checkout:new>
+		<checkout:new phases="CHECKOUT_PHASE_AUTHORIZE CHECKOUT_PHASE_DELIVER">
+			<phases>
+				<checkout:phases>
+					<phase><checkout:phase/></phase>
+				</checkout:phases>
+			</phases>
+		</checkout:new>
+	</body>
+</xsp:page>

@@ -1,4 +1,4 @@
-# $Id: Order.pm 665 2005-08-07 00:10:59Z claco $
+# $Id: Order.pm 737 2005-08-20 02:54:45Z claco $
 package AxKit::XSP::Handel::Order;
 use strict;
 use warnings;
@@ -11,8 +11,21 @@ use base 'Apache::AxKit::Language::XSP';
 
 $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
 
-{
+#{
     my @context = 'root';
+
+    sub push_context {
+        my @nodes = @_;
+        push @context, @nodes;
+    };
+
+    sub pop_context {
+        my $count = shift;
+
+        foreach (1..$count) {
+            pop @context;
+        };
+    };
 
     sub start_document {
         return "use Handel::Order;\n";
@@ -85,10 +98,10 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
 
             push @context, $tag;
 
-            my $noprocess = $attr{'noprocess'} || 0;
-            delete $attr{'noprocess'};
+            my $process = $attr{'process'} || 0;
+            delete $attr{'process'};
 
-            my $code = "my \$_xsp_handel_order_new_noprocess = $noprocess;my \$_xsp_handel_order_order;\nmy \$_xsp_handel_order_called_new;\n";
+            my $code = "my \$_xsp_handel_order_new_process = $process;my \$_xsp_handel_order_order;\nmy \$_xsp_handel_order_called_new;\n";
             $code .= scalar keys %attr ?
                 'my %_xsp_handel_order_new_filter = ("' . join('", "', %attr) . '");' :
                 'my %_xsp_handel_order_new_filter;' ;
@@ -383,7 +396,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
             if ($context[$#context-1] eq 'new') {
                 return '
                     if (!$_xsp_handel_order_called_new && scalar keys %_xsp_handel_order_new_filter) {
-                        $_xsp_handel_order_order = Handel::Order->new(\%_xsp_handel_order_new_filter, $_xsp_handel_order_new_noprocess);
+                        $_xsp_handel_order_order = Handel::Order->new(\%_xsp_handel_order_new_filter, $_xsp_handel_order_new_process);
                         $_xsp_handel_order_called_new = 1;
                     };
                     if ($_xsp_handel_order_order) {
@@ -456,7 +469,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
             if ($context[$#context-1] eq 'new') {
                 return '
                     if (!$_xsp_handel_order_called_new && scalar keys %_xsp_handel_order_new_filter) {
-                        $_xsp_handel_order_order = Handel::Order->new(\%_xsp_handel_order_new_filter, $_xsp_handel_order_new_noprocess);
+                        $_xsp_handel_order_order = Handel::Order->new(\%_xsp_handel_order_new_filter, $_xsp_handel_order_new_process);
                         $_xsp_handel_order_called_new = 1;
                     };
                     if (!$_xsp_handel_order_order) {
@@ -749,7 +762,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
 
         return '';
     };
-};
+#};
 
 1;
 __END__

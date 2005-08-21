@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: pod_coverage.t 714 2005-08-11 01:29:15Z claco $
+# $Id: pod_coverage.t 739 2005-08-20 02:57:04Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -12,7 +12,7 @@ plan skip_all => 'Pod::Coverage 0.14 not installed' if $@;
 
 my $trustme = {
     trustme =>
-    [qr/^(accessor_name|stringify|newuuid|FETCH|STORE|DELETE|EXISTS|CLEAR|new|load|parse_(char|end|start)|start_document)$/]
+    [qr/^(accessor_name|stringify|newuuid|FETCH|STORE|DELETE|EXISTS|CLEAR|new|load|(pop|push)_context|parse_(char|end|start)|start_document)$/]
 };
 
 all_pod_coverage_ok($trustme);

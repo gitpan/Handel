@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_process.t 716 2005-08-11 01:30:01Z claco $
+# $Id: checkout_process.t 731 2005-08-19 02:39:35Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -23,7 +23,7 @@ BEGIN {
 
 ## Setup SQLite DB for tests
 {
-    my $dbfile  = 't/checkout_new.db';
+    my $dbfile  = 't/checkout_process.db';
     my $db      = "dbi:SQLite:dbname=$dbfile";
     my $createcart   = 't/sql/cart_create_table.sql';
     my $createorder  = 't/sql/order_create_table.sql';
@@ -56,17 +56,16 @@ BEGIN {
 
 
 ## test for Handel::Exception::Argument when phases is not array reference
+## or string
 {
     try {
         my $checkout = Handel::Checkout->new;
-
-        $checkout->process('1234');
+        $checkout->process({'1234' => 1});
 
         fail;
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {
-        diag shift;
         fail;
     };
 };

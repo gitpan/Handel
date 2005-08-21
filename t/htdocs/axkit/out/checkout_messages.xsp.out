@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: checkout_messages.xsp.out 720 2005-08-17 02:04:13Z claco $ -->
+<body>
+	<messages>
+		<message>mytext</message>
+		<message>foo</message>
+		<message>bar</message>
+	</messages>
+	<messages>
+		<message>foo</message>
+		<message>bar</message>
+	</messages>
+	<messages>
+		<message>new test message</message>
+		<message>new test message</message>
+	</messages>
+	<messages>
+		<message>bar</message>
+		<message>bar</message>
+	</messages>
+</body>

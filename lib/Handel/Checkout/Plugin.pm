@@ -1,4 +1,4 @@
-# $Id: Plugin.pm 546 2005-06-25 02:09:11Z claco $
+# $Id: Plugin.pm 743 2005-08-20 22:50:22Z claco $
 package Handel::Checkout::Plugin;
 use strict;
 use warnings;
@@ -26,6 +26,12 @@ sub teardown {
 
 sub register {
     warn "Attempt to register plugin that hasn't defined 'register'!";
+};
+
+sub name {
+    my $self = shift;
+
+    return ref $self || $self;
 };
 
 1;
@@ -109,6 +115,10 @@ necessary preperation before its registered handler subs are called.
 Each time a checkout pipeline is finished being processed, the
 C<teardown> method is called on all registered plugins to allow each plugin
 to performa any cleanup it may need to do.
+
+=head2 name
+
+Returns the name of the current instance.
 
 =head1 SEE ALSO
 

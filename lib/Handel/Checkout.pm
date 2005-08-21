@@ -1,15 +1,17 @@
-# $Id: Checkout.pm 712 2005-08-11 01:27:43Z claco $
+# $Id: Checkout.pm 726 2005-08-19 02:31:04Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
 
 BEGIN {
     use Handel;
+    use Handel::Cart;
     use Handel::Constants qw(:checkout :returnas);
     use Handel::Constraints qw(constraint_checkout_phase constraint_uuid);
     use Handel::Exception qw(:try);
     use Handel::Checkout::Message;
     use Handel::L10N qw(translate);
+    use Handel::Order;
     use Module::Pluggable 2.95 instantiate => 'new', sub_name => '_plugins';
 };
 
@@ -43,7 +45,7 @@ sub new {
 sub plugins {
     my $self = shift;
 
-    return wantarray ? @{$self->{'plugins'}} : $self->{'plugins'};
+    return wantarray ? sort @{$self->{'plugins'}} : $self->{'plugins'};
 };
 
 sub add_handler {
@@ -78,7 +80,7 @@ sub add_message {
         $message->line($line) unless $message->line;
 
         push @{$self->{'messages'}}, $message;
-    } elsif (!ref $message) {
+    } elsif (!ref $message || ref $message eq 'Apache::AxKit::Exception::Error') {
         push @{$self->{'messages'}}, Handel::Checkout::Message->new(
             text => $message, source => $package, filename => $filename, line => $line);
     } else {
@@ -130,16 +132,19 @@ sub phases {
 
     if ($phases) {
         throw Handel::Exception::Argument( -details =>
-            translate(
-                'Param 1 is not an ARRAY reference') . '.')
-                unless ref($phases) eq 'ARRAY';
+            translate('Param 1 is not an ARRAY reference or string') . '.') unless (ref($phases) eq 'ARRAY' || !ref($phases));
+
+        if (! ref $phases) {
+            # holy crap, that actually worked!
+            $phases = [map(eval "$_", _path_to_array($phases))];
+        };
 
         $self->{'phases'} = $phases;
     } else {
         if (wantarray) {
-            return @{$self->{'phases'}} || @{&CHECKOUT_DEFAULT_PHASES};
+            return (scalar @{$self->{'phases'}}) ? @{$self->{'phases'}} : @{&CHECKOUT_DEFAULT_PHASES};
         } else {
-            return scalar @{$self->{'phases'}} ? $self->{'phases'} : &CHECKOUT_DEFAULT_PHASES;
+            return (scalar @{$self->{'phases'}}) ? $self->{'phases'} : &CHECKOUT_DEFAULT_PHASES;
         };
     };
 };
@@ -151,8 +156,13 @@ sub process {
     if ($phases) {
         throw Handel::Exception::Argument( -details =>
             translate(
-                'Param 1 is not an ARRAY reference') . '.')
-                unless ref($phases) eq 'ARRAY';
+                'Param 1 is not an ARRAY reference or string') . '.')
+                unless (ref($phases) eq 'ARRAY' || ! ref($phases));
+
+        if (! ref $phases) {
+            # holy crap, that actually worked!
+            $phases = [map(eval "$_", _path_to_array($phases))];
+        };
     } else {
         $phases = $self->{'phases'} || CHECKOUT_DEFAULT_PHASES;
     };
@@ -169,6 +179,7 @@ sub process {
         %{$self->{'stash'}} = ();
 
         foreach my $phase (@{$phases}) {
+            next unless $phase;
             foreach my $handler (@{$self->{'handlers'}->{$phase}}) {
                 my $status = $handler->[1]->($handler->[0], $self);
 
@@ -387,11 +398,16 @@ plugins.
 
 =item phases
 
-An array reference containing the various phases to be executed.
+An array reference or a comma (or space) seperated list containing the
+various phases to be executed.
 
     my $checkout = Handel::Checkout->new({
         phases => [CHECKOUT_PHASE_VALIDATION,
                    CHECKOUT_PHASE_AUTHORIZATION]
+    });
+
+    my $checkout = Handel::Checkout->new({
+        phases => 'CHECKOUT_PHASE_VALIDATION, CHECKOUT_PHASE_AUTHORIZATION'
     });
 
 =back
@@ -539,12 +555,15 @@ will be loaded and associated with the current checkout process.
 
 =head2 phases(\@phases)
 
-Get/Set the phases active for the current checkout process.
+Get/Set the phases active for the current checkout process. This can be
+an array reference or a comma (or space) seperated string:
 
     $checkout->phases([
         CHECKOUT_PHASE_INITIALIZE,
         CHECKOUT_PHASE_VALIDATION
     ]);
+
+    $checkout->phases('CHECKOUT_PHASE_INITIALIZE, CHECKOUT_PHASE_VALIDATION']);
 
 No attempt is made to sanitize the array for duplicates or the order of the phases.
 This means you can do evil things like run a phase twice, or run the phases
@@ -555,6 +574,9 @@ out of order. Returns a list in list context and an array reference in scalar co
 Executes the current checkout process pipeline and returns CHECKOUT_STATUS_*.
 Any plugin handler that doesn't return CHECKOUT_HANDLER_OK or CHECKOUT_HANDLER_DECLINE
 is considered to be an error that the chekcout process is aborted.
+
+Just like C<phases>, you can pass an array reference or a comma (or space)
+seperated string of phases into process.
 
 The call to C<process> will return on of the following constants:
 

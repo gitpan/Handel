@@ -1,0 +1,19 @@
+<!-- $Id: checkout_process.tt2.out 745 2005-08-20 22:54:07Z claco $ -->
+<body>
+	<checkout>
+		<ok>Order processing completed successfully!</ok>
+	</checkout>
+	<checkout>
+		<ok>Order processing completed successfully!</ok>
+	</checkout>
+	<checkout>
+		<ok>Order processing completed successfully!</ok>
+	</checkout>
+	<checkout>
+		<ok>Order processing completed successfully!</ok>
+	</checkout>
+	<checkout>
+		<error>Error processing order!</error>
+		<message>hasmessage</message>
+	</checkout>
+</body>

@@ -1,4 +1,4 @@
-# $Id: ConfigReader.pm 599 2005-07-29 01:43:31Z claco $
+# $Id: ConfigReader.pm 727 2005-08-19 02:32:16Z claco $
 package Handel::ConfigReader;
 use strict;
 use warnings;
@@ -36,7 +36,7 @@ sub FETCH {
         require Apache;
         my $r = Apache->request;
 
-        $value = $r->dir_config($key) || $default;
+        $value = $r->dir_config($key) || $ENV{$key} || $default;
     };
 
     if (!$value) {

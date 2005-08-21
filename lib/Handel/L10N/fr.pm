@@ -1,4 +1,4 @@
-# $Id: fr.pm 596 2005-07-29 01:41:54Z claco $
+# $Id: fr.pm 725 2005-08-19 02:28:55Z claco $
 package Handel::L10N::fr;
 use strict;
 use warnings;
@@ -62,6 +62,9 @@ BEGIN {
 
     "Param 1 is not an ARRAY reference" =>
         "Le param 1 n'est pas une référence de RANGÉE",
+
+    "Param 1 is not an ARRAY reference or string" =>
+        "Le param 1 n'est pas une référence ou une corde de RANGÉE",
 
     "Param 1 is not a HASH reference, Handel::Order object, or order id" =>
         "Le param 1 n'est pas une référence d'cInformations PARASITES, objet de Handel::Order, ou identification d'ordre",
