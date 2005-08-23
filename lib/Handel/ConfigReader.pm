@@ -1,4 +1,4 @@
-# $Id: ConfigReader.pm 727 2005-08-19 02:32:16Z claco $
+# $Id: ConfigReader.pm 756 2005-08-23 00:56:13Z claco $
 package Handel::ConfigReader;
 use strict;
 use warnings;
@@ -41,6 +41,11 @@ sub FETCH {
 
     if (!$value) {
         $value = $ENV{$key} || $default;
+    };
+
+    # quick untaint for now. Assuming we'll mever get a ref from system os ENV
+    if (! ref $value && $value =~ /^(.*)$/g) {
+        $value = $1;
     };
 
     return $value;
