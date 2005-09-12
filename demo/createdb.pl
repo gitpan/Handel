@@ -1,12 +1,14 @@
 #!perl -wT
-# $Id: createdb.pl 193 2005-02-18 04:04:45Z claco $
+# $Id: createdb.pl 762 2005-08-30 00:23:54Z claco $
 use strict;
 use warnings;
 use lib '../t/lib';
 use Handel::TestHelper qw(executesql);
 
-my $dbfile  = 'cart.db';
+my $dbfile  = 'handel.db';
 my $db      = "dbi:SQLite:dbname=$dbfile";
-my $create  = '../t/sql/cart_create_table.sql';
+my $cart    = '../t/sql/cart_create_table.sql';
+my $order   = '../t/sql/order_create_table.sql';
 
-executesql($db, $create);
+executesql($db, $cart);
+executesql($db, $order);

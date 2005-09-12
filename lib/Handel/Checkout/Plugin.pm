@@ -1,4 +1,4 @@
-# $Id: Plugin.pm 743 2005-08-20 22:50:22Z claco $
+# $Id: Plugin.pm 768 2005-09-05 02:25:24Z claco $
 package Handel::Checkout::Plugin;
 use strict;
 use warnings;

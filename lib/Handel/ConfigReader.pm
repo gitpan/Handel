@@ -1,4 +1,4 @@
-# $Id: ConfigReader.pm 756 2005-08-23 00:56:13Z claco $
+# $Id: ConfigReader.pm 768 2005-09-05 02:25:24Z claco $
 package Handel::ConfigReader;
 use strict;
 use warnings;

@@ -1,10 +1,10 @@
-# $Id: Handel.pm 753 2005-08-22 23:50:23Z claco $
+# $Id: Handel.pm 806 2005-09-12 03:21:54Z claco $
 package Handel;
 use strict;
 use warnings;
 use vars qw($VERSION);
 
-$VERSION = '0.18';
+$VERSION = '0.18_01';
 
 BEGIN {
     use Handel::ConfigReader;
@@ -65,6 +65,10 @@ might be useful to others so here it is on CPAN.
 
 For the curious, Handel is German for commerce.
 
+=head1 WEBSITE
+
+You can get the latest news, source, documentation and wiki help at http://handelframework.com/.
+
 =head1 MAILING LIST
 
 Join the mailing list at http://lists.rawmode.org/cgi-bin/mailman/listinfo/handel.
@@ -107,7 +111,7 @@ even process() call can have it's own uniquie order processing pipeline.
 
 =item Get someone to actually use the damn thing. :-)
 
-=item abstract schema into SQL::Translator scripts
+=item Abstract schema into SQL::Translator scripts
 
 =back
 

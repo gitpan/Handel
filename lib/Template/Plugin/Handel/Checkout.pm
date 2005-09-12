@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 677 2005-08-07 01:56:57Z claco $
+# $Id: Checkout.pm 768 2005-09-05 02:25:24Z claco $
 package Template::Plugin::Handel::Checkout;
 use strict;
 use warnings;

@@ -1,4 +1,4 @@
-# $Id: Order.pm 682 2005-08-07 18:53:31Z claco $
+# $Id: Order.pm 793 2005-09-12 02:05:09Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -23,7 +23,12 @@ __PACKAGE__->columns(All => qw(id shopper type number created updated comments
     billtonightphone billtofax billtoemail shiptosameasbillto
     shiptofirstname shiptolastname shiptoaddress1 shiptoaddress2 shiptoaddress3
     shiptocity shiptostate shiptozip shiptocountry shiptodayphone
-    shiptonightphone shiptofax shiptoemail));
+    shiptonightphone shiptofax shiptoemail)
+);
+__PACKAGE__->columns(
+    TEMP => qw(ccn cctype ccm ccy ccvn ccname)
+);
+
 
 __PACKAGE__->has_many(_items => 'Handel::Order::Item', 'orderid');
 __PACKAGE__->has_a(subtotal  => 'Handel::Currency');
@@ -91,6 +96,9 @@ sub new {
     if (defined $cart) {
         my $subtotal = 0;
         my $items = $cart->items(undef, RETURNAS_ITERATOR);
+        if ($cart->shopper && !$order->shopper) {
+            $order->shopper($cart->shopper);
+        };
         while (my $item = $items->next) {
             my %copy;
 
@@ -255,6 +263,47 @@ sub load {
         } else {
             return $iterator;
         };
+    };
+};
+
+sub reconcile {
+    my ($self, $cart) = @_;
+
+    my $is_uuid = constraint_uuid($cart);
+
+    if (defined $cart) {
+        throw Handel::Exception::Argument( -details =>
+          translate(
+              'Cart reference is not a HASH reference or Handel::Cart') . '.') unless
+                  (ref($cart) eq 'HASH' or UNIVERSAL::isa($cart, 'Handel::Cart') or $is_uuid);
+
+        if (ref $cart eq 'HASH') {
+            $cart = Handel::Cart->load($cart, RETURNAS_ITERATOR)->first;
+
+            throw Handel::Exception::Order( -details =>
+                translate(
+                    'Could not find a cart matching the supplied search criteria') . '.') unless $cart;
+        } elsif ($is_uuid) {
+            $cart = Handel::Cart->load({id => $cart}, RETURNAS_ITERATOR)->first;
+
+            throw Handel::Exception::Order( -details =>
+                translate(
+                    'Could not find a cart matching the supplied search criteria') . '.') unless $cart;
+        };
+
+        throw Handel::Exception::Order( -details =>
+            translate(
+                'Could not create a new order because the supplied cart is empty') . '.') unless
+                    $cart->count > 0;
+    };
+
+    if ($self->subtotal != $cart->subtotal || $self->count != $cart->count) {
+        $self->clear;
+        my @citems = $cart->items;
+        foreach my $item (@citems) {
+            $self->add($item);
+        };
+        $self->subtotal($cart->subtotal);
     };
 };
 
@@ -457,6 +506,14 @@ called without a filter specified.
 
 A C<Handel::Exception::Argument> exception is thrown if parameter one isn't a
 hashref or undef.
+
+=head2 reconcile($cart)
+
+This method copies the specified carts items into the order only if the item
+count or the subtotal differ.
+
+The cart key can be a cart id (uuid), a cart object, or a hash reference
+contain the search criteria to load matching carts.
 
 =head2 billtofirstname
 

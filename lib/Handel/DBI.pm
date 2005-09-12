@@ -1,4 +1,4 @@
-# $Id: DBI.pm 711 2005-08-11 01:26:49Z claco $
+# $Id: DBI.pm 768 2005-09-05 02:25:24Z claco $
 package Handel::DBI;
 use strict;
 use warnings;

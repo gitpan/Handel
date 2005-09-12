@@ -1,4 +1,4 @@
-# $Id: Iterator.pm 380 2005-03-10 02:59:51Z claco $
+# $Id: Iterator.pm 768 2005-09-05 02:25:24Z claco $
 package Handel::Iterator;
 use strict;
 use warnings;

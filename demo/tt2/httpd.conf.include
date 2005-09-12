@@ -1,4 +1,4 @@
-# $Id: httpd.conf.include 477 2005-03-22 00:48:11Z claco $
+# $Id: httpd.conf.include 775 2005-09-08 22:34:06Z claco $
 # Don't forget to change DocumentRoot, ErrorLog, db_name
 # and 'use lib' to match your system setup!!!!!
 
@@ -17,7 +17,7 @@ Listen 9002
 
 	TT2Trim			On
 	TT2IncludePath	C:\Development\CPAN\Handel\demo\tt2\includes
-	PerlSetVar		HandelDBIName	C:\Development\CPAN\Handel\demo\cart.db
+	PerlSetVar		HandelDBIName	C:\Development\CPAN\Handel\demo\handel.db
 	PerlSetVar		HandelDBIDriver	"SQLite"
 
 	<Files *.tt2>

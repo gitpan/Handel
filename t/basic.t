@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: basic.t 675 2005-08-07 01:54:52Z claco $
+# $Id: basic.t 804 2005-09-12 03:19:04Z claco $
 use strict;
 use warnings;
-use Test::More tests => 23;
+use Test::More tests => 29;
 
 BEGIN {
     use_ok('Handel');
@@ -44,5 +44,17 @@ BEGIN {
         use_ok('Template::Plugin::Handel::Checkout');
         use_ok('Template::Plugin::Handel::Constants');
         use_ok('Template::Plugin::Handel::Order');
+    };
+
+    SKIP: {
+        eval 'use Catalyst 5.0';
+        skip 'Catalyst 5.0 not installed', 6 if $@;
+
+        use_ok('Catalyst::Helper::Handel::Scaffold');
+        use_ok('Catalyst::Helper::Controller::Handel::Cart');
+        use_ok('Catalyst::Helper::Controller::Handel::Checkout');
+        use_ok('Catalyst::Helper::Controller::Handel::Order');
+        use_ok('Catalyst::Helper::Model::Handel::Cart');
+        use_ok('Catalyst::Helper::Model::Handel::Order');
     };
 };

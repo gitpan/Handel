@@ -1,4 +1,4 @@
-# $Id: Cart.pm 648 2005-08-05 00:44:06Z claco $
+# $Id: Cart.pm 768 2005-09-05 02:25:24Z claco $
 package AxKit::XSP::Handel::Cart;
 use strict;
 use warnings;

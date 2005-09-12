@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 738 2005-08-20 02:55:45Z claco $
+# $Id: Checkout.pm 768 2005-09-05 02:25:24Z claco $
 package AxKit::XSP::Handel::Checkout;
 use strict;
 use warnings;

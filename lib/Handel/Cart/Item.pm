@@ -1,4 +1,4 @@
-# $Id: Item.pm 517 2005-06-09 01:40:39Z claco $
+# $Id: Item.pm 768 2005-09-05 02:25:24Z claco $
 package Handel::Cart::Item;
 use strict;
 use warnings;

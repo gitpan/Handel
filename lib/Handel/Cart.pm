@@ -1,4 +1,4 @@
-# $Id: Cart.pm 598 2005-07-29 01:43:05Z claco $
+# $Id: Cart.pm 777 2005-09-09 02:01:23Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
@@ -91,6 +91,26 @@ sub delete {
     ## way yet. This should be fine as long as :weaken refs works.
     return Handel::Cart::Item->search_like(%{$filter},
         cart => $self->id)->delete_all;
+};
+
+sub destroy {
+    my ($self, $filter) = @_;
+
+    if (ref $self) {
+        $self->SUPER::delete;
+    } else {
+        throw Handel::Exception::Argument( -details =>
+            translate('Param 1 is not a HASH reference') . '.') unless
+                ref($filter) eq 'HASH';
+
+        my $carts = Handel::Cart->load($filter, RETURNAS_ITERATOR);
+        while (my $cart = $carts->next) {
+            $cart->clear;
+            $cart->SUPER::delete;
+        };
+    };
+
+    return;
 };
 
 sub items {
@@ -425,6 +445,23 @@ returns the number of items deleted.
     if ( $cart->delete({id => '8D4B0BE1-C02E-11D2-A33D-00A0C94B8D0E'}) ) {
         print 'Item deleted';
     };
+
+=back
+
+=head2 Removing the Entire Cart
+
+=over
+
+=item C<$cart-E<gt>destroy(\%filter)>
+
+=item C<Handel::Cart-E<gt>destroy(\%filter)>
+
+When called used as an instance method, this will delete all items from the
+current cart instance and delete the cart container. C<filter> will be ignored.
+
+When called as a package method, this will delete all carts matching C<filter>.
+A Handel::Exception::Argument exception will be thrown is C<filter> is not a
+HASH reference.
 
 =back
 

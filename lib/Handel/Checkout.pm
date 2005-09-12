@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 726 2005-08-19 02:31:04Z claco $
+# $Id: Checkout.pm 768 2005-09-05 02:25:24Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
