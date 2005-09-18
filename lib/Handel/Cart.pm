@@ -1,4 +1,4 @@
-# $Id: Cart.pm 777 2005-09-09 02:01:23Z claco $
+# $Id: Cart.pm 828 2005-09-17 23:36:28Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
@@ -111,6 +111,14 @@ sub destroy {
     };
 
     return;
+};
+
+sub item_class {
+    my ($class, $item_class) = @_;
+
+    undef(*_items);
+    undef(*add_to__items);
+    __PACKAGE__->has_many(_items => $item_class, 'cart');
 };
 
 sub items {
@@ -340,6 +348,21 @@ not a hashref.
 =back
 
 =head1 METHODS
+
+=head2 item_class($classname)
+
+Sets the name of the class to be used when returning or creating cart items.
+While you can set this directly in your application, it's best to set it
+in a custom subclass of Handel::Cart.
+
+    package CustomCart;
+    use strict;
+    use warnings;
+    use base 'Handel::Cart';
+
+    __PACKAGE__->item_class('CustomCart::CustomItem';
+
+    1;
 
 =head2 Adding Cart Items
 

@@ -1,4 +1,4 @@
-# $Id: ConfigReader.pm 768 2005-09-05 02:25:24Z claco $
+# $Id: ConfigReader.pm 830 2005-09-17 23:40:59Z claco $
 package Handel::ConfigReader;
 use strict;
 use warnings;
@@ -178,6 +178,12 @@ The user name used to connect to the server. Defaults to C<commerce>.
 =head2 HandelDBIPassword
 
 The password used to connect to the server. Defaults to C<commerce>.
+
+=head2 HandelDBIDSN
+
+The full data source to the connect to the database. If a dsn is supplied
+the driver/host/port and name are ignored. IF no dsn is supplied, one will
+will be constructed from driver/host/port and name.
 
 =head2 HandelPluginPaths
 

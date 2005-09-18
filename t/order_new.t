@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_new.t 653 2005-08-05 00:49:25Z claco $
+# $Id: order_new.t 819 2005-09-16 00:30:14Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -119,7 +119,9 @@ use_ok('Handel::Order');
 ## test for Handel::Exception::Order when Handel::Cart is empty
 {
     try {
-        my $cart = Handel::Cart->construct({});
+        my $cart = Handel::Cart->construct({
+            id => '00000000-0000-0000-0000-000000000000'
+        });
         my $order = Handel::Order->new({cart => $cart});
 
         fail;

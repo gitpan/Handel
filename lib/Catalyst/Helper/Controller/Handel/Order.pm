@@ -1,4 +1,4 @@
-# $Id: Order.pm 795 2005-09-12 02:07:53Z claco $
+# $Id: Order.pm 826 2005-09-17 23:31:32Z claco $
 package Catalyst::Helper::Controller::Handel::Order;
 use strict;
 use warnings;
@@ -35,6 +35,116 @@ use warnings;
 use Handel::Constants qw(:returnas :order);
 use base 'Catalyst::Base';
 
+our $DFV;
+
+# Until this patch [hopefully] get's dumped into DFV 4.03, I've inlined the msgs
+# method below with the following path applied to it:
+#
+#--- Results.pm.orig Wed Aug 31 22:27:27 2005
+#+++ Results.pm  Wed Sep 14 17:40:28 2005
+#@@ -584,7 +584,9 @@
+#    if ($self->has_missing) {
+#        my $missing = $self->missing;
+#        for my $m (@$missing) {
+#-           $msgs{$m} = _error_msg_fmt($profile{format},$profile{missing});
+#+            $msgs{$m} = _error_msg_fmt($profile{format},
+#+                (ref $profile{missing} eq 'HASH' ?
+#+                    ($profile{missing}->{$m} || $profile{missing}->{default} || 'Missing') : $profile{missing}));
+#        }
+#    }
+
+BEGIN {
+    eval 'use Data::FormValidator';
+    if (!$@) {
+        #############################################################
+        # This is here until the patch makes it to release
+        #############################################################
+        no warnings 'redefine';
+        sub Data::FormValidator::Results::msgs {
+            my $self = shift;
+            my $controls = shift || {};
+            if (defined $controls and ref $controls ne 'HASH') {
+                die "$0: parameter passed to msgs must be a hash ref";
+            }
+
+
+            # Allow msgs to be called more than one to accumulate error messages
+            $self->{msgs} ||= {};
+            $self->{profile}{msgs} ||= {};
+            $self->{msgs} = { %{ $self->{msgs} }, %$controls };
+
+            # Legacy typo support.
+            for my $href ($self->{msgs}, $self->{profile}{msgs}) {
+                if (
+                     (not defined $href->{invalid_separator})
+                     &&  (defined $href->{invalid_seperator})
+                 ) {
+                    $href->{invalid_separator} = $href->{invalid_seperator};
+                }
+            }
+
+            my %profile = (
+                prefix  => '',
+                missing => 'Missing',
+                invalid => 'Invalid',
+                invalid_separator => ' ',
+
+                format  => '<span style="color:red;font-weight:bold"><span class="dfv_errors">* %s</span></span>',
+                %{ $self->{msgs} },
+                %{ $self->{profile}{msgs} },
+            );
+
+
+            my %msgs = ();
+
+            # Add invalid messages to hash
+                #  look at all the constraints, look up their messages (or provide a default)
+                #  add field + formatted constraint message to hash
+            if ($self->has_invalid) {
+                my $invalid = $self->invalid;
+                for my $i ( keys %$invalid ) {
+                    $msgs{$i} = join $profile{invalid_separator}, map {
+                        Data::FormValidator::Results::_error_msg_fmt($profile{format},($profile{constraints}{$_} || $profile{invalid}))
+                        } @{ $invalid->{$i} };
+                }
+            }
+
+            # Add missing messages, if any
+            if ($self->has_missing) {
+                my $missing = $self->missing;
+                for my $m (@$missing) {
+                    $msgs{$m} = Data::FormValidator::Results::_error_msg_fmt($profile{format},
+                      (ref $profile{missing} eq 'HASH' ?
+                          ($profile{missing}->{$m} || $profile{missing}->{default} || 'Missing') : $profile{missing}));
+                }
+            }
+
+            my $msgs_ref = Data::FormValidator::Results::prefix_hash($profile{prefix},\%msgs);
+
+            $msgs_ref->{ $profile{any_errors} } = 1 if defined $profile{any_errors};
+
+            return $msgs_ref;
+        }
+        #############################################################
+
+        $DFV = Data::FormValidator->new({
+            orders_view    => {
+                required => [qw/id/],
+                field_filters => {
+                    id => ['trim']
+                },
+                msgs => {
+                    missing => {
+                        default => 'Field is blank!',
+                        id      => 'The order id is required to view an order'
+                    },
+                    format => '%s'
+                }
+            }
+        });
+    };
+};
+
 sub begin : Private {
     my ($self, $c) = @_;
     my $shopperid = $c->req->cookie('shopperid')->value;
@@ -60,12 +170,35 @@ sub default : Private {
 
 sub view : Local {
     my ($self, $c, $id) = @_;
+    my @messages;
+    my $results;
 
-    $c->stash->{'order'} = [% model %]->load({
-        shopper => $c->stash->{'shopperid'},
-        type    => ORDER_TYPE_SAVED,
-        id      => $id
-    }, RETURNAS_ITERATOR)->first;
+    if ($DFV) {
+        $results = $DFV->check({id => $id}, 'orders_view');
+    };
+
+    if ($results || !$DFV) {
+        if ($results) {
+            $id = $results->valid('id');
+        };
+
+        eval {
+            $c->stash->{'order'} = [% model %]->load({
+                shopper => $c->stash->{'shopperid'},
+                type    => ORDER_TYPE_SAVED,
+                id      => $id
+            }, RETURNAS_ITERATOR)->first;
+        };
+        if ($@) {
+            push @messages, $@;
+        };
+    } else {
+        push @messages, map {$_} values %{$results->msgs};
+    };
+
+    if (scalar @messages) {
+        $c->stash->{'messages'} = \@messages;
+    };
 
     $c->stash->{'template'} = '[% uri %]/view.tt';
 };
@@ -96,6 +229,13 @@ __list__
 <p>
     <a href="[% base _ '[- uri -]/' %]">View Order List</a>
 </p>
+[% IF messages %]
+    <ul>
+        [% FOREACH message IN messages %]
+            <li>[% message %]</li>
+        [% END %]
+    </ul>
+[% END %]
 [% IF orders.count %]
     <table border="0" cellpadding="3" cellspacing="5">
         <tr>
@@ -298,6 +438,13 @@ __view__
     <p>
         <a href="[% base _ '[- uri -]/' %]">View Order List</a>
     </p>
+    [% IF messages %]
+        <ul>
+            [% FOREACH message IN messages %]
+                <li>[% message %]</li>
+            [% END %]
+        </ul>
+    [% END %]
     <p>The order requested could not be found.</p>
 [% END %]
 __END__

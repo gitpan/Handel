@@ -1,4 +1,4 @@
-# $Id: Order.pm 793 2005-09-12 02:05:09Z claco $
+# $Id: Order.pm 828 2005-09-17 23:36:28Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -28,7 +28,6 @@ __PACKAGE__->columns(All => qw(id shopper type number created updated comments
 __PACKAGE__->columns(
     TEMP => qw(ccn cctype ccm ccy ccvn ccname)
 );
-
 
 __PACKAGE__->has_many(_items => 'Handel::Order::Item', 'orderid');
 __PACKAGE__->has_a(subtotal  => 'Handel::Currency');
@@ -192,6 +191,14 @@ sub delete {
     ## way yet. This should be fine as long as :weaken refs works.
     return Handel::Order::Item->search_like(%{$filter},
         orderid => $self->id)->delete_all;
+};
+
+sub item_class {
+    my ($class, $item_class) = @_;
+
+    undef(*_items);
+    undef(*add_to__items);
+    __PACKAGE__->has_many(_items => $item_class, 'orderid');
 };
 
 sub items {
@@ -464,6 +471,21 @@ returns the number of items deleted.
     if ( $cart->delete({id => '8D4B0BE1-C02E-11D2-A33D-00A0C94B8D0E'}) ) {
         print 'Item deleted';
     };
+
+=head2 item_class($classname)
+
+Sets the name of the class to be used when returning or creating order items.
+While you can set this directly in your application, it's best to set it
+in a custom subclass of Handel::Order.
+
+    package CustomOrder;
+    use strict;
+    use warnings;
+    use base 'Handel::Order';
+
+    __PACKAGE__->item_class('CustomOrder::CustomItem';
+
+    1;
 
 =head2 items([\%filter, [$wantiterator])
 

@@ -1,4 +1,4 @@
-# $Id: Cart.pm 794 2005-09-12 02:06:48Z claco $
+# $Id: Cart.pm 826 2005-09-17 23:31:32Z claco $
 package Catalyst::Helper::Controller::Handel::Cart;
 use strict;
 use warnings;
@@ -38,6 +38,188 @@ use strict;
 use warnings;
 use Handel::Constants qw(:returnas :cart);
 use base 'Catalyst::Base';
+
+our $DFV;
+
+# Until this patch [hopefully] get's dumped into DFV 4.03, I've inlined the msgs
+# method below with the following path applied to it:
+#
+#--- Results.pm.orig Wed Aug 31 22:27:27 2005
+#+++ Results.pm  Wed Sep 14 17:40:28 2005
+#@@ -584,7 +584,9 @@
+#    if ($self->has_missing) {
+#        my $missing = $self->missing;
+#        for my $m (@$missing) {
+#-           $msgs{$m} = _error_msg_fmt($profile{format},$profile{missing});
+#+            $msgs{$m} = _error_msg_fmt($profile{format},
+#+                (ref $profile{missing} eq 'HASH' ?
+#+                    ($profile{missing}->{$m} || $profile{missing}->{default} || 'Missing') : $profile{missing}));
+#        }
+#    }
+
+BEGIN {
+    eval 'use Data::FormValidator';
+    if (!$@) {
+        #############################################################
+        # This is here until the patch makes it to release
+        #############################################################
+        no warnings 'redefine';
+        sub Data::FormValidator::Results::msgs {
+            my $self = shift;
+            my $controls = shift || {};
+            if (defined $controls and ref $controls ne 'HASH') {
+                die "$0: parameter passed to msgs must be a hash ref";
+            }
+
+
+            # Allow msgs to be called more than one to accumulate error messages
+            $self->{msgs} ||= {};
+            $self->{profile}{msgs} ||= {};
+            $self->{msgs} = { %{ $self->{msgs} }, %$controls };
+
+            # Legacy typo support.
+            for my $href ($self->{msgs}, $self->{profile}{msgs}) {
+                if (
+                     (not defined $href->{invalid_separator})
+                     &&  (defined $href->{invalid_seperator})
+                 ) {
+                    $href->{invalid_separator} = $href->{invalid_seperator};
+                }
+            }
+
+            my %profile = (
+                prefix  => '',
+                missing => 'Missing',
+                invalid => 'Invalid',
+                invalid_separator => ' ',
+
+                format  => '<span style="color:red;font-weight:bold"><span class="dfv_errors">* %s</span></span>',
+                %{ $self->{msgs} },
+                %{ $self->{profile}{msgs} },
+            );
+
+
+            my %msgs = ();
+
+            # Add invalid messages to hash
+                #  look at all the constraints, look up their messages (or provide a default)
+                #  add field + formatted constraint message to hash
+            if ($self->has_invalid) {
+                my $invalid = $self->invalid;
+                for my $i ( keys %$invalid ) {
+                    $msgs{$i} = join $profile{invalid_separator}, map {
+                        Data::FormValidator::Results::_error_msg_fmt($profile{format},($profile{constraints}{$_} || $profile{invalid}))
+                        } @{ $invalid->{$i} };
+                }
+            }
+
+            # Add missing messages, if any
+            if ($self->has_missing) {
+                my $missing = $self->missing;
+                for my $m (@$missing) {
+                    $msgs{$m} = Data::FormValidator::Results::_error_msg_fmt($profile{format},
+                      (ref $profile{missing} eq 'HASH' ?
+                          ($profile{missing}->{$m} || $profile{missing}->{default} || 'Missing') : $profile{missing}));
+                }
+            }
+
+            my $msgs_ref = Data::FormValidator::Results::prefix_hash($profile{prefix},\%msgs);
+
+            $msgs_ref->{ $profile{any_errors} } = 1 if defined $profile{any_errors};
+
+            return $msgs_ref;
+        }
+        #############################################################
+
+        $DFV = Data::FormValidator->new({
+            cart_add => {
+                required => [qw/sku quantity/],
+                optional => [qw/price description/],
+                field_filters => {
+                    sku         => ['trim'],
+                    quantity    => ['pos_integer'],
+                    price       => ['pos_decimal'],
+                    description => ['trim']
+                },
+                msgs => {
+                    missing => {
+                        default  => 'Field is blank!',
+                        sku      => 'The SKU field is required',
+                        quantity => 'The quantity field is required and must be a positive number'
+                    },
+                    format => '%s'
+                }
+            },
+            cart_update => {
+                required      => [qw/id quantity/],
+                field_filters => {
+                    id       => ['trim'],
+                    quantity => ['pos_integer']
+                },
+                msgs => {
+                    missing => {
+                        default  => 'Field is blank!',
+                        id       => 'The Id field is required for updating a cart item',
+                        quantity => 'The quantity field is required and must be a positive number'
+                    },
+                    format => '%s'
+                }
+            },
+            cart_delete => {
+                required => ['id'],
+                field_filters => {
+                    id => ['trim']
+                },
+                msgs => {
+                    missing => {
+                        id => 'The Id field is required for delete a cart item'
+                    },
+                    format => '%s'
+                }
+            },
+            cart_save => {
+                required => [qw/name/],
+                field_filters => {
+                    name => ['trim']
+                },
+                msgs => {
+                    missing => {
+                        default => 'Field is blank',
+                        name    => 'The Name field is required to save a cart'
+                    },
+                    format => '%s'
+                }
+            },
+            cart_restore => {
+                required => [qw/id mode/],
+                field_filters => {
+                    id   => ['trim'],
+                    mode => ['digit']
+                },
+                msgs => {
+                    missing => {
+                        default => 'Field is blank',
+                        id      => 'The id field is required for restoring saved cartds',
+                        mode    => 'The mode field is required for restoring saved carts'
+                    },
+                    format => '%s'
+                }
+            },
+            cart_destroy => {
+                required => ['id'],
+                field_filters => {
+                    id => ['trim']
+                },
+                msgs => {
+                    missing => {
+                        id => 'The Id field is required for deleting saved carts'
+                    },
+                    format => '%s'
+                }
+            },
+        });
+    };
+};
 
 sub begin : Private {
     my ($self, $c) = @_;
@@ -87,66 +269,158 @@ sub view : Local {
 
 sub add : Local {
     my ($self, $c) = @_;
+    my @messages;
     my $sku         = $c->request->param('sku');
     my $quantity    = $c->request->param('quantity');
     my $price       = $c->request->param('price');
     my $description = $c->request->param('description');
 
-    $quantity ||= 1;
-
     if ($c->req->method eq 'POST') {
-        $c->stash->{'cart'}->add({
-            sku         => $sku,
-            quantity    => $quantity,
-            price       => $price,
-            description => $description
-        });
+        my $results;
+
+        if ($DFV) {
+            $results = $DFV->check($c->req->parameters, 'cart_add');
+        };
+
+        if ($results || !$DFV) {
+            if ($results) {
+                $sku         = $results->valid('sku');
+                $quantity    = $results->valid('quantity');
+                $price       = $results->valid('price');
+                $description = $results->valid('description');
+            };
+
+            $quantity ||= 1;
+
+            eval {
+                $c->stash->{'cart'}->add({
+                    sku         => $sku,
+                    quantity    => $quantity,
+                    price       => $price,
+                    description => $description
+                });
+            };
+            if ($@) {
+                push @messages, $@;
+            };
+        } else {
+            push @messages, map {$_} values %{$results->msgs};
+        };
     };
 
-    $c->res->redirect($c->req->base . '[% uri %]/');
+    if (scalar @messages) {
+        $c->stash->{'template'} = '[% uri %]/view.tt';
+        $c->stash->{'messages'} = \@messages;
+    } else {
+        $c->res->redirect($c->req->base . '[% uri %]/');
+    };
 };
 
 sub update : Local {
     my ($self, $c) = @_;
+    my @messages;
     my $id       = $c->request->param('id');
     my $quantity = $c->request->param('quantity');
 
-    if ($id && $quantity && $c->req->method eq 'POST') {
-        my $item = $c->stash->{'cart'}->items({
-            id => $id
-        });
+    if ($c->req->method eq 'POST') {
+        my $results;
 
-        if ($item) {
-            $item->quantity($quantity);
+        if ($DFV) {
+            $results = $DFV->check($c->req->parameters, 'cart_update');
         };
 
-        undef $item;
+        if ($results || !$DFV) {
+            if ($results) {
+                $id       = $results->valid('id');
+                $quantity = $results->valid('quantity');
+            };
+
+            $quantity ||= 1;
+
+            my $item = $c->stash->{'cart'}->items({
+                id => $id
+            });
+
+            eval {
+                if ($item) {
+                    $item->quantity($quantity);
+                };
+            };
+            if ($@) {
+                push @messages, $@;
+            };
+
+            undef $item;
+        } else {
+            push @messages, map {$_} values %{$results->msgs};
+        };
     };
 
-    $c->res->redirect($c->req->base . '[% uri %]/');
+    if (scalar @messages) {
+        $c->stash->{'template'} = '[% uri %]/view.tt';
+        $c->stash->{'messages'} = \@messages;
+    } else {
+        $c->res->redirect($c->req->base . '[% uri %]/');
+    };
 };
 
 sub clear : Local {
     my ($self, $c) = @_;
+    my @messages;
 
     if ($c->req->method eq 'POST') {
-        $c->stash->{'cart'}->clear;
+        eval {
+            $c->stash->{'cart'}->clear;
+        };
+        if ($@) {
+            push @messages, $@;
+        };
     };
 
-    $c->res->redirect($c->req->base . '[% uri %]/');
+    if (scalar @messages) {
+        $c->stash->{'template'} = '[% uri %]/view.tt';
+        $c->stash->{'messages'} = \@messages;
+    } else {
+        $c->res->redirect($c->req->base . '[% uri %]/');
+    };
 };
 
 sub delete : Local {
     my ($self, $c) = @_;
+    my @messages;
     my $id = $c->request->param('id');
 
-    if ($id && $c->req->method eq 'POST') {
-        $c->stash->{'cart'}->delete({
-            id => $id
-        });
+    if ($c->req->method eq 'POST') {
+        my $results;
+
+        if ($DFV) {
+            $results = $DFV->check($c->req->parameters, 'cart_delete');
+        };
+
+        if ($results || !$DFV) {
+            if ($results) {
+                $id       = $results->valid('id');
+            };
+
+            eval {
+                $c->stash->{'cart'}->delete({
+                    id => $id
+                });
+            };
+            if ($@) {
+                push @messages, $@;
+            };
+        } else {
+            push @messages, map {$_} values %{$results->msgs};
+        };
     };
 
-    $c->res->redirect($c->req->base . '[% uri %]/');
+    if (scalar @messages) {
+        $c->stash->{'template'} = '[% uri %]/view.tt';
+        $c->stash->{'messages'} = \@messages;
+    } else {
+        $c->res->redirect($c->req->base . '[% uri %]/');
+    };
 };
 
 sub empty : Local {
@@ -157,24 +431,56 @@ sub empty : Local {
 
 sub list : Local {
     my ($self, $c) = @_;
+    my @messages;
 
-    $c->stash->{'carts'} = [% model %]->load({
-        shopper => $c->stash->{'shopperid'},
-        type    => CART_TYPE_SAVED
-    }, RETURNAS_ITERATOR);
+    eval {
+        $c->stash->{'carts'} = MyApp::M::Cart->load({
+            shopper => $c->stash->{'shopperid'},
+            type    => CART_TYPE_SAVED
+        }, RETURNAS_ITERATOR);
+    };
+    if ($@) {
+        push @messages, $@;
+
+        $c->stash->{'messages'} = \@messages;
+    };
 
     $c->stash->{'template'} = '[% uri %]/list.tt';
 };
 
 sub save : Local {
     my ($self, $c) = @_;
-    my $name = $c->req->param('name') || 'My Saved Cart';
+    my @messages;
+    my $name = $c->req->param('name');
 
     if ($c->req->method eq 'POST') {
-        $c->stash->{'cart'}->name($name);
-        $c->stash->{'cart'}->save;
+        my $results;
 
-        $c->res->redirect($c->req->base . '[% uri %]/list/');
+        if ($DFV) {
+            $results = $DFV->check($c->req->parameters, 'cart_save');
+        };
+
+        if ($results || !$DFV) {
+            if ($results) {
+                $name = $results->valid('name');
+            };
+
+            eval {
+                $c->stash->{'cart'}->name($name);
+                $c->stash->{'cart'}->save;
+            };
+            if ($@) {
+                push @messages, $@;
+            };
+
+        } else {
+            push @messages, map {$_} values %{$results->msgs};
+        };
+    };
+
+    if (scalar @messages) {
+        $c->stash->{'template'} = '[% uri %]/view.tt';
+        $c->stash->{'messages'} = \@messages;
     } else {
         $c->res->redirect($c->req->base . '[% uri %]/');
     };
@@ -182,28 +488,82 @@ sub save : Local {
 
 sub restore : Local {
     my ($self, $c) = @_;
+    my @messages;
     my $id   = $c->req->param('id');
     my $mode = $c->req->param('mode') || CART_MODE_APPEND;
 
-    if ($id && $c->req->method eq 'POST') {
-        $c->stash->{'cart'}->restore({id => $id}, $mode);
+    if ($c->req->method eq 'POST') {
+        my $results;
+
+        if ($DFV) {
+            $results = $DFV->check($c->req->parameters, 'cart_restore');
+        };
+
+        if ($results || !$DFV) {
+            if ($results) {
+                $id   = $results->valid('id');
+                $mode = $results->valid('mode');
+            };
+
+            eval {
+                $c->stash->{'cart'}->restore({id => $id}, $mode);
+            };
+            if ($@) {
+                push @messages, $@;
+            };
+
+            $c->res->redirect($c->req->base . '[% uri %]/');
+        } else {
+            push @messages, map {$_} values %{$results->msgs};
+        };
     };
 
-    $c->res->redirect($c->req->base . '[% uri %]/');
+    if (scalar @messages) {
+        $c->stash->{'messages'} = \@messages;
+        $c->forward('list');
+    } else {
+        $c->res->redirect($c->req->base . '[% uri %]/');
+    };
 };
 
 sub destroy : Local {
     my ($self, $c) = @_;
+    my @messages;
     my $id = $c->req->param('id');
 
-    if ($id && $c->req->method eq 'POST') {
-        [% model %]->destroy({
-            id => $id
-        });
+    if ($c->req->method eq 'POST') {
+        my $results;
+
+        if ($DFV) {
+            $results = $DFV->check($c->req->parameters, 'cart_destroy');
+        };
+
+        if ($results || !$DFV) {
+            if ($results) {
+                $id   = $results->valid('id');
+            };
+
+            eval {
+                MyApp::M::Cart->destroy({
+                    id => $id
+                });
+            };
+            if ($@) {
+                push @messages, $@;
+            };
+        } else {
+            push @messages, map {$_} values %{$results->msgs};
+        };
     };
 
-    $c->res->redirect($c->req->base . '[% uri %]/list/');
+    if (scalar @messages) {
+        $c->stash->{'messages'} = \@messages;
+        $c->forward('list');
+    } else {
+        $c->res->redirect($c->req->base . '[% uri %]/list/');
+    };
 };
+
 1;
 __test__
 use Test::More tests => 2;
@@ -220,6 +580,13 @@ __view__
     <a href="[% base _ '[- uri -]/' %]">View Cart</a> |
     <a href="[% base _ '[- uri -]/list/' %]">View Saved Carts</a>
 </p>
+[% IF messages %]
+    <ul>
+        [% FOREACH message IN messages %]
+            <li>[% message %]</li>
+        [% END %]
+    </ul>
+[% END %]
 [% IF cart.count %]
     <table border="0" cellpadding="3" cellspacing="5">
         <tr>
@@ -283,6 +650,13 @@ __list__
     <a href="[% base _ '[- uri -]/' %]">View Cart</a> |
     <a href="[% base _ '[- uri -]/list/' %]">View Saved Carts</a>
 </p>
+[% IF messages %]
+    <ul>
+        [% FOREACH message IN messages %]
+            <li>[% message %]</li>
+        [% END %]
+    </ul>
+[% END %]
 [% IF carts.count %]
     <table border="0" cellpadding="3" cellspacing="5">
         <tr>
@@ -292,7 +666,7 @@ __list__
         </tr>
     [% WHILE (cart = carts.next) %]
         <tr>
-            <td align="left">[% HTML.escape(cart.name) %]</td>
+            <td align="left" valign="top">[% HTML.escape(cart.name) %]</td>
             <td>
                 <form action="[% base _ '[- uri -]/restore/' %]" method="POST">
                     <input type="hidden" name="id" value="[% HTML.escape(cart.id) %]">
