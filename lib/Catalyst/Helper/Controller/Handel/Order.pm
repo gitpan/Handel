@@ -1,4 +1,4 @@
-# $Id: Order.pm 826 2005-09-17 23:31:32Z claco $
+# $Id: Order.pm 837 2005-09-19 22:56:39Z claco $
 package Catalyst::Helper::Controller::Handel::Order;
 use strict;
 use warnings;

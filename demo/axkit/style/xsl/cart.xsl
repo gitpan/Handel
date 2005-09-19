@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: cart.xsl 179 2005-02-15 04:29:33Z claco $ -->
+<!-- $Id: cart.xsl 837 2005-09-19 22:56:39Z claco $ -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" cdata-section-elements="CDATA" version="1.0">
 	<xsl:output method="xml" omit-xml-declaration="no" encoding="UTF-8"/>
 

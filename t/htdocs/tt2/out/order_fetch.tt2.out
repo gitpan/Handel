@@ -1,4 +1,4 @@
-[%# $Id: order_fetch.tt2.out 681 2005-08-07 18:52:35Z claco $ %]
+[%# $Id: order_fetch.tt2.out 837 2005-09-19 22:56:39Z claco $ %]
 <body>
 	<order>
 		<count>0</count>

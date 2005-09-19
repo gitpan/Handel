@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: menu.xml 179 2005-02-15 04:29:33Z claco $ -->
+<!-- $Id: menu.xml 837 2005-09-19 22:56:39Z claco $ -->
 <ul>
 	<li><a href="index.xsp">Home</a></li>
 	<li><a href="products.xsp">Products</a></li>

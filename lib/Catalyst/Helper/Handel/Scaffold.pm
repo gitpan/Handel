@@ -1,4 +1,4 @@
-# $Id: Scaffold.pm 789 2005-09-11 04:21:59Z claco $
+# $Id: Scaffold.pm 837 2005-09-19 22:56:39Z claco $
 package Catalyst::Helper::Handel::Scaffold;
 use strict;
 use warnings;
@@ -27,7 +27,7 @@ __END__
 
 =head1 NAME
 
-Catalyst::Helper::Handel::Scaffold - Helper for create Handel frameework scaffolding
+Catalyst::Helper::Handel::Scaffold - Helper for creating Handel framework scaffolding
 
 =head1 SYNOPSIS
 

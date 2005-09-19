@@ -1,4 +1,4 @@
-[%# $Id: order_delete.tt2 683 2005-08-08 01:27:05Z claco $ %]
+[%# $Id: order_delete.tt2 837 2005-09-19 22:56:39Z claco $ %]
 [% USE horder  = Handel.Order %]
 <body>
     [% IF (order = horder.create({

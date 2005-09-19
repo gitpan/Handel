@@ -1,4 +1,4 @@
-# $Id: Constants.pm 768 2005-09-05 02:25:24Z claco $
+# $Id: Constants.pm 836 2005-09-18 14:59:30Z claco $
 package Template::Plugin::Handel::Constants;
 use strict;
 use warnings;
@@ -29,8 +29,7 @@ __END__
 
 =head1 NAME
 
-Template::Plugin::Handel::Constants - Template Toolkit plugin for Handel
-constants
+Template::Plugin::Handel::Constants - Template Toolkit plugin for constants
 
 =head1 SYNOPSIS
 

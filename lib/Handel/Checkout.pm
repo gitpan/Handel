@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 768 2005-09-05 02:25:24Z claco $
+# $Id: Checkout.pm 837 2005-09-19 22:56:39Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
@@ -289,7 +289,7 @@ __END__
 
 =head1 NAME
 
-Handel::Checkout - Checkout Pipeline Process
+Handel::Checkout - Checkout Pipeline Processor
 
 =head1 SYNOPSIS
 

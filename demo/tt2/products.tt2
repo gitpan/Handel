@@ -1,4 +1,4 @@
-[%# $Id: products.tt2 188 2005-02-18 04:00:54Z claco $ %]
+[%# $Id: products.tt2 837 2005-09-19 22:56:39Z claco $ %]
 [% META title='Products' %]
 [% INCLUDE header.tt2 %]
 

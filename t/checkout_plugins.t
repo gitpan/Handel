@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_plugins.t 715 2005-08-11 01:29:39Z claco $
+# $Id: checkout_plugins.t 837 2005-09-19 22:56:39Z claco $
 use strict;
 use warnings;
 use lib 't/lib';

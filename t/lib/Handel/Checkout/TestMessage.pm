@@ -1,4 +1,4 @@
-# $Id: TestMessage.pm 578 2005-07-09 02:24:46Z claco $
+# $Id: TestMessage.pm 837 2005-09-19 22:56:39Z claco $
 package Handel::Checkout::TestMessage;
 use strict;
 use warnings;

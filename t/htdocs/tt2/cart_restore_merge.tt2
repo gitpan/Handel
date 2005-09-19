@@ -1,4 +1,4 @@
-[%# $Id: cart_restore_merge.tt2 276 2005-03-02 02:24:49Z claco $ %]
+[%# $Id: cart_restore_merge.tt2 837 2005-09-19 22:56:39Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
     [% IF (cart = hcart.create({

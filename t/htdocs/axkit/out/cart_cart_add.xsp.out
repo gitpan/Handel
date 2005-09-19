@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: cart_cart_add.xsp.out 231 2005-02-22 02:46:23Z claco $ -->
+<!-- $Id: cart_cart_add.xsp.out 837 2005-09-19 22:56:39Z claco $ -->
 <body>
 	<cart>
 		<count>0</count>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: to_xhtml.xsl 191 2005-02-18 04:03:33Z claco $ -->
+<!-- $Id: to_xhtml.xsl 837 2005-09-19 22:56:39Z claco $ -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" cdata-section-elements="CDATA" version="1.0">
 	<xsl:output
 		method="xml"

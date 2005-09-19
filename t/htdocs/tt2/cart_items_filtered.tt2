@@ -1,4 +1,4 @@
-[%# $Id: cart_items_filtered.tt2 361 2005-03-08 23:29:53Z claco $ %]
+[%# $Id: cart_items_filtered.tt2 837 2005-09-19 22:56:39Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
     [% IF (cart = hcart.create({

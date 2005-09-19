@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: pod_coverage.t 803 2005-09-12 03:18:47Z claco $
+# $Id: pod_coverage.t 837 2005-09-19 22:56:39Z claco $
 use strict;
 use warnings;
 use Test::More;

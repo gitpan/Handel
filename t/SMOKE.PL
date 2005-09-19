@@ -1,5 +1,5 @@
 #!perl
-# $Id: SMOKE.PL 169 2005-02-13 01:48:29Z claco $
+# $Id: SMOKE.PL 837 2005-09-19 22:56:39Z claco $
 use strict;
 use warnings FATAL => 'all';
 use lib qw(lib);

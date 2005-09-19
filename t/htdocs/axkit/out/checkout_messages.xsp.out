@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: checkout_messages.xsp.out 720 2005-08-17 02:04:13Z claco $ -->
+<!-- $Id: checkout_messages.xsp.out 837 2005-09-19 22:56:39Z claco $ -->
 <body>
 	<messages>
 		<message>mytext</message>

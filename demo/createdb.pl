@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: createdb.pl 762 2005-08-30 00:23:54Z claco $
+# $Id: createdb.pl 837 2005-09-19 22:56:39Z claco $
 use strict;
 use warnings;
 use lib '../t/lib';

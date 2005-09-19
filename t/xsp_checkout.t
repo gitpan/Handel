@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: xsp_checkout.t 740 2005-08-20 02:57:29Z claco $
+# $Id: xsp_checkout.t 837 2005-09-19 22:56:39Z claco $
 use strict;
 use warnings;
 require Test::More;

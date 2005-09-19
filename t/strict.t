@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: strict.t 409 2005-03-15 02:09:46Z claco $
+# $Id: strict.t 837 2005-09-19 22:56:39Z claco $
 use strict;
 use warnings;
 use Test::More;

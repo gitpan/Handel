@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: constraints_checkout_phase.t 514 2005-06-08 03:23:01Z claco $
+# $Id: constraints_checkout_phase.t 837 2005-09-19 22:56:39Z claco $
 use strict;
 use warnings;
 use Test::More tests => 9;

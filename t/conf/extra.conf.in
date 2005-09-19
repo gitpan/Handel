@@ -1,4 +1,4 @@
-# $Id: extra.conf.in 685 2005-08-08 01:28:30Z claco $
+# $Id: extra.conf.in 837 2005-09-19 22:56:39Z claco $
 <IfModule mod_perl.c>
 	PerlSetVar db_name		@documentroot@/xsp.db
 	PerlSetVar db_driver	"SQLite"

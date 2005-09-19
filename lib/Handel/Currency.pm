@@ -1,4 +1,4 @@
-# $Id: Currency.pm 768 2005-09-05 02:25:24Z claco $
+# $Id: Currency.pm 837 2005-09-19 22:56:39Z claco $
 package Handel::Currency;
 use strict;
 use warnings;
@@ -93,7 +93,7 @@ __END__
 
 =head1 NAME
 
-Handel::Currency - Price container to do currency formatting
+Handel::Currency - Price container to do currency conversion/formatting
 
 =head1 SYNOPSIS
 

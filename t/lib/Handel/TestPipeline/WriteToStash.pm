@@ -1,4 +1,4 @@
-# $Id: WriteToStash.pm 709 2005-08-11 01:25:20Z claco $
+# $Id: WriteToStash.pm 837 2005-09-19 22:56:39Z claco $
 package Handel::TestPipeline::WriteToStash;
 use strict;
 use warnings;

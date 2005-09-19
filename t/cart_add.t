@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_add.t 608 2005-07-29 02:01:46Z claco $
+# $Id: cart_add.t 837 2005-09-19 22:56:39Z claco $
 use strict;
 use warnings;
 use Test::More;

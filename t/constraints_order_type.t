@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: constraints_order_type.t 541 2005-06-23 00:15:58Z claco $
+# $Id: constraints_order_type.t 837 2005-09-19 22:56:39Z claco $
 use strict;
 use warnings;
 use Test::More tests => 7;

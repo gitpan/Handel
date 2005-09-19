@@ -1,4 +1,4 @@
-# $Id: InitializeTotals.pm 693 2005-08-10 01:25:49Z claco $
+# $Id: InitializeTotals.pm 837 2005-09-19 22:56:39Z claco $
 package Handel::TestPipeline::InitializeTotals;
 use strict;
 use warnings;

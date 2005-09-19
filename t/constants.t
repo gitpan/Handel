@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: constants.t 254 2005-02-28 02:52:36Z claco $
+# $Id: constants.t 837 2005-09-19 22:56:39Z claco $
 use strict;
 use warnings;
 use Test::More qw(no_plan);

@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 826 2005-09-17 23:31:32Z claco $
+# $Id: Checkout.pm 837 2005-09-19 22:56:39Z claco $
 package Catalyst::Helper::Controller::Handel::Checkout;
 use strict;
 use warnings;

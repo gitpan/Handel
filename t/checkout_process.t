@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_process.t 731 2005-08-19 02:39:35Z claco $
+# $Id: checkout_process.t 837 2005-09-19 22:56:39Z claco $
 use strict;
 use warnings;
 use Test::More;

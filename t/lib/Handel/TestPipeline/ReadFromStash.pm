@@ -1,4 +1,4 @@
-# $Id: ReadFromStash.pm 709 2005-08-11 01:25:20Z claco $
+# $Id: ReadFromStash.pm 837 2005-09-19 22:56:39Z claco $
 package Handel::TestPipeline::ReadFromStash;
 use strict;
 use warnings;
