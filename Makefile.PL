@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 837 2005-09-19 22:56:39Z claco $
+# $Id: Makefile.PL 842 2005-09-19 23:42:35Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -78,7 +78,6 @@ WriteMakefile(
         'Locale::Maketext'  => '1.06',
         'Module::Pluggable' => '2.95',
         'Path::Class'       => '0',
-        'File::Find::Rule'  => '0',
         %modules
     },
     (ExtUtils::MakeMaker->VERSION >= 6.11) ?

@@ -1,9 +1,8 @@
-# $Id: Scaffold.pm 837 2005-09-19 22:56:39Z claco $
+# $Id: Scaffold.pm 844 2005-09-21 00:17:51Z claco $
 package Catalyst::Helper::Handel::Scaffold;
 use strict;
 use warnings;
 use Path::Class;
-use File::Find::Rule;
 
 sub mk_stuff {
     my ($self, $helper, $dsn, $user, $pass, $cart, $order, $checkout) = @_;
@@ -12,6 +11,10 @@ sub mk_stuff {
     $order    ||= 'Orders';
     $checkout ||= 'Checkout';
 
+    $cart = $cart =~ /^(.*::(Model|M|C|Controller)?::)?(.*)$/i ? $3 : 'Cart';
+    $order = $order =~ /^(.*::(Model|M|C|Controller)?::)?(.*)$/i ? $3 : 'Orders';
+    $checkout = $checkout =~ /^(.*::(Model|M|C|Controller)?::)?(.*)$/i ? $3 : 'Checkout';
+
     my $app = $helper->{'app'};
 
     $helper->mk_component($app, 'view', 'TT', 'TT');
@@ -19,7 +22,7 @@ sub mk_stuff {
     $helper->mk_component($app, 'model', $order, 'Handel::Order', $dsn, $user, $pass);
     $helper->mk_component($app, 'controller', $cart, 'Handel::Cart', $cart, $checkout);
     $helper->mk_component($app, 'controller', $order, 'Handel::Order', $order);
-    $helper->mk_component($app, 'controller', $checkout, 'Handel::Checkout', $cart, $order);
+    $helper->mk_component($app, 'controller', $checkout, 'Handel::Checkout', $cart, $order, $cart, $order);
 };
 
 1;
@@ -39,6 +42,19 @@ Catalyst::Helper::Handel::Scaffold - Helper for creating Handel framework scaffo
 A Helper for creating an entire cart/order/checkout framework scaffold.
 If cartname isn't specified, Cart is assumed. If ordername isn't specified,
 Orders is assumed. If no checkoutname is given, Checkout is assumed.
+
+The cartname, ordername, and checkoutname arguments try to do the right thing with the
+names given to them.
+
+For example, you can pass the shortened class name without the MyApp::M/C, or pass the fully
+qualified package name:
+
+    MyApp::M::CartModel
+    MyApp::Model::CartModel
+    CartModel
+
+In all three cases everything before M{odel)|C(ontroller) will be stripped and the class CartModel
+will be used.
 
 =head1 METHODS
 

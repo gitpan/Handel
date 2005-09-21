@@ -1,26 +1,31 @@
-# $Id: Checkout.pm 837 2005-09-19 22:56:39Z claco $
+# $Id: Checkout.pm 847 2005-09-21 00:34:05Z claco $
 package Catalyst::Helper::Controller::Handel::Checkout;
 use strict;
 use warnings;
 use Path::Class;
 
 sub mk_compclass {
-    my ($self, $helper, $cmodel, $omodel) = @_;
+    my ($self, $helper, $cmodel, $omodel, $ccontroller, $ocontroller) = @_;
     my $file = $helper->{'file'};
     my $dir  = dir($helper->{'base'}, 'root', $helper->{'uri'});
 
-    $helper->{'cmodel'} = $cmodel ? $helper->{'app'} . '::M::' . $cmodel :
-                         $helper->{'app'} . '::M::Cart';
+    $cmodel      ||= 'Cart';
+    $omodel      ||= 'Orders';
+    $ccontroller ||= 'Cart';
+    $ocontroller ||= 'Orders';
 
-    $helper->{'omodel'} = $omodel ? $helper->{'app'} . '::M::' . $omodel :
-                         $helper->{'app'} . '::M::Orders';
+    $cmodel = $cmodel =~ /^(.*::M(odel)?::)?(.*)$/i ? $3 : 'Cart';
+    $helper->{'cmodel'} = $helper->{'app'} . '::M::' . $cmodel;
 
-    my $curi = $helper->{'cmodel'} =~ /^.*::M(odel)?::(.*)$/i ? lc($2) : 'cart';
+    $omodel = $omodel =~ /^(.*::M(odel)?::)?(.*)$/i ? $3 : 'Orders';
+    $helper->{'omodel'} = $helper->{'app'} . '::M::' . $omodel;
+
+    my $curi = $ccontroller =~ /^(.*::C(ontroller)?::)?(.*)$/i ? lc($3) : 'cart';
     $curi =~ s/::/\//;
     $helper->{'curi'} = $curi;
 
-    my $ouri = $helper->{'omodel'} =~ /^.*::M(odel)?::(.*)$/i ? lc($2) : 'orders';
-    $curi =~ s/::/\//;
+    my $ouri = $ocontroller =~ /^(.*::C(ontroller)?::)?(.*)$/i ? lc($3) : 'orders';
+    $ouri =~ s/::/\//;
     $helper->{'ouri'} = $ouri;
 
     $helper->mk_dir($dir);
@@ -47,6 +52,8 @@ use strict;
 use warnings;
 use Handel::Checkout;
 use Handel::Constants qw(:returnas :order :cart :checkout);
+use Data::FormValidator 4.00;
+use HTML::FillInForm 1.04;
 use base 'Catalyst::Base';
 
 our $DFV;
@@ -69,12 +76,12 @@ our $FIF;
 #    }
 
 BEGIN {
-    eval 'use HTML::FillInForm';
+    eval 'use HTML::FillInForm 1.04';
     if (!$@) {
         $FIF = HTML::FillInForm->new;
     };
 
-    eval 'use Data::FormValidator';
+    eval 'use Data::FormValidator 4.00';
     if (!$@) {
         #############################################################
         # This is here until the patch makes it to release
@@ -256,7 +263,7 @@ sub begin : Private {
             }, RETURNAS_ITERATOR)->first;
 
             if (!$order) {
-                $order = MyApp::M::Orders->new({
+                $order = [% omodel %]->new({
                     shopper => $shopperid,
                     cart    => $cart
                 });
@@ -997,13 +1004,26 @@ Catalyst::Helper::Controller::Handel::Checkout - Helper for Handel::Checkout Con
 
 =head1 SYNOPSIS
 
-    script/create.pl controller <newclass> Handel::Checkout [<cartmodel> <ordermodel>]
+    script/create.pl controller <newclass> Handel::Checkout [<cartmodel> <ordermodel> <cartcontroller> <ordercontroller>]
     script/create.pl controller Checkout Handel::Checkout
 
 =head1 DESCRIPTION
 
 A Helper for creating controllers based on Handel::Checkout objects. IF no cartmodel or
 ordermodel was specified, ::M::Cart and ::M::Orders is assumed.
+
+The cartmode, ordermodel, cartcontroller and ordercontroller arguments try to do the
+right thing with the names given to them.
+
+For example, you can pass the shortened class name without the MyApp::M/C, or pass the fully
+qualified package name:
+
+    MyApp::M::CartModel
+    MyApp::Model::CartModel
+    CartModel
+
+In all three cases everything before M{odel)|C(ontroller) will be stripped and the class CartModel
+will be used.
 
 =head1 METHODS
 
