@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: warnings.t 837 2005-09-19 22:56:39Z claco $
+# $Id: warnings.t 860 2005-09-25 03:37:48Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -30,6 +30,8 @@ find({  wanted => \&wanted,
 sub wanted {
     my $name = $File::Find::name;
     my $file = fileparse($name);
+
+    return if $name =~ /TestApp/;
 
     if ($name =~ /\.(pm|pl|t)$/i && !exists($trusted{$file})) {
         push @files, $name;

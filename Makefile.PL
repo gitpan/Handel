@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 842 2005-09-19 23:42:35Z claco $
+# $Id: Makefile.PL 869 2005-09-27 00:26:09Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -28,32 +28,6 @@ if (!$@ && Handel->VERSION eq '0.17') {
     sleep 5;
 };
 
-eval 'use Apache::Test 1.16';
-if (!$@) {
-    require Apache::TestMM;
-    Apache::TestMM->import(qw(test clean));
-
-    my @defines;
-
-    eval 'use Apache::Template';
-    if (!$@) {
-        push @defines, 'TT2';
-    };
-
-    ## for whatever reason, use AxKit causes issues
-    ## use-ing A::A::Exception doesn't
-    eval 'use Apache::AxKit::Exception';
-    if (!$@) {
-        push @defines, 'AXKIT';
-    };
-
-    push(@ARGV, '-defines', join(' ', @defines)) if scalar @defines;
-
-    Apache::TestMM::filter_args();
-    Apache::TestMM::generate_script('t/TEST');
-    Apache::TestMM::generate_script('t/SMOKE');
-};
-
 my %modules;
 
 if ($^O eq 'MSWin32') {
@@ -65,6 +39,24 @@ if ($^O eq 'MSWin32') {
 } else {
     %modules = ('Data::UUID' => 0.10);
 };
+
+my @clean = qw(
+    smoke-report-*
+    t/cart*.db
+    t/order*.db
+    t/checkout*.db
+    t/TEST
+    t/SMOKE
+    t/logs
+    t/htdocs/*.db
+    t/TestApp
+    t/conf/apache_test_config.pm
+    t/conf/extra.conf
+    t/conf/httpd.conf
+    t/conf/modperl_inc.pl
+    t/conf/modperl_startup.pl
+    t/htdocs/index.html
+);
 
 WriteMakefile(
     NAME         => 'Handel',
@@ -86,5 +78,49 @@ WriteMakefile(
     dist => {
         PREOP => 'pod2text lib/Handel.pm > $(DISTVNAME)/README',
     },
-    clean => { FILES => 'smoke-report-* t/cart*.db t/order*.db t/checkout*.db t/TEST t/SMOKE t/logs t/htdocs/*.db' }
+    clean => { FILES => join ' ', @clean },
+    test  => { TESTS => join ' ', (glob("t/*.t"))}
 );
+
+package MY;
+sub test {
+    my $self = shift;
+
+    eval 'use Apache::Test 1.16';
+    if (!$@) {
+        require Apache::TestMM;
+        Apache::TestMM->import(qw(test clean));
+
+        my @defines;
+
+        eval 'use Apache::Template';
+        if (!$@) {
+            push @defines, 'TT2';
+        };
+
+        ## for whatever reason, use AxKit causes issues
+        ## use-ing A::A::Exception doesn't
+        eval 'use Apache::AxKit::Exception';
+        if (!$@) {
+            push @defines, 'AXKIT';
+        };
+
+        push(@ARGV, '-defines', join(' ', @defines)) if scalar @defines;
+
+        Apache::TestMM::filter_args();
+        Apache::TestMM::generate_script('t/TEST');
+        Apache::TestMM::generate_script('t/SMOKE');
+
+        my $at = Apache::TestMM->test;
+        my $tests = $self->{'test'} ? $self->{'test'}->{'TESTS'} : '';
+        if ($tests && Apache::Test->VERSION <= 1.26) {
+            $at =~ s/TEST_FILES\s+=/TEST_FILES = $tests\n/;
+        };
+
+        return $at;
+    } else {
+        return $self->SUPER::test;
+    };
+};
+
+1;
