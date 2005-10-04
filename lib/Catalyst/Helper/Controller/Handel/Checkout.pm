@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 870 2005-09-27 00:35:53Z claco $
+# $Id: Checkout.pm 877 2005-10-02 20:32:59Z claco $
 package Catalyst::Helper::Controller::Handel::Checkout;
 use strict;
 use warnings;
@@ -242,11 +242,13 @@ BEGIN {
 
 sub begin : Private {
     my ($self, $c) = @_;
-    my $shopperid = $c->req->cookie('shopperid')->value;
+    my $shopperid = $c->req->cookie('shopperid');
 
-    if (!$shopperid) {
+    if (!$shopperid || !$shopperid->value) {
         $c->res->redirect($c->req->base . '[% curi %]/');
     } else {
+        $shopperid = $shopperid->value;
+
         $c->stash->{'shopperid'} = $shopperid;
 
         my $cart = [% cmodel %]->load({

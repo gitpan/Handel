@@ -1,5 +1,5 @@
-#!perl -wT
-# $Id: catalyst_helpers_controller_checkout.t 865 2005-09-27 00:22:46Z claco $
+#!perl -w
+# $Id: catalyst_helpers_controller_checkout.t 875 2005-09-28 01:53:37Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -34,7 +34,7 @@ my $app = 'TestApp';
     chdir('t');
     rmtree('TestApp');
     $helper->mk_app($app);
-    $FindBin::Bin = catdir(cwd, $app, 'bogusdir');
+    $FindBin::Bin = catdir(cwd, $app, 'lib');
 };
 
 

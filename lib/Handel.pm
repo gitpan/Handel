@@ -1,10 +1,10 @@
-# $Id: Handel.pm 867 2005-09-27 00:24:35Z claco $
+# $Id: Handel.pm 880 2005-10-03 23:00:43Z claco $
 package Handel;
 use strict;
 use warnings;
 use vars qw($VERSION);
 
-$VERSION = '0.24';
+$VERSION = '0.25';
 
 BEGIN {
     use Handel::ConfigReader;
@@ -12,7 +12,12 @@ BEGIN {
     $Handel::Cfg = Handel::ConfigReader->new;
 
     my $uuidsub;
-    if (eval{require UUID}) {
+
+    if (eval{require APR::UUID}) {
+        $uuidsub = sub {
+            return APR::UUID->new->format;
+        };
+    } elsif (eval{require UUID}) {
         $uuidsub = sub {
             my ($uuid, $uuidstring);
             UUID::generate($uuid);

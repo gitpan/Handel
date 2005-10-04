@@ -1,5 +1,5 @@
-#!perl -wT
-# $Id: catalyst_helpers_model_cart.t 859 2005-09-25 03:36:55Z claco $
+#!perl -w
+# $Id: catalyst_helpers_model_cart.t 875 2005-09-28 01:53:37Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -35,16 +35,16 @@ my $app = 'TestApp';
     rmtree('TestApp');
 
     $helper->mk_app($app);
-    $FindBin::Bin = catdir(cwd, $app, 'bogusdir');
+    $FindBin::Bin = catdir(cwd, $app, 'lib');
 };
 
 
 ## create the default model
 {
-    my $file = catfile($app, 'lib', $app, 'M', 'Cart.pm');
+    my $module = catfile($app, 'lib', $app, 'M', 'Cart.pm');
     $helper->mk_component($app, 'model', 'Cart', 'Handel::Cart', 'testdsn', 'testuser', 'testpass');
-    file_exists_ok($file);
-    file_contents_like($file, qr/'testdsn'/);
-    file_contents_like($file, qr/'testuser'/);
-    file_contents_like($file, qr/'testpass'/);
+    file_exists_ok($module);
+    file_contents_like($module, qr/'testdsn'/);
+    file_contents_like($module, qr/'testuser'/);
+    file_contents_like($module, qr/'testpass'/);
 };
