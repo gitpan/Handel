@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 869 2005-09-27 00:26:09Z claco $
+# $Id: Makefile.PL 895 2005-10-06 01:33:53Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -45,6 +45,7 @@ my @clean = qw(
     t/cart*.db
     t/order*.db
     t/checkout*.db
+    t/subclassing.db
     t/TEST
     t/SMOKE
     t/logs

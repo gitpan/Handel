@@ -1,4 +1,4 @@
-# $Id: Order.pm 828 2005-09-17 23:36:28Z claco $
+# $Id: Order.pm 891 2005-10-06 01:30:34Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -90,7 +90,7 @@ sub new {
                     $cart->count > 0;
     };
 
-    my $order = $self->create($data);
+    my $order = $self->insert($data);
 
     if (defined $cart) {
         my $subtotal = 0;
@@ -196,9 +196,13 @@ sub delete {
 sub item_class {
     my ($class, $item_class) = @_;
 
-    undef(*_items);
-    undef(*add_to__items);
-    __PACKAGE__->has_many(_items => $item_class, 'orderid');
+    if (Class::DBI->VERSION < 3.000008) {
+        undef(*_items);
+        undef(*add_to__items);
+        __PACKAGE__->has_many(_items => $item_class, 'orderid');
+    } else {
+        $class->has_many(_items => $item_class, 'orderid');
+    };
 };
 
 sub items {

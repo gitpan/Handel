@@ -1,4 +1,4 @@
-# $Id: Cart.pm 828 2005-09-17 23:36:28Z claco $
+# $Id: Cart.pm 891 2005-10-06 01:30:34Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
@@ -35,7 +35,7 @@ sub new {
         $data->{'type'} = CART_TYPE_TEMP;
     };
 
-    return $self->create($data);
+    return $self->insert($data);
 };
 
 sub add {
@@ -116,9 +116,13 @@ sub destroy {
 sub item_class {
     my ($class, $item_class) = @_;
 
-    undef(*_items);
-    undef(*add_to__items);
-    __PACKAGE__->has_many(_items => $item_class, 'cart');
+    if (Class::DBI->VERSION < 3.000008) {
+        undef(*_items);
+        undef(*add_to__items);
+        __PACKAGE__->has_many(_items => $item_class, 'cart');
+    } else {
+        $class->has_many(_items => $item_class, 'cart');
+    };
 };
 
 sub items {
