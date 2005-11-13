@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_controller_cart.t 875 2005-09-28 01:53:37Z claco $
+# $Id: catalyst_helpers_controller_cart.t 913 2005-11-07 23:41:37Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -25,7 +25,7 @@ BEGIN {
     use_ok('Catalyst::Helper');
 };
 
-my $helper = Catalyst::Helper->new;
+my $helper = Catalyst::Helper->new({short => 1});
 my $app = 'TestApp';
 
 

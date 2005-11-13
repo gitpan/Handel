@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_model_cart.t 875 2005-09-28 01:53:37Z claco $
+# $Id: catalyst_helpers_model_cart.t 914 2005-11-07 23:53:21Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -8,7 +8,7 @@ use File::Path;
 use File::Spec::Functions;
 
 BEGIN {
-    eval 'use Catalyst 5.00';
+    eval 'use Catalyst 5';
     plan(skip_all =>
         'Catalyst 5 not installed') if $@;
 
@@ -25,7 +25,7 @@ BEGIN {
     use_ok('Catalyst::Helper');
 };
 
-my $helper = Catalyst::Helper->new;
+my $helper = Catalyst::Helper->new({short => 1});
 my $app = 'TestApp';
 
 

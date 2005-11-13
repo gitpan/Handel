@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 895 2005-10-06 01:33:53Z claco $
+# $Id: Makefile.PL 901 2005-10-25 00:31:03Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -11,7 +11,7 @@ if (Test::More->VERSION < 0.48) {
     print "Test::More < 0.48 sometimes causes test failures with\n";
     print "Class::DBI/IMA::DBI. Please consider updating Test::More\n";
     print "to version 0.48 or greater if you experience test failures\n";
-    print "with 'attemt to free unreferenced scalar' errors.\n";
+    print "with 'attempt to free unreferenced scalar' errors.\n";
     print "----------------------------------------------------------\n";
     sleep 5;
 };
@@ -23,7 +23,7 @@ if (!$@ && Handel->VERSION eq '0.17') {
     print "BREAKING API CHANGES!!!!\n\n";
     print "Handel::Order >= 0.18 is incompatable with Handel::Order\n";
     print "version 0.17 only. Earlier versions of Handel without\n";
-    print "Handel::ORder arenot effected.\n";
+    print "Handel::Order are not effected.\n";
     print "----------------------------------------------------------\n";
     sleep 5;
 };
@@ -38,6 +38,33 @@ if ($^O eq 'MSWin32') {
     %modules = ('UUID' => 0.02) if $@;
 } else {
     %modules = ('Data::UUID' => 0.10);
+};
+if (eval {require APR::UUID}) {
+    %modules = ();
+};
+
+eval 'use Apache::Test 1.27';
+if (!$@) {
+    require Apache::TestMM;
+    Apache::TestMM->import(qw(test clean));
+
+    my @defines;
+    eval 'use Apache::Template';
+    if (!$@) {
+        push @defines, 'TT2';
+    };
+
+    ## for whatever reason, use AxKit causes issues
+    ## use-ing A::A::Exception doesn't
+    eval 'use Apache::AxKit::Exception';
+    if (!$@) {
+        push @defines, 'AXKIT';
+    };
+
+    push(@ARGV, '-defines', join(' ', @defines)) if scalar @defines;
+    Apache::TestMM::filter_args();
+    Apache::TestMM::generate_script('t/TEST');
+    Apache::TestMM::generate_script('t/SMOKE');
 };
 
 my @clean = qw(
@@ -82,46 +109,3 @@ WriteMakefile(
     clean => { FILES => join ' ', @clean },
     test  => { TESTS => join ' ', (glob("t/*.t"))}
 );
-
-package MY;
-sub test {
-    my $self = shift;
-
-    eval 'use Apache::Test 1.16';
-    if (!$@) {
-        require Apache::TestMM;
-        Apache::TestMM->import(qw(test clean));
-
-        my @defines;
-
-        eval 'use Apache::Template';
-        if (!$@) {
-            push @defines, 'TT2';
-        };
-
-        ## for whatever reason, use AxKit causes issues
-        ## use-ing A::A::Exception doesn't
-        eval 'use Apache::AxKit::Exception';
-        if (!$@) {
-            push @defines, 'AXKIT';
-        };
-
-        push(@ARGV, '-defines', join(' ', @defines)) if scalar @defines;
-
-        Apache::TestMM::filter_args();
-        Apache::TestMM::generate_script('t/TEST');
-        Apache::TestMM::generate_script('t/SMOKE');
-
-        my $at = Apache::TestMM->test;
-        my $tests = $self->{'test'} ? $self->{'test'}->{'TESTS'} : '';
-        if ($tests && Apache::Test->VERSION <= 1.26) {
-            $at =~ s/TEST_FILES\s+=/TEST_FILES = $tests\n/;
-        };
-
-        return $at;
-    } else {
-        return $self->SUPER::test;
-    };
-};
-
-1;
