@@ -1,4 +1,4 @@
-# $Id: Item.pm 768 2005-09-05 02:25:24Z claco $
+# $Id: Item.pm 923 2005-11-15 02:59:22Z claco $
 package Handel::Order::Item;
 use strict;
 use warnings;
@@ -42,7 +42,7 @@ __END__
 
 =head1 NAME
 
-Handel::Order::Item - Module representing an indivudal order line item
+Handel::Order::Item - Module representing an individual order line item
 
 =head1 SYNOPSIS
 
@@ -77,7 +77,7 @@ You can create a new C<Handel::Order::Item> object by calling the C<new> method:
 This is a lazy operation. No actual item record is created until the item object
 is passed into the C<add> method of a C<Handel::Order> object.
 
-=head1 METHOS
+=head1 METHODS
 
 =head2 description
 

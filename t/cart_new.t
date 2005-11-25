@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_new.t 837 2005-09-19 22:56:39Z claco $
+# $Id: cart_new.t 972 2005-11-25 19:11:55Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 47;
+        plan tests => 48;
     };
 
     use_ok('Handel::Cart');
@@ -57,6 +57,22 @@ BEGIN {
         my $cart = Handel::Cart->new({
             id      => '11111111-1111-1111-1111-111111111111',
             shopper => 'crap'
+        });
+
+        fail;
+    } catch Handel::Exception::Constraint with {
+        pass;
+    } otherwise {
+        fail;
+    };
+};
+
+
+## test for Handel::Exception::Constraint during cart new for empty shopper
+{
+    try {
+        my $cart = Handel::Cart->new({
+            id      => '11111111-1111-1111-1111-111111111111'
         });
 
         fail;

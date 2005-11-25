@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 768 2005-09-05 02:25:24Z claco $
+# $Id: Checkout.pm 923 2005-11-15 02:59:22Z claco $
 package AxKit::XSP::Handel::Checkout;
 use strict;
 use warnings;
@@ -419,7 +419,7 @@ the orders uuid value:
 
 =head2 <checkout:ok>
 
-If process suceeds, anything in the ok block is run:
+If process succeeds, anything in the ok block is run:
 
     <checkout:new>
         <checkout:process>

@@ -1,4 +1,4 @@
-# $Id: Cart.pm 768 2005-09-05 02:25:24Z claco $
+# $Id: Cart.pm 923 2005-11-15 02:59:22Z claco $
 package AxKit::XSP::Handel::Cart;
 use strict;
 use warnings;
@@ -1389,7 +1389,7 @@ as is.
 =head3 Precedence
 
 If you are using both the currency conversion and the currency formatting
-options, the conversion will be performaed first, then the result will
+options, the conversion will be performed first, then the result will
 be formatted.
 
 =head2 <cart:quantity>
@@ -1468,7 +1468,7 @@ forms are valid for your syntactic sanity:
 =head2 <cart:no-results>
 
 The anti-results or 'not found' tag. This tag is executed when
-C<cart>, C<carts>, C<item>, or C<items> fails to fild a match for it's filters.
+C<cart>, C<carts>, C<item>, or C<items> fails to find a match for it's filters.
 As with C<E<lt>cart:resultsE<gt>>, both the
 singular and plural forms are available for your enjoyment:
 

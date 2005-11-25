@@ -1,4 +1,4 @@
-# $Id: Exception.pm 768 2005-09-05 02:25:24Z claco $
+# $Id: Exception.pm 923 2005-11-15 02:59:22Z claco $
 package Handel::Exception;
 use strict;
 use warnings;
@@ -137,7 +137,7 @@ unexpected things happen.
 =head2 Handel::Exception
 
 This is the base exception thrown in C<Handel>. All other exceptions subclass
-C<Handel::Exception> so it's possibl to catch all Handel generated exceptions
+C<Handel::Exception> so it's possible to catch all Handel generated exceptions
 with a single C<catch> statement.
 
     try {

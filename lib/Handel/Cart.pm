@@ -1,4 +1,4 @@
-# $Id: Cart.pm 891 2005-10-06 01:30:34Z claco $
+# $Id: Cart.pm 968 2005-11-25 03:08:32Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
@@ -33,6 +33,12 @@ sub new {
 
     if (!defined($data->{'type'})) {
         $data->{'type'} = CART_TYPE_TEMP;
+    };
+
+    if ($data->{'type'} == CART_TYPE_SAVED && !$data->{'name'}) {
+        throw Handel::Exception::Constraint(
+            -details => translate(
+                'Cart name is required when creating a saved cart') . '.');
     };
 
     return $self->insert($data);

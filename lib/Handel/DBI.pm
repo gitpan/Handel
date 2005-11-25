@@ -1,4 +1,4 @@
-# $Id: DBI.pm 887 2005-10-05 00:19:13Z claco $
+# $Id: DBI.pm 923 2005-11-15 02:59:22Z claco $
 package Handel::DBI;
 use strict;
 use warnings;
@@ -168,7 +168,7 @@ vs. search_like).
 =head1 CONFIGURATION
 
 Starting in version C<0.16>, the DBI configuration variables have been changed.
-The old variables are now considered depricated and will be removed in the
+The old variables are now considered deprecated and will be removed in the
 future.
 
 These can either be set in C<ENV>, or using PerlSetVar in C<httpd.conf>.
