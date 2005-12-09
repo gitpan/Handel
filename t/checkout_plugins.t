@@ -1,9 +1,9 @@
 #!perl -wT
-# $Id: checkout_plugins.t 837 2005-09-19 22:56:39Z claco $
+# $Id: checkout_plugins.t 1007 2005-12-08 04:51:54Z claco $
 use strict;
 use warnings;
 use lib 't/lib';
-use Test::More tests => 419;
+use Test::More tests => 420;
 
 BEGIN {
     use_ok('Handel::Checkout');
@@ -39,6 +39,22 @@ BEGIN {
     } catch Handel::Exception::Argument with {
         pass;
     } otherwise {
+        fail;
+    };
+};
+
+
+## Add a custom phase and verify it works in add_handler
+{
+    try {
+        Handel::Checkout->add_phase('CHECKOUT_PHASE_CUSTOM', 99);
+        my $checkout = Handel::Checkout->new;
+
+        $checkout->add_handler(Handel::Constants->CHECKOUT_PHASE_CUSTOM, sub{});
+
+        pass;
+    } otherwise {
+    warn shift;
         fail;
     };
 };

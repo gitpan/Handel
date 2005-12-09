@@ -1,4 +1,4 @@
-# $Id: Order.pm 891 2005-10-06 01:30:34Z claco $
+# $Id: Order.pm 1014 2005-12-09 01:26:08Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -592,6 +592,48 @@ Gets/sets the bill to fax number
 =head2 billtoemail
 
 Gets/sets the bill to email address
+
+=head2 ccn*
+
+Gets/sets the credit cart number.
+
+B<NOTE:> This field is stored in memory for the life of the order instance and
+is not a real database field.
+
+=head2 cctype*
+
+Gets/sets the credit cart type.
+
+B<NOTE:> This field is stored in memory for the life of the order instance and
+is not a real database field.
+
+=head2 ccm*
+
+Gets/sets the credit cart expiration month.
+
+B<NOTE:> This field is stored in memory for the life of the order instance and
+is not a real database field.
+
+=head2 ccy*
+
+Gets/sets the credit cart expiration year.
+
+B<NOTE:> This field is stored in memory for the life of the order instance and
+is not a real database field.
+
+=head2 ccvn*
+
+Gets/sets the credit cart verification number.
+
+B<NOTE:> This field is stored in memory for the life of the order instance and
+is not a real database field.
+
+=head2 ccname*
+
+Gets/sets the credit cart holders name as it appears on the card.
+
+B<NOTE:> This field is stored in memory for the life of the order instance and
+is not a real database field.
 
 =head2 comments
 

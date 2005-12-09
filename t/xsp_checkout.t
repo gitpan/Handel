@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: xsp_checkout.t 837 2005-09-19 22:56:39Z claco $
+# $Id: xsp_checkout.t 1013 2005-12-09 01:00:22Z claco $
 use strict;
 use warnings;
 require Test::More;
 use lib 't/lib';
 use Handel::TestHelper qw(preparetables comp_to_file);
+
+Test::More::plan(skip_all => 'set TEST_HTTP to enable this test') unless $ENV{TEST_HTTP};
 
 eval 'use Apache::Test 1.16';
 Test::More::plan(skip_all =>

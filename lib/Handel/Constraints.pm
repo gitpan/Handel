@@ -1,4 +1,4 @@
-# $Id: Constraints.pm 792 2005-09-12 02:04:00Z claco $
+# $Id: Constraints.pm 1005 2005-12-08 04:51:01Z claco $
 package Handel::Constraints;
 use strict;
 use warnings;
@@ -95,12 +95,13 @@ sub constraint_checkout_phase {
 
     return if $value !~ /[0-9]/;
 
-    if ($value != CHECKOUT_PHASE_INITIALIZE && $value != CHECKOUT_PHASE_VALIDATE &&
-        $value != CHECKOUT_PHASE_FINALIZE && $value != CHECKOUT_PHASE_AUTHORIZE &&
-        $value != CHECKOUT_PHASE_DELIVER) {
-        return 0;
+    foreach my $const (@{Handel::Constants->CHECKOUT_ALL_PHASES}) {
+        if ($value == $const) {
+            return 1;
+        };
     };
-    return 1;
+
+    return 0;
 };
 
 sub constraint_order_type {
