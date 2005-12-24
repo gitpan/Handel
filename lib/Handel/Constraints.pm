@@ -1,4 +1,4 @@
-# $Id: Constraints.pm 1005 2005-12-08 04:51:01Z claco $
+# $Id: Constraints.pm 1039 2005-12-24 03:29:34Z claco $
 package Handel::Constraints;
 use strict;
 use warnings;
@@ -49,7 +49,7 @@ sub constraint_quantity {
 sub constraint_price {
     my $value = defined $_[0] ? shift : '';
 
-    return ($value =~ /^\d{1,5}(\.\d{1,2})?$/ && $value > 0);
+    return ($value =~ /^\d{1,5}(\.\d{1,2})?$/);
 };
 
 sub constraint_uuid {

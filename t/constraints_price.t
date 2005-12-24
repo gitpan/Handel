@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: constraints_price.t 837 2005-09-19 22:56:39Z claco $
+# $Id: constraints_price.t 1039 2005-12-24 03:29:34Z claco $
 use strict;
 use warnings;
 use Test::More tests => 14;
@@ -11,8 +11,8 @@ BEGIN {
 ok(!constraint_price('junk.foo'),   'alpha gibberish price');
 ok(!constraint_price(-14),          'negative number price');
 ok(!constraint_price(-25.79),       'negative float price');
-ok(!constraint_price(0),            'zero price');
-ok(!constraint_price(0.00),         'zero float price');
+ok(constraint_price(0),             'zero price');
+ok(constraint_price(0.00),          'zero float price');
 ok(!constraint_price(345.345),      'overextended price float');
 ok(!constraint_price(1234567.00),   'overextended price float');
 ok(!constraint_price(1234567),      'overextended price int');

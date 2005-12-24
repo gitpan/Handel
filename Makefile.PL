@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 1013 2005-12-09 01:00:22Z claco $
+# $Id: Makefile.PL 1038 2005-12-24 03:28:26Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -97,6 +97,7 @@ WriteMakefile(
     ABSTRACT     => 'Simple ecommerce framework with AxKit support',
     PREREQ_PM    => {
         'Class::DBI'        => '0.96',
+        'Class::Data::Inheritable' => '0',
         'DBI'               => '1.36',
         'Error'             => '0.14',
         'Locale::Maketext'  => '1.06',

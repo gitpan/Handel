@@ -1,10 +1,10 @@
-# $Id: Handel.pm 1012 2005-12-09 00:59:13Z claco $
+# $Id: Handel.pm 1036 2005-12-24 03:25:24Z claco $
 package Handel;
 use strict;
 use warnings;
 use vars qw($VERSION);
 
-$VERSION = '0.29';
+$VERSION = '0.30';
 
 BEGIN {
     use Handel::ConfigReader;
