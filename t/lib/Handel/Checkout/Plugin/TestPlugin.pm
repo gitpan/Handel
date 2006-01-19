@@ -1,4 +1,4 @@
-# $Id: TestPlugin.pm 837 2005-09-19 22:56:39Z claco $
+# $Id: TestPlugin.pm 1059 2006-01-06 01:59:25Z claco $
 package Handel::Checkout::Plugin::TestPlugin;
 use strict;
 use warnings;
@@ -9,7 +9,7 @@ sub register {
     my ($self, $ctx) = @_;
 
     $self->{'register_called'}++;
-    $ctx->add_handler(CHECKOUT_PHASE_INITIALIZE, \&handler);
+    $ctx->add_handler(CHECKOUT_PHASE_INITIALIZE, \&handler, 3);
 };
 
 sub init {

@@ -1,4 +1,4 @@
-# $Id: First.pm 837 2005-09-19 22:56:39Z claco $
+# $Id: First.pm 1059 2006-01-06 01:59:25Z claco $
 package Handel::TestPlugins::First;
 use strict;
 use warnings;
@@ -9,7 +9,7 @@ sub register {
     my ($self, $ctx) = @_;
 
     $self->{'register_called'}++;
-    $ctx->add_handler(CHECKOUT_PHASE_INITIALIZE, \&handler);
+    $ctx->add_handler(CHECKOUT_PHASE_INITIALIZE, \&handler, 1);
 };
 
 sub init {

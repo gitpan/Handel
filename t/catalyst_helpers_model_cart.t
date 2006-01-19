@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_model_cart.t 914 2005-11-07 23:53:21Z claco $
+# $Id: catalyst_helpers_model_cart.t 1072 2006-01-17 03:30:38Z claco $
 use strict;
 use warnings;
 use Test::More;

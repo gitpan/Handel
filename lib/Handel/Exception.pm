@@ -1,4 +1,4 @@
-# $Id: Exception.pm 923 2005-11-15 02:59:22Z claco $
+# $Id: Exception.pm 1070 2006-01-13 03:50:51Z claco $
 package Handel::Exception;
 use strict;
 use warnings;
@@ -65,6 +65,10 @@ use warnings;
 
 BEGIN {
     use base 'Handel::Exception';
+    eval 'require Apache::AxKit::Exception';
+    if (!$@) {
+        push @__PACKAGE__::ISA, 'Apache::AxKit::Exception';
+    };
 };
 
 sub new {

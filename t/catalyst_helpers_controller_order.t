@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_controller_order.t 973 2005-11-25 19:12:35Z claco $
+# $Id: catalyst_helpers_controller_order.t 1072 2006-01-17 03:30:38Z claco $
 use strict;
 use warnings;
 use Test::More;

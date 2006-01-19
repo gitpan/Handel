@@ -1,4 +1,4 @@
-# $Id: Order.pm 1041 2005-12-24 03:33:07Z claco $
+# $Id: Order.pm 1081 2006-01-19 02:06:56Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -12,7 +12,8 @@ BEGIN {
     use Handel::Currency;
     use Handel::L10N qw(translate);
 
-    __PACKAGE__->mk_classdata(cart_class => 'Handel::Cart');
+    __PACKAGE__->mk_classdata(_cart_class => 'Handel::Cart');
+    __PACKAGE__->mk_classdata(_item_class => 'Handel::Order::Item');
 };
 
 __PACKAGE__->autoupdate(1);
@@ -28,7 +29,7 @@ __PACKAGE__->columns(All => qw(id shopper type number created updated comments
     shiptonightphone shiptofax shiptoemail)
 );
 __PACKAGE__->columns(
-    TEMP => qw(ccn cctype ccm ccy ccvn ccname)
+    TEMP => qw(ccn cctype ccm ccy ccvn ccname ccissuenumber ccstartdate ccenddate)
 );
 
 __PACKAGE__->has_many(_items => 'Handel::Order::Item', 'orderid');
@@ -62,9 +63,8 @@ sub new {
         $data->{'type'} = ORDER_TYPE_TEMP;
     };
 
-    my $cart = $data->{'cart'};
+    my $cart = delete $data->{'cart'};
     my $is_uuid = constraint_uuid($cart);
-    delete $data->{'cart'};
 
     if (defined $cart) {
         throw Handel::Exception::Argument( -details =>
@@ -79,7 +79,7 @@ sub new {
                 translate(
                     'Could not find a cart matching the supplied search criteria') . '.') unless $cart;
         } elsif ($is_uuid) {
-            $cart = Handel::Cart->load({id => $cart}, RETURNAS_ITERATOR)->first;
+            $cart = $self->cart_class->load({id => $cart}, RETURNAS_ITERATOR)->first;
 
             throw Handel::Exception::Order( -details =>
                 translate(
@@ -116,6 +116,17 @@ sub new {
     return $order;
 };
 
+sub cart_class {
+    my ($self, $cart_class) = @_;
+
+    if ($cart_class) {
+        eval "require $cart_class";
+        $self->_cart_class($cart_class);
+    };
+
+    return $self->_cart_class;
+};
+
 sub copy_cart {
     my ($self, $order, $cart) = @_;
 
@@ -139,7 +150,7 @@ sub copy_cart_items {
             $copy{$_} = $item->$_;
         };
 
-        $copy{'id'} = $self->uuid unless constraint_uuid($copy{'id'});
+        $copy{'id'} = $self->uuid unless Handel::Constraints::constraint_uuid($copy{'id'});
         $copy{'orderid'} = $order->id;
         $copy{'total'} = $copy{'quantity'}*$copy{'price'};
 
@@ -201,19 +212,48 @@ sub delete {
 
     ## I'd much rather use $self->_items->search_like, but it doesn't work that
     ## way yet. This should be fine as long as :weaken refs works.
-    return Handel::Order::Item->search_like(%{$filter},
+    return $self->item_class->search_like(%{$filter},
         orderid => $self->id)->delete_all;
+};
+
+sub destroy {
+    my ($self, $filter) = @_;
+
+    if (ref $self) {
+        $self->SUPER::delete;
+    } else {
+        throw Handel::Exception::Argument( -details =>
+            translate('Param 1 is not a HASH reference') . '.') unless
+                ref($filter) eq 'HASH';
+
+        my $orders = $self->load($filter, RETURNAS_ITERATOR);
+        while (my $order = $orders->next) {
+            $order->clear;
+            $order->SUPER::delete;
+        };
+    };
+
+    return;
 };
 
 sub item_class {
     my ($class, $item_class) = @_;
 
-    if (Class::DBI->VERSION < 3.000008) {
-        undef(*_items);
-        undef(*add_to__items);
-        __PACKAGE__->has_many(_items => $item_class, 'orderid');
+    if ($item_class) {
+        eval "require $item_class";
+
+        require version;
+        my $cdbiver = version->new(Class::DBI->VERSION);
+
+        if ($cdbiver->numify < 3.000008) {
+            undef(*_items);
+            undef(*add_to__items);
+            __PACKAGE__->has_many(_items => $item_class, 'orderid');
+        } else {
+            $class->has_many(_items => $item_class, 'orderid');
+        };
     } else {
-        $class->has_many(_items => $item_class, 'orderid');
+        return $class->_item_class;
     };
 };
 
@@ -233,19 +273,19 @@ sub items {
     ## doesn't appear to be available within a loaded object.
     if ((wantarray && $wantiterator != RETURNAS_ITERATOR) || $wantiterator == RETURNAS_LIST) {
         my @items = $wildcard ?
-            Handel::Order::Item->search_like(%{$filter}, orderid => $self->id) :
+            $self->item_class->search_like(%{$filter}, orderid => $self->id) :
             $self->_items(%{$filter});
 
         return @items;
     } elsif ($wantiterator == RETURNAS_ITERATOR) {
         my $iterator = $wildcard ?
-            Handel::Order::Item->search_like(%{$filter}, orderid => $self->id) :
+            $self->item_class->search_like(%{$filter}, orderid => $self->id) :
             $self->_items(%{$filter});
 
         return $iterator;
     } else {
         my $iterator = $wildcard ?
-            Handel::Order::Item->search_like(%{$filter}, orderid => $self->id) :
+            $self->item_class->search_like(%{$filter}, orderid => $self->id) :
             $self->_items(%{$filter});
         if ($iterator->count == 1 && $wantiterator != RETURNAS_ITERATOR && $wantiterator != RETURNAS_LIST) {
             return $iterator->next;
@@ -301,13 +341,13 @@ sub reconcile {
                   (ref($cart) eq 'HASH' or UNIVERSAL::isa($cart, 'Handel::Cart') or $is_uuid);
 
         if (ref $cart eq 'HASH') {
-            $cart = Handel::Cart->load($cart, RETURNAS_ITERATOR)->first;
+            $cart = $self->cart_class->load($cart, RETURNAS_ITERATOR)->first;
 
             throw Handel::Exception::Order( -details =>
                 translate(
                     'Could not find a cart matching the supplied search criteria') . '.') unless $cart;
         } elsif ($is_uuid) {
-            $cart = Handel::Cart->load({id => $cart}, RETURNAS_ITERATOR)->first;
+            $cart = $self->cart_class->load({id => $cart}, RETURNAS_ITERATOR)->first;
 
             throw Handel::Exception::Order( -details =>
                 translate(
@@ -493,7 +533,7 @@ parameters, it will receive the order and cart objects.
     use base 'Handel::Order';
 
     sub copy_cart {
-        my ($self, $cart, $order) = @_;
+        my ($self, $order, $cart) = @_;
 
         # copy stock fields
         $self->SUPER::copy_cart($order, $cart);
@@ -539,12 +579,21 @@ parameters, it will receive the order and cart objects.
 
 =head2 delete(\%filter)
 
-This method deletes the cart item(s) matching the supplied filter values and
+This method deletes the order item(s) matching the supplied filter values and
 returns the number of items deleted.
 
     if ( $cart->delete({id => '8D4B0BE1-C02E-11D2-A33D-00A0C94B8D0E'}) ) {
         print 'Item deleted';
     };
+
+=head2 destroy(\%filter)
+
+When called used as an instance method, this will delete all items from the
+current cart instance and delete the cart container. C<filter> will be ignored.
+
+When called as a package method, this will delete all carts matching C<filter>.
+A Handel::Exception::Argument exception will be thrown is C<filter> is not a
+HASH reference.
 
 =head2 cart_class($orderclass)
 
@@ -712,6 +761,27 @@ is not a real database field.
 =head2 ccname*
 
 Gets/sets the credit cart holders name as it appears on the card.
+
+B<NOTE:> This field is stored in memory for the life of the order instance and
+is not a real database field.
+
+=head2 ccissuenumber*
+
+Gets/sets the credit cart issue number.
+
+B<NOTE:> This field is stored in memory for the life of the order instance and
+is not a real database field.
+
+=head2 ccstartdate*
+
+Gets/sets the credit cart start date.
+
+B<NOTE:> This field is stored in memory for the life of the order instance and
+is not a real database field.
+
+=head2 ccenddate*
+
+Gets/sets the credit cart end date.
 
 B<NOTE:> This field is stored in memory for the life of the order instance and
 is not a real database field.

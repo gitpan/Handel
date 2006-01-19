@@ -1,4 +1,4 @@
-# $Id: Cart.pm 968 2005-11-25 03:08:32Z claco $
+# $Id: Cart.pm 1080 2006-01-19 02:05:22Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
@@ -9,6 +9,8 @@ BEGIN {
     use Handel::Constraints qw(:all);
     use Handel::Currency;
     use Handel::L10N qw(translate);
+
+    __PACKAGE__->mk_classdata(_item_class => 'Handel::Cart::Item');
 };
 
 __PACKAGE__->autoupdate(1);
@@ -95,7 +97,7 @@ sub delete {
 
     ## I'd much rather use $self->_items->search_like, but it doesn't work that
     ## way yet. This should be fine as long as :weaken refs works.
-    return Handel::Cart::Item->search_like(%{$filter},
+    return $self->item_class->search_like(%{$filter},
         cart => $self->id)->delete_all;
 };
 
@@ -109,7 +111,7 @@ sub destroy {
             translate('Param 1 is not a HASH reference') . '.') unless
                 ref($filter) eq 'HASH';
 
-        my $carts = Handel::Cart->load($filter, RETURNAS_ITERATOR);
+        my $carts = $self->load($filter, RETURNAS_ITERATOR);
         while (my $cart = $carts->next) {
             $cart->clear;
             $cart->SUPER::delete;
@@ -122,12 +124,21 @@ sub destroy {
 sub item_class {
     my ($class, $item_class) = @_;
 
-    if (Class::DBI->VERSION < 3.000008) {
-        undef(*_items);
-        undef(*add_to__items);
-        __PACKAGE__->has_many(_items => $item_class, 'cart');
+    if ($item_class) {
+        eval "require $item_class";
+
+        require version;
+        my $cdbiver = version->new(Class::DBI->VERSION);
+
+        if ($cdbiver->numify < 3.000008) {
+            undef(*_items);
+            undef(*add_to__items);
+            __PACKAGE__->has_many(_items => $item_class, 'cart');
+        } else {
+            $class->has_many(_items => $item_class, 'cart');
+        };
     } else {
-        $class->has_many(_items => $item_class, 'cart');
+        return $class->_item_class;
     };
 };
 
@@ -147,19 +158,19 @@ sub items {
     ## doesn't appear to be available within a loaded object.
     if ((wantarray && $wantiterator != RETURNAS_ITERATOR) || $wantiterator == RETURNAS_LIST) {
         my @items = $wildcard ?
-            Handel::Cart::Item->search_like(%{$filter}, cart => $self->id) :
+            $self->item_class->search_like(%{$filter}, cart => $self->id) :
             $self->_items(%{$filter});
 
         return @items;
     } elsif ($wantiterator == RETURNAS_ITERATOR) {
         my $iterator = $wildcard ?
-            Handel::Cart::Item->search_like(%{$filter}, cart => $self->id) :
+            $self->item_class->search_like(%{$filter}, cart => $self->id) :
             $self->_items(%{$filter});
 
         return $iterator;
     } else {
         my $iterator = $wildcard ?
-            Handel::Cart::Item->search_like(%{$filter}, cart => $self->id) :
+            $self->item_class->search_like(%{$filter}, cart => $self->id) :
             $self->_items(%{$filter});
         if ($iterator->count == 1 && $wantiterator != RETURNAS_ITERATOR && $wantiterator != RETURNAS_LIST) {
             return $iterator->next;
@@ -214,7 +225,7 @@ sub restore {
                 ref($data) eq 'HASH' or $data->isa('Handel::Cart'));
 
     my @carts = (ref($data) eq 'HASH') ?
-        Handel::Cart->search_like(%{$data}) : $data;
+        $self->search_like(%{$data}) : $data;
 
     if ($mode == CART_MODE_REPLACE) {
         $self->clear;

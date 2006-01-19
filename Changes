@@ -1,5 +1,34 @@
 Revision history for Perl module Handel
 
+0.31 Tue Jan 17 19:43:14 2005
+    - Fixed order creation from cart uuid to use cart_class
+    - Fixed order reconcile to use cart_class
+    - Added ccissuenumber, ccstartdate and ccenddate temp fieds to orders
+    - Use version to property compare CDBI versions (3.0.1 doesn't use version)
+    - Added clear_messages to Handel::Checkout
+    - Checkout plugin handlers are now run in the order of their declared
+        preference number
+    - Fixed Carts item_class to return a default
+    - Fixed Carts items(), delete(), destroy() and restore() to use item_class
+    - Fixed Orders item_class to return a default
+    - Fixed Orders items(), delete() to use item_class
+    - PRAGMA synchronous = OFF and temp_store = MEMORY for SQLite tests to
+        reduce disk trashing during testing
+    - Handel::Exception::Taglib subclasses Apache::AxKit::Exception if available
+        to play nice with AxKits exception handling
+    - Added destroy() to Handel::Order
+    - Added subclassing tests to current cart/order/checkout tests
+    - Checkout::process now clears the stash before the call to plugin init, so
+	plugins can set stash data
+    - Added Handel::Checkout::Stash to checkout process
+    - Added Checkout->stash_class to allow the use of a custom stash class in
+        Checkout subclasses
+    - Checkout::new how takes the stash option, which should contain a instance
+	of a Handel::Checkout::Stash subclass
+    - Added t/checkout_stash,t tests
+    - Class setter methods (order_class, item_class, stash_class, cart_class)
+        now try to require the specified class
+
 0.30 Fri Dec 23 22:52:23 2005
     - Constraint constraint_price now accepts 0 as a valid value
     - Added order_class to Handel::Checkout to allow Checkout->order to create

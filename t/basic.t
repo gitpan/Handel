@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: basic.t 837 2005-09-19 22:56:39Z claco $
+# $Id: basic.t 1078 2006-01-19 02:03:42Z claco $
 use strict;
 use warnings;
-use Test::More tests => 29;
+use Test::More tests => 30;
 
 BEGIN {
     use_ok('Handel');
@@ -10,6 +10,7 @@ BEGIN {
     use_ok('Handel::Cart::Item');
     use_ok('Handel::Checkout');
     use_ok('Handel::Checkout::Plugin');
+    use_ok('Handel::Checkout::Stash');
     use_ok('Handel::Constants');
     use_ok('Handel::Constraints');
     use_ok('Handel::Currency');

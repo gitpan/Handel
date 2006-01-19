@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1042 2005-12-24 03:39:32Z claco $
+# $Id: Checkout.pm 1082 2006-01-19 02:08:35Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
@@ -6,6 +6,7 @@ use warnings;
 BEGIN {
     use Handel;
     use Handel::Cart;
+    use Handel::Checkout::Stash;
     use Handel::Constants qw(:checkout :returnas);
     use Handel::Constraints qw(constraint_checkout_phase constraint_uuid);
     use Handel::Exception qw(:try);
@@ -15,7 +16,8 @@ BEGIN {
     use Module::Pluggable 2.95 instantiate => 'new', sub_name => '_plugins';
     use base qw(Class::Data::Inheritable);
 
-    __PACKAGE__->mk_classdata(order_class => 'Handel::Order');
+    __PACKAGE__->mk_classdata(_order_class => 'Handel::Order');
+    __PACKAGE__->mk_classdata(_stash_class => 'Handel::Checkout::Stash');
 };
 
 sub new {
@@ -26,7 +28,7 @@ sub new {
         handlers => {},
         phases => [],
         messages => [],
-        stash => {}
+        stash => $opts->{'stash'} || $class->stash_class->new
     }, ref $class || $class;
 
     $self->_set_search_path($opts);
@@ -52,7 +54,7 @@ sub plugins {
 };
 
 sub add_handler {
-    my ($self, $phase, $ref) = @_;
+    my ($self, $phase, $ref, $preference) = @_;
     my ($package) = caller;
 
     throw Handel::Exception::Argument( -details =>
@@ -67,7 +69,18 @@ sub add_handler {
 
     foreach (@{$self->{'plugins'}}) {
         if (ref $_ eq $package) {
-            push @{$self->{'handlers'}->{$phase}}, [$_, $ref];
+            if ($preference) {
+                if (exists $self->{'handlers'}->{$phase}->{$preference}) {
+                    my $plugin = $self->{'handlers'}->{$phase}->{$preference}->[0];
+
+                    throw Handel::Exception::Checkout( -details =>
+                        translate("There is already a handler in phase ([_1]) for preference ([_2]) from the plugin ([_3])", $phase, $preference, $plugin) . '.')
+                };
+            } else {
+                my @prefs = sort {$a <=> $b} keys %{$self->{'handlers'}->{'$phase'}};
+                $preference = scalar @prefs ? $#prefs++ : 101;
+            };
+            $self->{'handlers'}->{$phase}->{$preference} = [$_, $ref];
             last;
         };
     };
@@ -122,6 +135,12 @@ sub add_phase {
     };
 };
 
+sub clear_messages {
+    my $self = shift;
+
+    $self->{'messages'} = [];
+};
+
 sub cart {
     my ($self, $cart) = @_;
 
@@ -139,6 +158,17 @@ sub messages {
     my $self = shift;
 
     return wantarray ? @{$self->{'messages'}} : $self->{'messages'};
+};
+
+sub order_class {
+    my ($self, $order_class) = @_;
+
+    if ($order_class) {
+        eval "require $order_class";
+        $self->_order_class($order_class);
+    };
+
+    return $self->_order_class;
 };
 
 sub order {
@@ -204,16 +234,18 @@ sub process {
         translate('No order is assocated with this checkout process') . '.')
             unless $self->order;
 
+    $self->stash->clear;
     $self->_setup($self);
 
     {
         local $self->order->db_Main->{AutoCommit};
 
-        %{$self->{'stash'}} = ();
-
         foreach my $phase (@{$phases}) {
             next unless $phase;
-            foreach my $handler (@{$self->{'handlers'}->{$phase}}) {
+
+            my @handlerprefs = sort {$a <=> $b} keys %{$self->{'handlers'}->{$phase}};
+            foreach my $handlerpref (@handlerprefs) {
+                my $handler = $self->{'handlers'}->{$phase}->{$handlerpref};
                 my $status = $handler->[1]->($handler->[0], $self);
 
                 if ($status != CHECKOUT_HANDLER_OK && $status != CHECKOUT_HANDLER_DECLINE) {
@@ -235,6 +267,17 @@ sub process {
     $self->_teardown($self);
 
     return CHECKOUT_STATUS_OK;
+};
+
+sub stash_class {
+    my ($self, $stash_class) = @_;
+
+    if ($stash_class) {
+        eval "require $stash_class";
+        $self->_stash_class($stash_class);
+    };
+
+    return $self->_stash_class;
 };
 
 sub stash {
@@ -443,24 +486,40 @@ various phases to be executed.
         phases => 'CHECKOUT_PHASE_VALIDATION, CHECKOUT_PHASE_AUTHORIZATION'
     });
 
+=item stash
+
+A Handel::Checkout::Stash instance of subclass instance. If nothing is specified,
+$self->stash_class will be used instead.
+
 =back
 
 =head1 METHODS
 
-=head2 add_handler($phase, \&coderef)
+=head2 add_handler($phase, \&coderef, $preference)
 
-Registers a code reference with the checkout phase specified. This is
-usually called within C<register> on the current checkout context:
+Registers a code reference with the checkout phase specified and assigned a run
+order preference. This is usually called within C<register> on the current
+checkout context:
 
     sub register {
         my ($self, $ctx) = @_;
 
-        $ctx->add_handler(CHECKOUT_PHASE_DELIVER, \&myhandler);
+        $ctx->add_handler(CHECKOUT_PHASE_DELIVER, \&myhandler, 200);
     };
 
     sub myhandler {
         ...
     };
+
+If no preference number is specified, the handler is added to the end of the
+list after all other handlers in that phase.
+
+If there is already a handler in the specified phase with the same preference, a
+Handel::Exception::Checkout exception will be thrown.
+
+While not enforced, please keep your handler preference orders between 251 - 749.
+Preference orders 1-250 and 750-1000 will be reserved for core modules that need
+to run before or after all other plugin handlers.
 
 =head2 add_message($message)
 
@@ -496,6 +555,10 @@ statement.
     print constraint_checkout_phase(&CHECKOUT_PHASE_CUSTOMPHASE);
 
     $plugincontext->add_handler(Handel::Constants::CHECKOUT_PHASE_CUSTOMPHASE, &handlersub);
+
+=head2 clear_messages
+
+Clears all messages from the current checkout instance.
 
 =head2 cart
 
@@ -557,6 +620,17 @@ of Handel::Checkout.
     my $checkout = CustomCheckout->new({order => '11111111-2222-3333-4444-555555555555'});
 
     print ref $checkout->order; # CustomOrder
+
+=head2 stash_class($stashclass)
+
+Gets/Sets the name of the stash class to create during C<new>. By default, it
+returns Handel::Checkout::Stash. While you can
+set this directly in your application, it's best to set it in a custom subclass
+of Handel::Checkout.
+
+    package CustomCheckout;
+    use base 'Handel::Checkout';
+    __PACKAGE__->stash_class('MyCustomStash');
 
 =head2 messages
 
@@ -645,6 +719,11 @@ is considered to be an error that the checkout process is aborted.
 Just like C<phases>, you can pass an array reference or a comma (or space)
 separated string of phases into process.
 
+The method $self->stash->clear is called before the call to
+$plugin->setup so plugins can set stash data, and the stash remains until the
+next call to process so $plugin->teardown can read any remaining stash data
+before C<process> ends.
+
 The call to C<process> will return on of the following constants:
 
 =over
@@ -662,7 +741,8 @@ the registered plugin handlers.
 
 =head2 stash
 
-Returns a hash collection of information shared by all plugins in the current context.
+Returns a Handel::Checkout::Stash object that can store information shared by
+all plugins in the current context.
 
     # plugin handler
     my ($self, $ctx) = @_;
