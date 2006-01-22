@@ -1,4 +1,4 @@
-# $Id: Order.pm 1081 2006-01-19 02:06:56Z claco $
+# $Id: Order.pm 1086 2006-01-21 03:09:11Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -362,11 +362,8 @@ sub reconcile {
 
     if ($self->subtotal != $cart->subtotal || $self->count != $cart->count) {
         $self->clear;
-        my @citems = $cart->items;
-        foreach my $item (@citems) {
-            $self->add($item);
-        };
-        $self->subtotal($cart->subtotal);
+        $self->copy_cart($self, $cart);
+        $self->copy_cart_items($self, $cart);
     };
 };
 
