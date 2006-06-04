@@ -1,5 +1,19 @@
 Revision history for Perl module Handel
 
+0.99_01
+    - RETURN_AS has been removed from the API
+    - Data filters now take SQL::Abstract syntax for wildcards
+    - Converted from Class::DBI to DBIx::Class schemas
+    - Handel::ConfigReader is now a singleton via instance()
+    - Handel::DBI is deprecated in favor if Handel::Storage
+    - Moved columnd defaults into Handel::Components::DefaultValues
+    - Added constraint_cart_name
+
+0.33
+    - Fixed version requirement for catalyst tests
+    - Fixed cart iterator tests db file creation issues
+    - Cart taglib now calls tag-based functions to ease subclassing
+
 0.32 Sun Jan 22 18:19:38 2006
     - Added order_reconcile.t tests
     - Order::reconcile now uses copy_cart/copy_cart_items

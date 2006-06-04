@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: xsp_checkout.t 1013 2005-12-09 01:00:22Z claco $
+# $Id: xsp_checkout.t 1099 2006-02-01 00:32:20Z claco $
 use strict;
 use warnings;
 require Test::More;
@@ -8,9 +8,9 @@ use Handel::TestHelper qw(preparetables comp_to_file);
 
 Test::More::plan(skip_all => 'set TEST_HTTP to enable this test') unless $ENV{TEST_HTTP};
 
-eval 'use Apache::Test 1.16';
+eval 'use Apache::Test 1.27';
 Test::More::plan(skip_all =>
-    'Apache::Test 1.16 not installed') if $@;
+    'Apache::Test 1.27 not installed') if $@;
 
 eval 'use DBD::SQLite';
 Test::More::plan(skip_all =>

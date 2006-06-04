@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_destroy.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: cart_destroy.t 1159 2006-05-20 23:12:27Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 35;
+        plan tests => 68;
     };
 
     use_ok('Handel::Cart');
@@ -42,8 +42,7 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        local $^W = 0;
-        Handel::DBI->connection($db);
+        $ENV{'HandelDBIDSN'} = $db;
     };
 
 
@@ -61,39 +60,73 @@ sub run {
     };
 
 
+    my $total_carts = $subclass->schema_instance->resultset('Carts')->count;
+    ok($total_carts);
+
+    my $total_items = $subclass->schema_instance->resultset('Items')->count;
+    ok($total_items);
+
+
     ## Destroy a single cart via instance
     {
-        my $cart = $subclass->load({
+        my $it = $subclass->load({
             id => '22222222-2222-2222-2222-222222222222'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        is($cart->count, 1);
+
+        my $related_items = $cart->count;
+        is($related_items, 1);
         is($cart->subtotal, 9.99);
 
         $cart->destroy;
 
-        my $recart = $subclass->load({
+        my $reit = $subclass->load({
             id => '22222222-2222-2222-2222-222222222222'
         });
+        isa_ok($reit, 'Handel::Iterator');
+        is($reit, 0);
 
-        is($recart, 0);
+        my $recart = $reit->first;
+        is($recart, undef);
+
+        my $remaining_carts = $subclass->schema_instance->resultset('Carts')->count;
+        my $remaining_items = $subclass->schema_instance->resultset('Items')->count;
+
+        is($remaining_carts, $total_carts - 1);
+        is($remaining_items, $total_items - $related_items);
+
+        $total_carts--;
+        $total_items -= $related_items;
     };
 
 
     ## Destroy multiple carts with wildcard filter
     {
-        my $carts = $subclass->load({name => 'Cart%'}, RETURNAS_ITERATOR);
+        my $carts = $subclass->load({description => {like => 'Saved%'}}, RETURNAS_ITERATOR);
         isa_ok($carts, 'Handel::Iterator');
-        is($carts, 2);
+        is($carts, 1);
+
+        my $related_items = $carts->first->items->count;
+        ok($related_items);
 
         $subclass->destroy({
-            name => 'Cart%'
+            description => {like => 'Saved%'}
         });
 
-        $carts = $subclass->load({name => 'Cart%'}, RETURNAS_ITERATOR);
+        $carts = $subclass->load({description => {like => 'Saved%'}}, RETURNAS_ITERATOR);
         isa_ok($carts, 'Handel::Iterator');
         is($carts, 0);
+
+        my $remaining_carts = $subclass->schema_instance->resultset('Carts')->count;
+        my $remaining_items = $subclass->schema_instance->resultset('Items')->count;
+
+        is($remaining_carts, $total_carts - 1);
+        is($remaining_items, $total_items - $related_items);
     };
 
 };

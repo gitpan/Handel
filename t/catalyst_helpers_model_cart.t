@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_model_cart.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: catalyst_helpers_model_cart.t 1093 2006-01-24 00:44:37Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -8,9 +8,9 @@ use File::Path;
 use File::Spec::Functions;
 
 BEGIN {
-    eval 'use Catalyst 5';
+    eval 'use Catalyst 5.56';
     plan(skip_all =>
-        'Catalyst 5 not installed') if $@;
+        'Catalyst 5.56 not installed') if $@;
 
     eval 'use Test::File 1.10';
     plan(skip_all =>

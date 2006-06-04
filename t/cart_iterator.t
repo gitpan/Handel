@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_iterator.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: cart_iterator.t 1131 2006-05-16 02:38:06Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -33,7 +33,7 @@ sub run {
 
     ## Setup SQLite DB for tests
     {
-        my $dbfile  = 't/cart_iterator.db';
+        my $dbfile  = "t/cart_iterator_$dbsuffix.db";
         my $db      = "dbi:SQLite:dbname=$dbfile";
         my $create  = 't/sql/cart_create_table.sql';
         my $data    = 't/sql/cart_fake_data.sql';
@@ -42,8 +42,7 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        local $^W = 0;
-        Handel::DBI->connection($db);
+        $ENV{'HandelDBIDSN'} = $db;
     };
 
 

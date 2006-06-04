@@ -9,6 +9,10 @@ DESCRIPTION
 
     For the curious, Handel is German for commerce.
 
+METHODS
+  config
+    Returns a Handel::ConfigReader instance.
+
 WEBSITE
     You can get the latest news, source, documentation and wiki help at
     http://handelframework.com/.
@@ -19,8 +23,8 @@ MAILING LIST
     gabb@#catalyst for the list space.
 
 GOALS
-    Database agnostic. Thanks to Class::DBI and staying away from auto
-    incrementing ids, Handel should run in any database that Class::DBI
+    Database agnostic. Thanks to DBIx::Class and staying away from auto
+    incrementing ids, Handel should run in any database that DBIx::Class
     supports.
     Implementation agnostic. Handel should be able to be used from the
     command line, from a web page, from a SOAP service, or from a GUI

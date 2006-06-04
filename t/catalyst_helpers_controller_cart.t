@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_controller_cart.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: catalyst_helpers_controller_cart.t 1201 2006-06-04 18:52:16Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -8,9 +8,9 @@ use File::Path;
 use File::Spec::Functions;
 
 BEGIN {
-    eval 'use Catalyst 5.00';
+    eval 'use Catalyst 5.56';
     plan(skip_all =>
-        'Catalyst 5 not installed') if $@;
+        'Catalyst 5.56 not installed') if $@;
 
     eval 'use Test::File 1.10';
     plan(skip_all =>
@@ -36,6 +36,11 @@ my $app = 'TestApp';
     $helper->mk_app($app);
     $FindBin::Bin = catdir(cwd, $app, 'lib');
 };
+
+
+SKIP: {
+    skip 'Catalyst Helper rewrite pending Storage rewrite', 100;
+
 
 
 ## create the default cart controller
@@ -235,4 +240,7 @@ my $app = 'TestApp';
     file_contents_like($module, qr/\$c->res->redirect\(\$c->req->base . 'myfqcart\/list\/'\);/);
     file_contents_like($view, qr/\[% base _ 'myfqcart\/list\/' %\]/);
     file_contents_like($view, qr/\[% base  _ 'my\/checkout\/' %\]/);
+};
+
+
 };

@@ -1,4 +1,4 @@
-# $Id: Cart.pm 923 2005-11-15 02:59:22Z claco $
+# $Id: Cart.pm 1102 2006-02-01 03:24:15Z claco $
 package AxKit::XSP::Handel::Cart;
 use strict;
 use warnings;
@@ -11,51 +11,350 @@ use base 'Apache::AxKit::Language::XSP';
 
 $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Cart';
 
-{
-    my @context = 'root';
+BEGIN {
+    my $pkg = __PACKAGE__;
+    no strict 'refs';
 
-    sub start_document {
-        return "use Handel::Cart;\n";
+    my @quoted = qw/
+        new_description
+        new_id
+        new_name
+        new_shopper
+        new_results_add_id
+        new_results_add_sku
+        new_results_add_quantity
+        new_results_add_price
+        new_results_add_description
+        cart_filter
+        cart_results_add_id
+        cart_results_add_sku
+        cart_results_add_quantity
+        cart_results_add_price
+        cart_results_add_description
+        cart_results_delete_id
+        cart_results_delete_sku
+        cart_results_delete_quantity
+        cart_results_delete_price
+        cart_results_delete_description
+        cart_results_update_name
+        cart_results_update_shopper
+        cart_results_update_description
+        cart_results_item_filter
+        cart_results_item_results_update_sku
+        cart_results_item_results_update_quantity
+        cart_results_item_results_update_price
+        cart_results_item_results_update_description
+        cart_results_items_filter
+        cart_results_items_results_update_sku
+        cart_results_items_results_update_quantity
+        cart_results_items_results_update_price
+        cart_results_items_results_update_description
+        cart_results_restore_filter
+        carts_filter
+        carts_results_add_id
+        carts_results_add_sku
+        carts_results_add_quantity
+        carts_results_add_price
+        carts_results_add_description
+        carts_results_delete_id
+        carts_results_delete_sku
+        carts_results_delete_quantity
+        carts_results_delete_price
+        carts_results_delete_description
+        carts_results_item_filter
+        carts_results_item_results_update_sku
+        carts_results_item_results_update_quantity
+        carts_results_item_results_update_price
+        carts_results_item_results_update_description
+        carts_results_items_filter
+        carts_results_items_results_update_sku
+        carts_results_items_results_update_quantity
+        carts_results_items_results_update_price
+        carts_results_items_results_update_description
+        carts_results_update_name
+        carts_results_update_shopper
+        carts_results_update_description
+        carts_results_restore_filter
+        /;
+
+    my @empty = qw/
+        new
+        new_no_results
+        new_results
+        new_results_add
+        new_results_add_results
+        new_results_add_no_results
+        cart
+        cart_results
+        cart_results_add
+        cart_results_add_results
+        cart_results_add_no_results
+        cart_results_delete
+        cart_results_update
+        cart_results_item
+        cart_results_item_results
+        cart_results_item_results_update
+        cart_results_item_no_results
+        cart_results_items
+        cart_results_items_results
+        cart_results_items_results_update
+        cart_results_items_no_results
+        cart_results_restore
+        cart_no_results
+        carts
+        carts_results
+        carts_results_add
+        carts_results_delete
+        carts_results_update
+        carts_results_item
+        carts_results_item_results
+        carts_results_item_results_update
+        carts_results_item_no_results
+        carts_results_items
+        carts_results_items_results
+        carts_results_items_results_update
+        carts_results_items_no_results
+        carts_results_restore
+        carts_no_results
+        /;
+
+    my @constants = qw /
+        new_type
+        cart_results_update_type
+        carts_results_update_type
+        /;
+
+    foreach (@quoted) {
+        my $sub = $_ . "_char";
+
+        *{"$pkg\::$sub"} = \&quoted_text;
     };
+
+    foreach (@empty) {
+        my $sub = $_ . "_char";
+
+        *{"$pkg\::$sub"} = sub {};
+    };
+
+    foreach (@constants) {
+        my $sub = $_ . "_char";
+
+        *{"$pkg\::$sub"} = \&constant_text;
+    };
+
+    *{"$pkg\::guid_start"} = \&uuid_start;
+};
+
+my @context = 'root';
+
+sub start_document {
+    return "use Handel::Cart;\n";
+};
+
+sub quoted_text {
+    my ($e, $text) = @_;
+
+    return ".q|$text|";
+};
+
+sub constant_text {
+   my ($e, $text) = @_;
+
+    if ($text =~ /^[A-Z]{1}/) {
+        $text = str_to_const($text);
+    };
+
+    return ".q|$text|";
+};
+
+sub uuid_start {
+    my ($e, $tag, %attr) = @_;
+
+    $e->start_expr($tag);
+    $e->append_to_script("Handel::Cart->uuid");
+    $e->end_expr($tag);
+
+    return;
+};
+
+sub new_start {
+    my ($e, $tag, %attr) = @_;
+
+    throw Handel::Exception::Taglib(
+        -text => translate("Tag '[_1]' not valid inside of other Handel tags", $tag)
+    ) if ($context[$#context] ne 'root');
+
+    push @context, $tag;
+
+    my $code = "my \$_xsp_handel_cart_cart;\nmy \$_xsp_handel_cart_called_new;\n";
+    $code .= scalar keys %attr ?
+        'my %_xsp_handel_cart_new_filter = ("' . join('", "', %attr) . '");' :
+        'my %_xsp_handel_cart_new_filter;' ;
+
+    return "\n{\n$code\n";
+};
+
+sub new_description_start {
+    my ($e, $tag, %attr) = @_;
+
+    return "\n\$_xsp_handel_cart_new_filter{$tag} = ''";
+};
+
+sub new_id_start {
+    my ($e, $tag, %attr) = @_;
+
+    return "\n\$_xsp_handel_cart_new_filter{$tag} = ''";
+};
+
+sub new_name_start {
+    my ($e, $tag, %attr) = @_;
+
+    return "\n\$_xsp_handel_cart_new_filter{$tag} = ''";
+};
+
+sub new_shopper_start {
+    my ($e, $tag, %attr) = @_;
+
+    return "\n\$_xsp_handel_cart_new_filter{$tag} = ''";
+};
+
+sub new_type_start {
+    my ($e, $tag, %attr) = @_;
+
+    if (exists $attr{'type'}) {
+        if ($attr{'type'} =~ /^[A-Z]{1}/) {
+            $attr{'type'} = str_to_const($attr{'type'});
+        };
+    };
+
+    return "\n\$_xsp_handel_cart_new_filter{$tag} = ''";
+};
+
+sub new_results_start {
+    my ($e, $tag, %attr) = @_;
+
+    throw Handel::Exception::Taglib(
+        -text => translate("Tag '[_1]' not valid here", $tag)
+    ) if ($context[$#context] !~ /^(new|add|cart(s?)|item(s?))$/);
+
+    push @context, $tag;
+
+    return '
+        if (!$_xsp_handel_cart_called_new && scalar keys %_xsp_handel_cart_new_filter) {
+            $_xsp_handel_cart_cart = Handel::Cart->new(\%_xsp_handel_cart_new_filter);
+            $_xsp_handel_cart_called_new = 1;
+        };
+        if ($_xsp_handel_cart_cart) {
+
+    ';
+};
+
+sub new_results_count_start {
+    my ($e, $tag, %attr) = @_;
+
+    $e->start_expr($tag);
+    $e->append_to_script("\$_xsp_handel_cart_cart->$tag;\n");
+
+    return;
+};
+
+sub new_results_description_start {
+    my ($e, $tag, %attr) = @_;
+
+    $e->start_expr($tag);
+    $e->append_to_script("\$_xsp_handel_cart_cart->$tag;\n");
+
+    return;
+};
+
+sub new_results_name_start {
+    my ($e, $tag, %attr) = @_;
+
+    $e->start_expr($tag);
+    $e->append_to_script("\$_xsp_handel_cart_cart->$tag;\n");
+
+    return;
+};
+
+sub new_results_id_start {
+    my ($e, $tag, %attr) = @_;
+
+    $e->start_expr($tag);
+    $e->append_to_script("\$_xsp_handel_cart_cart->$tag;\n");
+
+    return;
+};
+
+sub new_results_shopper_start {
+    my ($e, $tag, %attr) = @_;
+
+    $e->start_expr($tag);
+    $e->append_to_script("\$_xsp_handel_cart_cart->$tag;\n");
+
+    return;
+};
+
+
+
+
+
+
+
+
+
+
 
     sub parse_char {
         my ($e, $text) = @_;
         my $tag = $e->current_element();
+        my $pkg = $AxKit::XSP::TaglibPkg;
 
-        return unless length($text);
-
-        if ($tag eq 'type' && $text =~ /^[A-Z]{1}/) {
-            $text = str_to_const($text);
+        ########################################################################
+        ## New magic to make subclassing more feasable
+        ########################################################################
+        my @ctx = @context; shift @ctx;
+        if (($ctx[$#ctx] && $ctx[$#ctx] ne $tag) || !$ctx[$#ctx]) {
+            push @ctx, $tag;
         };
+        push @ctx, 'char';
+        my $sub = join '_', @ctx;$sub =~ s/-/_/;
+        if (my $coderef = $pkg->can($sub)) {
+            AxKit::Debug(5, "[Handel] [Cart] parse_char:  calling $sub");
 
-        if ($tag =~ /^(description|id|name|shopper|type)$/) {
-            if ($context[$#context] eq 'new') {
-                return ".q|$text|";
-            } elsif ($context[$#context] eq 'add') {
-                return ".q|$text|";
-            } elsif ($context[$#context] eq 'delete') {
-                return ".q|$text|";
-            } elsif ($context[$#context] eq 'update') {
-                return ".q|$text|";
-            };
-        } elsif ($tag =~ /^(sku|price|quantity)$/) {
-            if ($context[$#context] eq 'add') {
-                return ".q|$text|";
-            } elsif ($context[$#context] eq 'delete') {
-                return ".q|$text|";
-            } elsif ($context[$#context] eq 'update') {
-                return ".q|$text|";
-            };
-        } elsif ($tag eq 'filter') {
-            return ".q|$text|";
+            return $coderef->($e, $text);
+        } else {
+            AxKit::Debug(5, "[Handel] [Cart] parse_char:  $sub not found");
+            AxKit::Debug(5, "[Handel] [Cart] parse_char:  processing $tag");
         };
-        return '';
+        ########################################################################
+
+        return;
     };
 
     sub parse_start {
         my ($e, $tag, %attr) = @_;
+        my $pkg = $AxKit::XSP::TaglibPkg;
 
-        AxKit::Debug(5, "[Handel] [Cart] parse_start [$tag] context: " . join('->', @context));
+        AxKit::Debug(5, "[Handel] [Cart] parse_start: [$tag] context: " . join('->', @context));
+
+        ########################################################################
+        ## New magic to make subclassing more feasable
+        ########################################################################
+        my @ctx = @context; shift @ctx;
+        if (($ctx[$#ctx] && $ctx[$#ctx] ne $tag) || !$ctx[$#ctx]) {
+            push @ctx, $tag;
+        };
+        push @ctx, 'start';
+        my $sub = join '_', @ctx;$sub =~ s/-/_/;
+        if (my $coderef = $pkg->can($sub)) {
+            AxKit::Debug(5, "[Handel] [Cart] parse_start: calling $sub");
+
+            return $coderef->($e, $tag, %attr);
+        } else {
+            AxKit::Debug(5, "[Handel] [Cart] parse_start: $sub not found");
+            AxKit::Debug(5, "[Handel] [Cart] parse_start: processing $tag");
+        };
+        ########################################################################
 
         if (exists $attr{'type'}) {
             if ($attr{'type'} =~ /^[A-Z]{1}/) {
@@ -486,7 +785,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Cart';
     sub parse_end {
         my ($e, $tag) = @_;
 
-        AxKit::Debug(5, "[Handel] [Cart] parse_end   [$tag] context: " . join('->', @context));
+        AxKit::Debug(5, "[Handel] [Cart] parse_end:   [$tag] context: " . join('->', @context));
 
         ## cart:new
         if ($tag eq 'new') {
@@ -699,7 +998,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Cart';
 
         return '';
     };
-};
+#};
 
 1;
 __END__

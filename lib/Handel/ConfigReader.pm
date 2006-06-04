@@ -1,8 +1,10 @@
-# $Id: ConfigReader.pm 923 2005-11-15 02:59:22Z claco $
+# $Id: ConfigReader.pm 1111 2006-04-12 23:44:49Z claco $
 package Handel::ConfigReader;
 use strict;
 use warnings;
 use vars qw(%Defaults $MOD_PERL);
+
+my $instance;
 
 %Defaults = (
     HandelMaxQuantityAction => 'Adjust',
@@ -36,6 +38,12 @@ sub new {
     tie %config, __PACKAGE__;
 
     return bless \%config, $class;
+};
+
+sub instance {
+    $instance ||= shift->new(@_);
+
+    return $instance;
 };
 
 sub get {
@@ -125,9 +133,15 @@ Apache::ModuleConfig and custom directives which use the same hash syntax.
 
 =head2 new
 
-Returns a new Handel::ConfigReader object.
+Returns a new Handel::ConfigReader instance.
 
     my $cfg = Handel::ConfigReader->new();
+
+=head2 instance
+
+Returns the singleton Handel::ConfigReader instance.
+
+    my $cfg = Handel::ConfigReader->instance();
 
 =head1 METHODS
 

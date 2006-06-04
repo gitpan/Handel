@@ -1,4 +1,4 @@
-# $Id: Currency.pm 923 2005-11-15 02:59:22Z claco $
+# $Id: Currency.pm 1145 2006-05-17 01:21:34Z claco $
 package Handel::Currency;
 use strict;
 use warnings;
@@ -29,7 +29,7 @@ sub format {
     eval 'use Locale::Currency::Format';
     return $self->{'price'} if $@;
 
-    my $cfg = $Handel::Cfg;
+    my $cfg = Handel->config;
 
     eval '$format = ' .  ($format || $cfg->{'HandelCurrencyFormat'});
     $code   ||= $cfg->{'HandelCurrencyCode'};
@@ -43,7 +43,7 @@ sub format {
 
 sub convert {
     my ($self, $from, $to, $format, $options) = @_;
-    my $cfg = $Handel::Cfg;
+    my $cfg = Handel->config;
 
     $from ||= $cfg->{'HandelCurrencyCode'};
     $to   ||= $cfg->{'HandelCurrencyCode'};

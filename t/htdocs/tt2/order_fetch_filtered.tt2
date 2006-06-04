@@ -1,7 +1,7 @@
-[%# $Id: order_fetch_filtered.tt2 837 2005-09-19 22:56:39Z claco $ %]
+[%# $Id: order_fetch_filtered.tt2 1167 2006-05-31 01:50:19Z claco $ %]
 [% USE horder  = Handel.Order %]
 <body>
-    [% UNLESS (order = horder.create({
+    [% UNLESS (order = horder.new({
 		id					=> 'D65692C4-B043-43A7-BFAA-D5326C099B71',
         shopper 			=> 'A29DD9DD-58B9-4436-81AC-784CE7E88F78',
 		type				=> horder.ORDER_TYPE_SAVED,
@@ -46,10 +46,10 @@
 		<message>Error creating order</message>
 	[% END %]
 
-	[% IF (order = horder.fetch({
+	[% IF (order = horder.load({
 		type => horder.ORDER_TYPE_SAVED,
 		id 	 => 'D65692C4-B043-43A7-BFAA-D5326C099B71'
-	})) %]
+	}).first) %]
 		<order>
 			<count>[% order.count %]</count>
 			<id>[% order.id %]</id>

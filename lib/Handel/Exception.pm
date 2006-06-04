@@ -1,4 +1,4 @@
-# $Id: Exception.pm 1070 2006-01-13 03:50:51Z claco $
+# $Id: Exception.pm 1150 2006-05-19 00:21:13Z claco $
 package Handel::Exception;
 use strict;
 use warnings;
@@ -6,6 +6,10 @@ use warnings;
 BEGIN {
     use base 'Error';
     use Handel::L10N qw(translate);
+    eval 'require Apache::AxKit::Exception';
+    if (!$@) {
+        push @__PACKAGE__::ISA, 'Apache::AxKit::Exception';
+    };
 };
 
 my $lh = Handel::L10N->get_handle();
@@ -44,7 +48,6 @@ sub new {
         -text => 'The supplied field(s) failed database constraints', @_ );
 };
 
-
 package Handel::Exception::Argument;
 use strict;
 use warnings;
@@ -65,10 +68,6 @@ use warnings;
 
 BEGIN {
     use base 'Handel::Exception';
-    eval 'require Apache::AxKit::Exception';
-    if (!$@) {
-        push @__PACKAGE__::ISA, 'Apache::AxKit::Exception';
-    };
 };
 
 sub new {
