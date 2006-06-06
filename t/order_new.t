@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_new.t 1166 2006-05-28 02:35:11Z claco $
+# $Id: order_new.t 1205 2006-06-05 14:04:38Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -654,7 +654,7 @@ sub run {
 
     SKIP: {
         eval 'use Test::MockObject 0.07';
-        skip 'Test::MockObject not installed', 6 if $@;
+        skip 'Test::MockObject not installed', 7 if $@;
 
         ## add a new order and test process::OK (in mock series)
         {

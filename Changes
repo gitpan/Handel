@@ -1,5 +1,12 @@
 Revision history for Perl module Handel
 
+0.99_02 Mon Jun 05 22:08:32 2006
+    - Fixed test counts in t/order_new.t (RT#19700,TKP)
+    - Moved _error_handler in Storage to process_error and set
+        dbh->{HandelError} using $self->can
+    - Use blessed when setting schema_instance in Storage
+    - Abstracted schema setup when setting Storage->schema_instance($schema)
+
 0.99_01
     - RETURN_AS has been removed from the API
     - Data filters now take SQL::Abstract syntax for wildcards

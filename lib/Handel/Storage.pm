@@ -1,10 +1,11 @@
-# $Id: Storage.pm 1199 2006-06-03 02:33:27Z claco $
+# $Id: Storage.pm 1209 2006-06-06 02:03:03Z claco $
 package Handel::Storage;
 use strict;
 use warnings;
 use Handel::Exception qw/:try/;
 use Handel::L10N qw/translate/;
 use DBIx::Class::UUIDColumns;
+use Scalar::Util qw/blessed/;
 
 BEGIN {
     use base qw/Class::Data::Accessor/;
@@ -114,85 +115,104 @@ sub schema_instance {
 
     no strict 'refs';
 
-    if ($schema_instance) {
-        ${$package.'::_schema_instance'} = $schema_instance;
-        $self->_schema_class(ref $schema_instance);
+    if (blessed $schema_instance) {
+        my $namespace = "$package\:\:".uc($self->uuid);
+        $namespace =~ s/-//g;
+
+        my $clone_schema = $schema_instance->compose_namespace($namespace);
+        if (blessed $self) {
+            $self->{'schema_instance'} = $clone_schema;
+        } else {
+            ${$package.'::_schema_instance'} = $clone_schema;
+        };
+        $self->_configure_schema_instance;
+        $self->_schema_class(blessed $clone_schema);
     };
 
-    if (!${$package.'::_schema_instance'}) {
-        my $schema_class = $self->schema_class;
-        my $schema_source = $self->schema_source;
-        my $iterator_class = $self->iterator_class;
-        my $item_class = $self->item_class;
-        my $item_relationship = $self->item_relationship;
-        my $source_class = $schema_class->class($schema_source);
-        my $item_source_class;
+    if (!$self->{'schema_instance'} && !${$package.'::_schema_instance'}) {
+        my $namespace = "$package\:\:".uc($self->uuid);
+        $namespace =~ s/-//g;
 
-        if ($item_class) {
-            eval "require $item_class";
+        my $clone_schema = $self->schema_class->compose_namespace($namespace);
+        my $schema = $clone_schema->connect($self->connection_info);
 
-            $item_source_class = $item_class->schema_class->class($item_class->schema_source);
+        if (blessed $self) {
+            $self->{'schema_instance'} = $schema;
+        } else {
+            ${$package.'::_schema_instance'} = $schema;
         };
-
-        $source_class->resultset_class($iterator_class);
-
-        my $source = $schema_class->source($schema_source);
-        if ($item_class) {
-            if ($source->has_relationship($item_relationship)) {
-                $source->related_class($item_relationship)->resultset_class($iterator_class);
-            } else {
-                throw Handel::Exception(-text =>
-                    translate('The source [_1] has no relationship named [_2].', $schema_source, $item_relationship)
-                );
-            };
-        };
-
-
-        # load class and item class validation
-        if (my $profie = $self->validation_profile) {
-            $source_class->load_components('+Handel::Components::Validation');
-            $source_class->validation_profile($profie);
-        };
-        if ($item_class && $item_class->validation_profile) {
-            $item_source_class->load_components('+Handel::Components::Validation');
-            $item_source_class->validation_profile($item_class->validation_profile);
-        };
-
-        # load class and item class constraints
-        if (my $constraints = $self->constraints) {
-            $source_class->load_components('+Handel::Components::Constraints');
-            $source_class->constraints($constraints);
-        };
-        if ($item_class && $item_class->constraints) {
-            $item_source_class->load_components('+Handel::Components::Constraints');
-            $item_source_class->constraints($item_class->constraints);
-        };
-
-        # load class and item class default values
-        if (my $defaults = $self->default_values) {
-            $source_class->load_components('+Handel::Components::DefaultValues');
-            $source_class->default_values($defaults);
-        };
-        if ($item_class && $item_class->default_values) {
-            $item_source_class->load_components('+Handel::Components::DefaultValues');
-            $item_source_class->default_values($item_class->default_values);
-        };
-
-
-
-        my $schema = $self->schema_class->connect($self->connection_info);
-
-        $schema->storage->dbh->{HandleError} = \&_error_handler;
-
-        ${$package.'::_schema_instance'} = $schema;
+        $self->_configure_schema_instance;
+        $self->_schema_class(blessed $schema);
     };
 
-    return ${$package.'::_schema_instance'};
+    return $self->{'schema_instance'} || ${$package.'::_schema_instance'};
+};
+
+sub _configure_schema_instance {
+    my ($self) = @_;
+    my $schema_instance = $self->schema_instance;
+    my $schema_source = $self->schema_source;
+    my $iterator_class = $self->iterator_class;
+    my $item_class = $self->item_class;
+    my $item_relationship = $self->item_relationship;
+    my $source_class = $schema_instance->class($schema_source);
+    my $item_source_class;
+
+    if ($item_class) {
+        eval "require $item_class";
+
+        $item_source_class = $schema_instance->class($item_class->schema_source);
+    };
+
+    my $source = $schema_instance->source($schema_source);
+    $source->resultset_class($iterator_class);
+
+    if ($item_class) {
+        if ($source->has_relationship($item_relationship)) {
+            $source->related_source($item_relationship)->resultset_class($iterator_class);
+        } else {
+            throw Handel::Exception(-text =>
+                translate('The source [_1] has no relationship named [_2].', $schema_source, $item_relationship)
+            );
+        };
+    };
+
+    $schema_instance->storage->dbh->{HandleError} = $self->can('process_error');
+
+    # load class and item class validation
+    if (my $profie = $self->validation_profile) {
+        $source_class->load_components('+Handel::Components::Validation');
+        $source_class->validation_profile($profie);
+    };
+    if ($item_class && $item_class->validation_profile) {
+        $item_source_class->load_components('+Handel::Components::Validation');
+        $item_source_class->validation_profile($item_class->validation_profile);
+    };
+
+    # load class and item class constraints
+    if (my $constraints = $self->constraints) {
+        $source_class->load_components('+Handel::Components::Constraints');
+        $source_class->constraints($constraints);
+    };
+    if ($item_class && $item_class->constraints) {
+        $item_source_class->load_components('+Handel::Components::Constraints');
+        $item_source_class->constraints($item_class->constraints);
+    };
+
+    # load class and item class default values
+    if (my $defaults = $self->default_values) {
+        $source_class->load_components('+Handel::Components::DefaultValues');
+        $source_class->default_values($defaults);
+    };
+    if ($item_class && $item_class->default_values) {
+        $item_source_class->load_components('+Handel::Components::DefaultValues');
+        $item_source_class->default_values($item_class->default_values);
+    };
 };
 
 sub setup_column_accessors {
     my $self = shift;
-    my @columns = $self->schema_class->class($self->schema_source)->columns;
+    my @columns = $self->schema_class->source($self->schema_source)->columns;
 
     $self->_map_columns(@columns);
 };
@@ -212,7 +232,7 @@ sub uuid {
     return $uuid;
 };
 
-sub _error_handler {
+sub process_error {
     my ($message) = @_;
 
     if ($message =~ /column\s+(.*)\s+is not unique/) {
@@ -243,7 +263,7 @@ sub _migrate_wildcards {
 
 sub _map_columns {
     my ($self, @columns) = @_;
-    my $source = $self->schema_class->class($self->schema_source);
+    my $source = $self->schema_class->source($self->schema_source);
 
     no strict 'refs';
     foreach my $column (@columns) {
@@ -263,7 +283,7 @@ sub _map_columns {
 
 sub _unmap_columns {
     my ($self, @columns) = @_;
-    my $source = $self->schema_class->class($self->schema_source);
+    my $source = $self->schema_class->source($self->schema_source);
 
     no strict 'refs';
     foreach my $column (@columns) {
@@ -347,6 +367,11 @@ first/next into the current class.
 
 Gets/sets the class used for iterative resultset operations. The default
 iterator is L<Handel::Iterator>.
+
+=head2 process_error
+
+This method accepts errors from DBI using $dbh->{HandelError} and converts them
+into Handel::Exception objects before throwing the error.
 
 =head2 remove_columns(@columns)
 
