@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_new.t 1205 2006-06-05 14:04:38Z claco $
+# $Id: order_new.t 1072 2006-01-17 03:30:38Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -70,7 +70,8 @@ sub run {
         executesql($db, $createorder);
         executesql($db, $createcart);
 
-        $ENV{'HandelDBIDSN'} = $db;
+        local $^W = 0;
+        Handel::DBI->connection($db);
     };
 
 
@@ -134,9 +135,8 @@ sub run {
     ## test for Handel::Exception::Order when Handel::Cart is empty
     {
         try {
-            my $cart = Handel::Cart->new({
-                id      => '00000000-0000-0000-0000-00000000000' . $dbsuffix,
-                shopper => '00000000-0000-0000-0000-000000000000'
+            my $cart = Handel::Cart->construct({
+                id => '00000000-0000-0000-0000-000000000000'
             });
             my $order = $subclass->new({cart => $cart});
 
@@ -144,7 +144,6 @@ sub run {
         } catch Handel::Exception::Order with {
             pass;
         } otherwise {
-        warn shift->text;
             fail;
         };
     };
@@ -153,9 +152,9 @@ sub run {
     ## test for Handel::Exception::Order when Handel::Cart subclass is empty
     {
         try {
-            my $cart = Handel::Subclassing::Cart->load({
-                id => '00000000-0000-0000-0000-00000000000' . $dbsuffix
-            })->first;
+            my $cart = Handel::Subclassing::Cart->construct({
+                id => '00000000-0000-0000-0000-000000000000'
+            });
             my $order = $subclass->new({cart => $cart});
 
             fail;
@@ -187,14 +186,14 @@ sub run {
     ## test for raw db key violation
     {
         my $order = $subclass->new({
-            id      => '11111111-1111-1111-1111-11111111111' . $dbsuffix,
+            id      => '11111111-1111-1111-1111-111111111111',
             shopper => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($order, 'Handel::Order');
 
         try {
             my $cart = $subclass->new({
-                id      => '11111111-1111-1111-1111-11111111111' . $dbsuffix,
+                id      => '11111111-1111-1111-1111-111111111111',
                 shopper => '11111111-1111-1111-1111-111111111111'
             }, 1);
 
@@ -410,23 +409,16 @@ sub run {
 
     {
         ## create and order from a Handel::Cart object and test currency
-        my $cart = Handel::Cart->new({
-            id=>'66BFFD29-8FAD-4200-A22F-E0D80979ADB'.$dbsuffix,
-            shopper=>'66BFFD29-8FAD-4200-A22F-E0D80979ADBF',
-            name=>'My First Cart'
-        });
+        my $cart = Handel::Cart->new({id=>'66BFFD29-8FAD-4200-A22F-E0D80979ADBF', name=>'My First Cart'});
         my $item = $cart->add({
-            id => '5A8E0C3D-92C3-49b1-A988-585C792B752'.$dbsuffix,
+            id => '5A8E0C3D-92C3-49b1-A988-585C792B7529',
             sku => 'sku1',
             quantity => 2,
             price => 1.11,
             description => 'My First Item'
         });
 
-        my $order = $subclass->new({
-            cart => $cart,
-            shopper=>'66BFFD29-8FAD-4200-A22F-E0D80979ADBF'
-        });
+        my $order = $subclass->new({cart => $cart});
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->count, $cart->count);
@@ -447,7 +439,7 @@ sub run {
             is($order->subtotal->format('CAD', 'FMT_NAME'), 2.22);
         };
 
-        my $orderitem = $order->items->first;
+        my $orderitem = $order->items;
         isa_ok($orderitem, 'Handel::Order::Item');
         isa_ok($orderitem, $itemclass);
         is($orderitem->sku, $item->sku);
@@ -484,24 +476,16 @@ sub run {
 
     {
         ## create and order from a Handel::Cart subclass object and test currency
-        my $cart = Handel::Subclassing::Cart->new({
-            id=>'76BFFD29-8FAD-4200-A22F-E0D80979ADB'.$dbsuffix,
-            shopper=>'76BFFD29-8FAD-4200-A22F-E0D80979ADBF',
-            name=>'My First Cart',
-            custom=>'custom'}
-        );
+        my $cart = Handel::Subclassing::Cart->new({id=>'76BFFD29-8FAD-4200-A22F-E0D80979ADBF', name=>'My First Cart', custom=>'custom'});
         my $item = $cart->add({
-            id => '6A8E0C3D-92C3-49b1-A988-585C792B752'.$dbsuffix,
+            id => '6A8E0C3D-92C3-49b1-A988-585C792B7529',
             sku => 'sku1',
             quantity => 2,
             price => 1.11,
             description => 'My First Item'
         });
 
-        my $order = $subclass->new({
-            cart => $cart,
-            shopper=>'76BFFD29-8FAD-4200-A22F-E0D80979ADBF'
-        });
+        my $order = $subclass->new({cart => $cart});
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->count, $cart->count);
@@ -522,7 +506,7 @@ sub run {
             is($order->subtotal->format('CAD', 'FMT_NAME'), 2.22);
         };
 
-        my $orderitem = $order->items->first;
+        my $orderitem = $order->items;
         isa_ok($orderitem, 'Handel::Order::Item');
         isa_ok($orderitem, $itemclass);
         is($orderitem->sku, $item->sku);
@@ -559,29 +543,22 @@ sub run {
 
     {
         ## create and order from a search hash
-        my $cart = Handel::Cart->new({
-            id=>'F00F8DE0-A39C-41e4-A906-D43DF55D93D'.$dbsuffix,
-            shopper=>'F00F8DE0-A39C-41e4-A906-D43DF55D93D8',
-            name=>'My Other Second Cart'
-        });
+        my $cart = Handel::Cart->new({id=>'F00F8DE0-A39C-41e4-A906-D43DF55D93D8', name=>'My Other Second Cart'});
         my $item = $cart->add({
-            id => 'B1247A21-E121-470e-AA97-245B7BD7CD1'.$dbsuffix,
+            id => 'B1247A21-E121-470e-AA97-245B7BD7CD19',
             sku => 'sku2',
             quantity => 3,
             price => 2.22,
             description => 'My Second Item'
         });
 
-        my $order = $subclass->new({
-            cart => {id => 'F00F8DE0-A39C-41e4-A906-D43DF55D93D'.$dbsuffix},
-            shopper=>'F00F8DE0-A39C-41e4-A906-D43DF55D93D8'
-        });
+        my $order = $subclass->new({cart => {id => 'F00F8DE0-A39C-41e4-A906-D43DF55D93D8'}});
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->count, $cart->count);
         is($order->subtotal, $cart->subtotal);
 
-        my $orderitem = $order->items->first;
+        my $orderitem = $order->items;
         isa_ok($orderitem, 'Handel::Order::Item');
         isa_ok($orderitem, $itemclass);
         is($orderitem->sku, $item->sku);
@@ -595,29 +572,22 @@ sub run {
 
     {
         ## create and order from a cart id
-        my $cart = Handel::Cart->new({
-            id=>'99BE4783-2A16-4172-A5A8-415A7D984BC'.$dbsuffix,
-            shopper=>'99BE4783-2A16-4172-A5A8-415A7D984BCA',
-            name=>'My Other Third Cart'
-        });
+        my $cart = Handel::Cart->new({id=>'99BE4783-2A16-4172-A5A8-415A7D984BCA', name=>'My Other Third Cart'});
         my $item = $cart->add({
-            id => '699E1E68-0DCE-43d5-A747-F380769DDCF'.$dbsuffix,
+            id => '699E1E68-0DCE-43d5-A747-F380769DDCF0',
             sku => 'sku3',
             quantity => 2,
             price => 1.23,
             description => 'My Third Item'
         });
 
-        my $order = $subclass->new({
-            cart => '99BE4783-2A16-4172-A5A8-415A7D984BC'.$dbsuffix,
-            shopper=>'99BE4783-2A16-4172-A5A8-415A7D984BCA'
-        });
+        my $order = $subclass->new({cart => '99BE4783-2A16-4172-A5A8-415A7D984BCA'});
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->count, $cart->count);
         is($order->subtotal, $cart->subtotal);
 
-        my $orderitem = $order->items->first;
+        my $orderitem = $order->items;
         isa_ok($orderitem, 'Handel::Order::Item');
         isa_ok($orderitem, $itemclass);
         is($orderitem->sku, $item->sku);
@@ -631,16 +601,13 @@ sub run {
 
     ## check that when multiple carts are found that we only load the first one
     {
-        my $order = $subclass->new({
-            cart => {name => '%Other%'},
-            shopper=>'99BE4783-2A16-4172-A5A8-415A7D984BCA'
-        });
+        my $order = $subclass->new({cart => {name => '%Other%'}});
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->count, 1);
         is($order->subtotal, 6.66);
 
-        my $orderitem = $order->items->first;
+        my $orderitem = $order->items;
         isa_ok($orderitem, 'Handel::Order::Item');
         isa_ok($orderitem, $itemclass);
         is($orderitem->sku, 'sku2');
@@ -654,7 +621,7 @@ sub run {
 
     SKIP: {
         eval 'use Test::MockObject 0.07';
-        skip 'Test::MockObject not installed', 7 if $@;
+        skip 'Test::MockObject not installed', 6 if $@;
 
         ## add a new order and test process::OK (in mock series)
         {

@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 1203 2006-06-04 19:02:57Z claco $
+# $Id: Makefile.PL 1101 2006-02-01 03:23:52Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -17,14 +17,30 @@ if (Test::More->VERSION < 0.48) {
 };
 
 eval 'require Handel';
-if (!$@ && $Handel::VERSION <= '1.00') {
+if (!$@ && Handel->VERSION eq '0.17') {
     print "\a\a\a\a\a";
     print "----------------------------------------------------------\n";
     print "BREAKING API CHANGES!!!!\n\n";
-    print "Handel 1.0+ is not API compatable with Handel <= 0.32.\n";
-    print "Please read the documentation for further details.\n";
+    print "Handel::Order >= 0.18 is incompatable with Handel::Order\n";
+    print "version 0.17 only. Earlier versions of Handel without\n";
+    print "Handel::Order are not effected.\n";
     print "----------------------------------------------------------\n";
     sleep 5;
+};
+
+my %modules;
+
+if ($^O eq 'MSWin32') {
+    eval 'use UUID 0.02;';
+    eval 'use Win32::Guidgen 0.02;' if $@;
+    eval 'use Win32API::GUID 0.02;' if $@;
+
+    %modules = ('UUID' => 0.02) if $@;
+} else {
+    %modules = ('Data::UUID' => 0.10);
+};
+if ($^O ne 'openbsd' && eval {require APR::UUID}) {
+    %modules = ();
 };
 
 if ($ENV{TEST_HTTP}) {
@@ -82,14 +98,14 @@ WriteMakefile(
     AUTHOR       => 'Christopher H. Laco <claco@chrislaco.com>',
     ABSTRACT     => 'Simple ecommerce framework with AxKit support',
     PREREQ_PM    => {
-        'DBIx::Class'              => '0.06999',
-        'DBIx::Class::UUIDColumns' => '0',
-        'DBIx::Class::Validation'  => '0',
-        'Class::Data::Accessor'    => '0.03',
-        'Error'                    => '0.14',
-        'Locale::Maketext'         => '1.06',
-        'Module::Pluggable'        => '2.95',
-        'Scalar::Util'             => '0'
+        'Class::DBI'        => '0.96',
+        'Class::Data::Inheritable' => '0',
+        'DBI'               => '1.36',
+        'Error'             => '0.14',
+        'Locale::Maketext'  => '1.06',
+        'Module::Pluggable' => '2.95',
+        'version'           => '0',
+        %modules
     },
     (ExtUtils::MakeMaker->VERSION >= 6.11) ?
     (NO_META      => 1) : (),

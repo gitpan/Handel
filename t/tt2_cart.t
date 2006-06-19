@@ -1,10 +1,11 @@
 #!perl -wT
-# $Id: tt2_cart.t 1167 2006-05-31 01:50:19Z claco $
+# $Id: tt2_cart.t 837 2005-09-19 22:56:39Z claco $
 use strict;
 use warnings;
 use Test::More;
 use lib 't/lib';
 use Handel::TestHelper qw(preparetables comp_to_file);
+use Handel::DBI;
 
 eval 'use Template 2.07';
     plan(skip_all => 'Template Toolkit 2.07 not installed') if $@;
@@ -47,7 +48,8 @@ my @tests = (
     unlink $dbfile;
     preparetables($db, ['cart']);
 
-    $ENV{'HandelDBIDSN'} = $db;
+    local $^W = 0;
+    Handel::DBI->connection($db);
 };
 
 plan(tests => (scalar @tests) + 1);
@@ -58,7 +60,7 @@ my $output  = '';
 
 ## test uuid ouput format
 $tt->process("$docroot/cart_uuid.tt2", undef, \$output);
-ok($output =~ /(.*<p>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}<\/p>.*){1}/is);
+ok($output =~ /(.*<p>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}<\/p>.*){2}/is);
 
 foreach my $test (@tests) {
     my $output = '';

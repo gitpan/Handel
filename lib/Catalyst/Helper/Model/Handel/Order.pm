@@ -1,4 +1,4 @@
-# $Id: Order.pm 1134 2006-05-16 22:04:20Z claco $
+# $Id: Order.pm 837 2005-09-19 22:56:39Z claco $
 package Catalyst::Helper::Model::Handel::Order;
 use strict;
 use warnings;
@@ -26,9 +26,13 @@ __model__
 package [% class %];
 use strict;
 use warnings;
-use base qw/Handel::Order/;
+use base 'Handel::Order';
 
-__PACKAGE__->connection_info('[% dsn %]', '[% user %]', '[% pass %]');
+{
+    $^W = 0;
+    Handel::DBI->connection('[% dsn %]', '[% user %]', '[% pass %]');
+};
+
 1;
 __test__
 use Test::More tests => 2;

@@ -1,9 +1,9 @@
-[%# $Id: checkout_messages.tt2 1167 2006-05-31 01:50:19Z claco $ %]
+[%# $Id: checkout_messages.tt2 837 2005-09-19 22:56:39Z claco $ %]
 [% USE hcheckout = Handel.Checkout %]
 
 <body>
 
-	[% IF (checkout = hcheckout.new) %]
+	[% IF (checkout = hcheckout.create) %]
 		[% CALL checkout.add_message('This is a new message') %]
 		<messages>
 			[% FOREACH message = checkout.messages %]

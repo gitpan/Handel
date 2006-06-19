@@ -2,4 +2,5 @@
 [% USE hdlo = Handel.Order %]
 <body>
 	<p>[% hdlo.uuid %]</p>
+	<p>[% hdlo.guid %]</p>
 </body>

@@ -1,7 +1,7 @@
-[%# $Id: cart_items_as_iterator.tt2 1167 2006-05-31 01:50:19Z claco $ %]
+[%# $Id: cart_items_as_iterator.tt2 837 2005-09-19 22:56:39Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
-    [% IF (cart = hcart.new({
+    [% IF (cart = hcart.create({
 		description	=> 'My New Shopping Cart',
 		id			=> 'E516A609-1905-4C7B-AC82-C33D50DE7AB9',
 		name    	=> 'New Cart',
@@ -24,10 +24,10 @@
 		}) %]
 	[% END %]
 
-	[% IF (cart = hcart.load({
+	[% IF (cart = hcart.fetch({
 		type => hcart.CART_TYPE_TEMP,
 		id 	 => 'E516A609-1905-4C7B-AC82-C33D50DE7AB9'
-	}).first) %]
+	})) %]
 		<cart>
 			<count>[% cart.count %]</count>
 			<description>[% cart.description %]</description>
@@ -36,7 +36,7 @@
 			<shopper>[% cart.shopper %]</shopper>
 			<subtotal>[% cart.subtotal %]</subtotal>
 			<type>[% cart.type %]</type>
-			[% IF (items = cart.items) %]
+			[% IF (items = cart.items(undef, hcart.RETURNAS_ITERATOR)) %]
 				[% WHILE (item = items.next) %]
 					<item>
 						<description>[% item.description %]</description>

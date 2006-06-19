@@ -1,7 +1,7 @@
-[%# $Id: cart_fetch_as_array.tt2 1167 2006-05-31 01:50:19Z claco $ %]
+[%# $Id: cart_fetch_as_array.tt2 837 2005-09-19 22:56:39Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
-    [% IF (cart = hcart.load.all) %]
+    [% IF (cart = hcart.fetch(undef, hcart.RETURNAS_ARRAY)) %]
 		<cart>
 			<count>[% cart.0.count %]</count>
 			<description>[% cart.0.description %]</description>

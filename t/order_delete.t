@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_delete.t 1166 2006-05-28 02:35:11Z claco $
+# $Id: order_delete.t 1072 2006-01-17 03:30:38Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests =>115;
+        plan tests => 82;
     };
 
     use_ok('Handel::Order');
@@ -42,7 +42,8 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        $ENV{'HandelDBIDSN'} = $db;
+        local $^W = 0;
+        Handel::DBI->connection($db);
     };
 
 
@@ -60,24 +61,14 @@ sub run {
     };
 
 
-    my $total_items = $subclass->schema_instance->resultset('Items')->count;
-    ok($total_items);
-
-
     ## Delete a single order item contents and validate counts
     {
-        my $it = $subclass->load({
+        my $order = $subclass->load({
             id => '22222222-2222-2222-2222-222222222222'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
-
-        my $related_items = $order->count;
-        is($related_items, 1);
+        is($order->count, 1);
         is($order->subtotal, 5.55);
         if ($subclass ne 'Handel::Order') {
             is($order->custom, 'custom');
@@ -87,13 +78,9 @@ sub run {
         is($order->count, 0);
         is($order->subtotal, 5.55);
 
-        my $reit = $subclass->load({
+        my $reorder = $subclass->load({
             id => '22222222-2222-2222-2222-222222222222'
         });
-        isa_ok($reit, 'Handel::Iterator');
-        is($reit, 1);
-
-        my $reorder = $reit->first;
         isa_ok($reorder, 'Handel::Order');
         isa_ok($reorder, $subclass);
         is($reorder->count, 0);
@@ -101,28 +88,17 @@ sub run {
         if ($subclass ne 'Handel::Order') {
             is($reorder->custom, 'custom');
         };
-
-        my $remaining_items = $subclass->schema_instance->resultset('Items')->count;
-        is($remaining_items, $total_items - $related_items);
-
-        $total_items -= $related_items;
     };
 
 
     ## Delete multiple order item contents with wildcard filter and validate counts
     {
-        my $it = $subclass->load({
+        my $order = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
-
-        my $related_items = $order->count;
-        is($related_items, 2);
+        is($order->count, 2);
         is($order->subtotal, 5.55);
         if ($subclass ne 'Handel::Order') {
             is($order->custom, 'custom');
@@ -132,13 +108,9 @@ sub run {
         is($order->count, 0);
         is($order->subtotal, 5.55);
 
-        my $reit = $subclass->load({
+        my $reorder = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($reit, 'Handel::Iterator');
-        is($reit, 1);
-
-        my $reorder = $reit->first;
         isa_ok($reorder, 'Handel::Order');
         isa_ok($reorder, $subclass);
         is($reorder->count, 0);
@@ -146,9 +118,6 @@ sub run {
         if ($subclass ne 'Handel::Order') {
             is($reorder->custom, 'custom');
         };
-
-        my $remaining_items = $subclass->schema_instance->resultset('Items')->count;
-        is($remaining_items, $total_items - $related_items);
     };
 
 };

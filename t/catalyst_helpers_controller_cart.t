@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_controller_cart.t 1201 2006-06-04 18:52:16Z claco $
+# $Id: catalyst_helpers_controller_cart.t 1093 2006-01-24 00:44:37Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -36,11 +36,6 @@ my $app = 'TestApp';
     $helper->mk_app($app);
     $FindBin::Bin = catdir(cwd, $app, 'lib');
 };
-
-
-SKIP: {
-    skip 'Catalyst Helper rewrite pending Storage rewrite', 100;
-
 
 
 ## create the default cart controller
@@ -240,7 +235,4 @@ SKIP: {
     file_contents_like($module, qr/\$c->res->redirect\(\$c->req->base . 'myfqcart\/list\/'\);/);
     file_contents_like($view, qr/\[% base _ 'myfqcart\/list\/' %\]/);
     file_contents_like($view, qr/\[% base  _ 'my\/checkout\/' %\]/);
-};
-
-
 };

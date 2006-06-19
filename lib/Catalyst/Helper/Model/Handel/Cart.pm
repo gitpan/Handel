@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1134 2006-05-16 22:04:20Z claco $
+# $Id: Cart.pm 918 2005-11-13 19:07:51Z claco $
 package Catalyst::Helper::Model::Handel::Cart;
 use strict;
 use warnings;
@@ -26,9 +26,12 @@ __model__
 package [% class %];
 use strict;
 use warnings;
-use base qw/Handel::Cart/;
+use base 'Handel::Cart';
 
-__PACKAGE__->connection_info('[% dsn %]', '[% user %]', '[% pass %]');
+{
+    $^W = 0;
+    Handel::DBI->connection('[% dsn %]', '[% user %]', '[% pass %]');
+};
 
 1;
 __test__

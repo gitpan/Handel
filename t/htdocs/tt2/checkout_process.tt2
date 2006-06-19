@@ -1,9 +1,9 @@
-[%# $Id: checkout_process.tt2 1167 2006-05-31 01:50:19Z claco $ %]
+[%# $Id: checkout_process.tt2 837 2005-09-19 22:56:39Z claco $ %]
 [% USE hcheckout = Handel.Checkout %]
 
 <body>
 
-	[% IF (checkout = hcheckout.new({
+	[% IF (checkout = hcheckout.create({
 		pluginpaths => 'Handel::TestPipeline',
 		loadplugins => 'Handel::TestPipeline::ReadFromStash, Handel::Testpipeline::WriteFromStash',
 		cart => '11111111-1111-1111-1111-111111111111'
@@ -20,7 +20,7 @@
 		</checkout>
 	[% END %]
 
-	[% IF (checkout = hcheckout.new({
+	[% IF (checkout = hcheckout.create({
 		pluginpaths => 'Handel::TestPipeline',
 		loadplugins => 'Handel::TestPipeline::ReadFromStash, Handel::Testpipeline::WriteFromStash',
 		order => '11111111-1111-1111-1111-111111111111'
@@ -37,7 +37,7 @@
 		</checkout>
 	[% END %]
 
-	[% IF (checkout = hcheckout.new({
+	[% IF (checkout = hcheckout.create({
 		pluginpaths => 'Handel::TestPipeline',
 		loadplugins => 'Handel::TestPipeline::ReadFromStash, Handel::Testpipeline::WriteFromStash'
 	})) %]
@@ -54,7 +54,7 @@
 		</checkout>
 	[% END %]
 
-	[% IF (checkout = hcheckout.new({
+	[% IF (checkout = hcheckout.create({
 		pluginpaths => 'Handel::TestPipeline',
 		loadplugins => 'Handel::TestPipeline::ReadFromStash, Handel::Testpipeline::WriteFromStash'
 	})) %]
@@ -72,7 +72,7 @@
 	[% END %]
 
 
-	[% IF (checkout = hcheckout.new({
+	[% IF (checkout = hcheckout.create({
 		pluginpaths => 'Handel::TestPipeline',
 		loadplugins => 'Handel::TestPipeline::InitializeTotals, Handel::TestPipeline::ValidateError',
 		order => '11111111-1111-1111-1111-111111111111',

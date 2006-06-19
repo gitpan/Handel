@@ -1,45 +1,49 @@
-# $Id: Cart.pm 1202 2006-06-04 18:59:10Z claco $
+# $Id: Cart.pm 1080 2006-01-19 02:05:22Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
 
 BEGIN {
-    use Handel;
-    use Handel::Constants qw/:cart :returnas/;
-    use Handel::Constraints qw/:all/;
+    use base 'Handel::DBI';
+    use Handel::Constants qw(:cart :returnas);
+    use Handel::Constraints qw(:all);
     use Handel::Currency;
-    use Handel::L10N qw/translate/;
+    use Handel::L10N qw(translate);
 
-    use base qw/Handel::Storage/;
-    __PACKAGE__->schema_class('Handel::Cart::Schema');
-    __PACKAGE__->schema_source('Carts');
-    __PACKAGE__->item_class('Handel::Cart::Item');
-    __PACKAGE__->setup_column_accessors;
-
-    __PACKAGE__->add_constraint('id',      id      => \&constraint_uuid);
-    __PACKAGE__->add_constraint('shopper', shopper => \&constraint_uuid);
-    __PACKAGE__->add_constraint('type',    type    => \&constraint_cart_type);
-    __PACKAGE__->add_constraint('name',    name    => \&constraint_cart_name);
-
-    __PACKAGE__->default_values({
-        id   => \&Handel::Storage::uuid,
-        type => CART_TYPE_TEMP
-    });
+    __PACKAGE__->mk_classdata(_item_class => 'Handel::Cart::Item');
 };
 
+__PACKAGE__->autoupdate(1);
+__PACKAGE__->table('cart');
+__PACKAGE__->iterator_class('Handel::Iterator');
+__PACKAGE__->columns(All => qw(id shopper type name description));
+__PACKAGE__->has_many(_items => 'Handel::Cart::Item', 'cart');
+__PACKAGE__->add_constraint('id',      id      => \&constraint_uuid);
+__PACKAGE__->add_constraint('shopper', shopper => \&constraint_uuid);
+__PACKAGE__->add_constraint('type',    type    => \&constraint_cart_type);
+
 sub new {
-    my ($class, $data) = @_;
-    $class = ref $class || $class;
+    my ($self, $data) = @_;
 
     throw Handel::Exception::Argument(
         -details => translate('Param 1 is not a HASH reference') . '.') unless
             ref($data) eq 'HASH';
 
-    my $self = bless {
-        storage => $class->schema_instance->resultset($class->schema_source)->create($data)
-    }, $class;
+    if (!defined($data->{'id'}) || !constraint_uuid($data->{'id'})) {
+        $data->{'id'} = $self->uuid;
+    };
 
-    return $self;
+    if (!defined($data->{'type'})) {
+        $data->{'type'} = CART_TYPE_TEMP;
+    };
+
+    if ($data->{'type'} == CART_TYPE_SAVED && !$data->{'name'}) {
+        throw Handel::Exception::Constraint(
+            -details => translate(
+                'Cart name is required when creating a saved cart') . '.');
+    };
+
+    return $self->insert($data);
 };
 
 sub add {
@@ -51,27 +55,29 @@ sub add {
               (ref($data) eq 'HASH' or $data->isa('Handel::Cart::Item'));
 
     if (ref($data) eq 'HASH') {
-        return bless {
-            storage => $self->storage->create_related($self->item_relationship, $data)
-        }, $self->item_class;
+        if (!defined($data->{'id'}) || !constraint_uuid($data->{'id'})) {
+            $data->{'id'} = $self->uuid;
+        };
+
+        return $self->add_to__items($data);
     } else {
         my %copy;
 
-        foreach ($data->storage->columns) {
+        foreach ($data->columns) {
             next if $_ =~ /^(id|cart)$/i;
-            $copy{$_} = $data->storage->$_;
+            $copy{$_} = $data->$_;
         };
 
-        return bless {
-            storage => $self->storage->create_related($self->item_relationship, \%copy)
-        }, $self->item_class;
+        $copy{'id'} = $self->uuid;
+
+        return $self->add_to__items(\%copy);
     };
 };
 
 sub clear {
     my $self = shift;
 
-    $self->storage->delete_related($self->item_relationship);
+    $self->_items->delete_all;
 
     return undef;
 };
@@ -79,7 +85,7 @@ sub clear {
 sub count {
     my $self  = shift;
 
-    return $self->storage->count_related($self->item_relationship) || 0;
+    return $self->_items->count || 0;
 };
 
 sub delete {
@@ -89,69 +95,122 @@ sub delete {
         translate('Param 1 is not a HASH reference') . '.') unless
             ref($filter) eq 'HASH';
 
-    $filter = $self->_migrate_wildcards($filter);
-
-    return $self->storage->delete_related($self->item_relationship, $filter);
+    ## I'd much rather use $self->_items->search_like, but it doesn't work that
+    ## way yet. This should be fine as long as :weaken refs works.
+    return $self->item_class->search_like(%{$filter},
+        cart => $self->id)->delete_all;
 };
 
 sub destroy {
     my ($self, $filter) = @_;
 
     if (ref $self) {
-        $self->storage->delete;
+        $self->SUPER::delete;
     } else {
         throw Handel::Exception::Argument( -details =>
             translate('Param 1 is not a HASH reference') . '.') unless
                 ref($filter) eq 'HASH';
 
-        $filter = $self->_migrate_wildcards($filter);
-
-        $self->schema_instance->resultset($self->schema_source)->search($filter)->delete_all;
+        my $carts = $self->load($filter, RETURNAS_ITERATOR);
+        while (my $cart = $carts->next) {
+            $cart->clear;
+            $cart->SUPER::delete;
+        };
     };
 
     return;
 };
 
+sub item_class {
+    my ($class, $item_class) = @_;
+
+    if ($item_class) {
+        eval "require $item_class";
+
+        require version;
+        my $cdbiver = version->new(Class::DBI->VERSION);
+
+        if ($cdbiver->numify < 3.000008) {
+            undef(*_items);
+            undef(*add_to__items);
+            __PACKAGE__->has_many(_items => $item_class, 'cart');
+        } else {
+            $class->has_many(_items => $item_class, 'cart');
+        };
+    } else {
+        return $class->_item_class;
+    };
+};
+
 sub items {
-    my ($self, $filter) = @_;
+    my ($self, $filter, $wantiterator) = @_;
 
     throw Handel::Exception::Argument( -details =>
         translate('Param 1 is not a HASH reference') . '.') unless(
             ref($filter) eq 'HASH' or !$filter);
 
-    $filter = $self->_migrate_wildcards($filter);
+    $wantiterator ||= RETURNAS_AUTO;
+    $filter       ||= {};
 
-    if (wantarray) {
-        my @items = $self->storage->search_related($self->item_relationship, $filter)->all;
+    my $wildcard = Handel::DBI::has_wildcard($filter);
 
-        return map {bless {storage => $_}, $self->item_class} @items;
-    } else {
-        my $iterator = $self->storage->search_related_rs($self->item_relationship, $filter);
-        $iterator->result_class($self->item_class);
+    ## If the filter as a wildcard, push it through a fresh search_like since it
+    ## doesn't appear to be available within a loaded object.
+    if ((wantarray && $wantiterator != RETURNAS_ITERATOR) || $wantiterator == RETURNAS_LIST) {
+        my @items = $wildcard ?
+            $self->item_class->search_like(%{$filter}, cart => $self->id) :
+            $self->_items(%{$filter});
+
+        return @items;
+    } elsif ($wantiterator == RETURNAS_ITERATOR) {
+        my $iterator = $wildcard ?
+            $self->item_class->search_like(%{$filter}, cart => $self->id) :
+            $self->_items(%{$filter});
 
         return $iterator;
+    } else {
+        my $iterator = $wildcard ?
+            $self->item_class->search_like(%{$filter}, cart => $self->id) :
+            $self->_items(%{$filter});
+        if ($iterator->count == 1 && $wantiterator != RETURNAS_ITERATOR && $wantiterator != RETURNAS_LIST) {
+            return $iterator->next;
+        } else {
+            return $iterator;
+        };
     };
 };
 
 sub load {
-    my ($class, $filter) = @_;
-    $class = ref $class || $class;
+    my ($self, $filter, $wantiterator) = @_;
 
     throw Handel::Exception::Argument( -details =>
         translate('Param 1 is not a HASH reference') . '.') unless(
             ref($filter) eq 'HASH' or !$filter);
 
-    $filter = $class->_migrate_wildcards($filter);
+    $wantiterator ||= RETURNAS_AUTO;
 
-    if (wantarray) {
-        my @carts = $class->schema_instance->resultset($class->schema_source)->search($filter)->all;
-
-        return map {bless {storage => $_}, $class} @carts;
-    } else {
-        my $iterator = $class->schema_instance->resultset($class->schema_source)->search_rs($filter);
-        $iterator->result_class($class);
+    ## only return array if wantarray and not explicitly asking for an iterator
+    ## or we've explicitly asked for a list/array
+    if ((wantarray && $wantiterator != RETURNAS_ITERATOR) || $wantiterator == RETURNAS_LIST) {
+        my @carts = $filter ? $self->search_like(%{$filter}) :
+            $self->retrieve_all;
+        return @carts;
+    ## return an iterator if explicitly asked for
+    } elsif ($wantiterator == RETURNAS_ITERATOR) {
+        my $iterator = $filter ?
+            $self->search_like(%{$filter}) : $self->retrieve_all;
 
         return $iterator;
+    ## full out auto
+    } else {
+        my $iterator = $filter ?
+            $self->search_like(%{$filter}) : $self->retrieve_all;
+
+        if ($iterator->count == 1 && $wantiterator != RETURNAS_ITERATOR && $wantiterator != RETURNAS_LIST) {
+            return $iterator->next;
+        } else {
+            return $iterator;
+        };
     };
 };
 
@@ -165,32 +224,32 @@ sub restore {
             'Param 1 is not a HASH reference or Handel::Cart') . '.') unless(
                 ref($data) eq 'HASH' or $data->isa('Handel::Cart'));
 
-    if (ref $data eq 'HASH') {
-        $data = $self->_migrate_wildcards($data);
-    };
-
     my @carts = (ref($data) eq 'HASH') ?
-        $self->load($data)->all : $data;
+        $self->search_like(%{$data}) : $data;
 
     if ($mode == CART_MODE_REPLACE) {
         $self->clear;
 
         my $first = $carts[0];
+        $self->autoupdate(0);
         $self->name($first->name);
         $self->description($first->description);
+        $self->update;
+        $self->autoupdate(1);
 
         foreach (@carts) {
-            my @items = $_->items->all;
-            foreach my $item (@items) {
+            my $iterator = $_->items(undef, 1);
+            while (my $item = $iterator->next) {
                 $self->add($item);
             };
         };
     } elsif ($mode == CART_MODE_MERGE) {
         foreach (@carts) {
-            my @items = $_->items->all;
-            foreach my $item (@items) {
-                if (my $exists = $self->items({sku => $item->sku})->first){
+            my $iterator = $_->items(undef, 1);
+            while (my $item = $iterator->next) {
+                if (my $exists = $self->items({sku => $item->sku})){
                     $exists->quantity($item->quantity + $exists->quantity);
+                    $exists->update;
                 } else {
                     $self->add($item);
                 };
@@ -198,8 +257,8 @@ sub restore {
         };
     } elsif ($mode == CART_MODE_APPEND) {
         foreach (@carts) {
-            my @items = $_->items->all;
-            foreach my $item (@items) {
+            my $iterator = $_->items(undef, 1);
+            while (my $item = $iterator->next) {
                 $self->add($item);
             };
         };
@@ -210,19 +269,18 @@ sub restore {
 };
 
 sub save {
-    my $self = shift;
-    $self->type(CART_TYPE_SAVED);
+    $_[0]->type(CART_TYPE_SAVED);
 
     return undef;
 };
 
 sub subtotal {
     my $self     = shift;
-    my $it       = $self->items();
+    my $it       = $self->items(undef, 1);
     my $subtotal = 0.00;
 
-    while (my $item = $it->next) {
-        $subtotal += ($item->total);
+    while ( my $item = $it->next ) {
+        $subtotal += ( $item->total );
     };
 
     return Handel::Currency->new($subtotal);

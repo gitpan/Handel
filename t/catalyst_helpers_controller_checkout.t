@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_controller_checkout.t 1201 2006-06-04 18:52:16Z claco $
+# $Id: catalyst_helpers_controller_checkout.t 1093 2006-01-24 00:44:37Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -36,10 +36,6 @@ my $app = 'TestApp';
     $helper->mk_app($app);
     $FindBin::Bin = catdir(cwd, $app, 'lib');
 };
-
-
-SKIP: {
-    skip 'Catalyst Helper rewrite pending Storage rewrite', 90;
 
 
 ## create the default checkout controller
@@ -194,7 +190,4 @@ SKIP: {
     file_contents_like($payment, qr/\[% base _ 'mythirdcheckout\/preview\/' %\]/);
     file_contents_like($payment, qr/\[% base _ 'mythirdcheckout\/payment\/' %\]/);
     file_contents_like($complete, qr/\[% base _ 'my\/orders\/list\/' %\]/);
-};
-
-
 };

@@ -1,12 +1,5 @@
 TODO list for Perl module Handel (in no particular order):
 
-    - rework Catalyst Helpers for 5.6x
-    - further abstract storage so one can create items using per new connections
-    - better deal with copying carts to orders, custom fields, etc
-    - better abstract column names
-    - better abstract id column types
-    - move from constraints to validations
-    - allow for column defaults
     - create sql from SQL::Translator schema scripts
     - add taglib test to check for bogus filter names
     - add sql schema and conversions using SQL::Translator
@@ -16,3 +9,4 @@ TODO list for Perl module Handel (in no particular order):
     - clean up cart test variable names
     - add additional cart restore w/filter tests for multiple saved carts
     - devise method for overriding constraints
+    - abstract DBI layer to use Class::DBI, DBIx::CDBICompat, or DBIx::Class

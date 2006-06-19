@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 70;
+        plan tests => 37;
     };
 
     use_ok('Handel::Order');
@@ -42,7 +42,8 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        $ENV{'HandelDBIDSN'} = $db;
+        local $^W = 0;
+        Handel::DBI->connection($db);
     };
 
 
@@ -60,27 +61,14 @@ sub run {
     };
 
 
-    my $total_orders = $subclass->schema_instance->resultset('Orders')->count;
-    ok($total_orders);
-
-    my $total_items = $subclass->schema_instance->resultset('Items')->count;
-    ok($total_items);
-
-
     ## Destroy a single order via instance
     {
-        my $it = $subclass->load({
+        my $order = $subclass->load({
             id => '22222222-2222-2222-2222-222222222222'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
-
-        my $related_items = $order->count;
-        is($related_items, 1);
+        is($order->count, 1);
         is($order->subtotal, 5.55);
         if ($subclass ne 'Handel::Order') {
             is($order->custom, 'custom');
@@ -88,48 +76,27 @@ sub run {
 
         $order->destroy;
 
-        my $reit = $subclass->load({
+        my $reorder = $subclass->load({
             id => '22222222-2222-2222-2222-222222222222'
         });
-        isa_ok($reit, 'Handel::Iterator');
-        is($reit, 0);
 
-        my $reorder = $reit->first;
-        is($reorder, undef);
-
-        my $remaining_orders = $subclass->schema_instance->resultset('Orders')->count;
-        my $remaining_items = $subclass->schema_instance->resultset('Items')->count;
-
-        is($remaining_orders, $total_orders - 1);
-        is($remaining_items, $total_items - $related_items);
-
-        $total_orders--;
-        $total_items -= $related_items;
+        is($reorder, 0);
     };
 
 
     ## Destroy multiple orders with wildcard filter
     {
-        my $orders = $subclass->load({id => '11111%'}, RETURNAS_ITERATOR);
+        my $orders = $subclass->load({billtofirstname => 'Chris%'}, RETURNAS_ITERATOR);
         isa_ok($orders, 'Handel::Iterator');
-        is($orders, 1);
-
-        my $related_items = $orders->first->items->count;
-        ok($related_items);
+        is($orders, 2);
 
         $subclass->destroy({
-            id => '111%'
+            billtofirstname => 'Chris%'
         });
 
-        $orders = $subclass->load({id => '11111%'}, RETURNAS_ITERATOR);
+        $orders = $subclass->load({billtofirstname => 'Chris%'}, RETURNAS_ITERATOR);
         isa_ok($orders, 'Handel::Iterator');
         is($orders, 0);
-
-        my $remaining_orders = $subclass->schema_instance->resultset('Orders')->count;
-        my $remaining_items = $subclass->schema_instance->resultset('Items')->count;
-
-        is($remaining_orders, $total_orders - 1);
-        is($remaining_items, $total_items - $related_items);
     };
 
 };

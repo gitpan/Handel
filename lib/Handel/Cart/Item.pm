@@ -1,42 +1,38 @@
-# $Id: Item.pm 1202 2006-06-04 18:59:10Z claco $
+# $Id: Item.pm 923 2005-11-15 02:59:22Z claco $
 package Handel::Cart::Item;
 use strict;
 use warnings;
 
 BEGIN {
-    use Handel;
+    use base 'Handel::DBI';
     use Handel::Constraints qw(:all);
     use Handel::Currency;
     use Handel::L10N qw(translate);
-
-    use base qw/Handel::Storage/;
-    __PACKAGE__->schema_class('Handel::Cart::Schema');
-    __PACKAGE__->schema_source('Items');
-    __PACKAGE__->setup_column_accessors;
-    __PACKAGE__->add_constraint('quantity', quantity => \&constraint_quantity);
-    __PACKAGE__->add_constraint('price',    price    => \&constraint_price);
-    __PACKAGE__->add_constraint('id',       id       => \&constraint_uuid);
-    __PACKAGE__->add_constraint('cart',     cart     => \&constraint_uuid);
-
-    __PACKAGE__->default_values({
-        id       => \&Handel::Storage::uuid,
-        price    => 0,
-        quantity => 1
-    });
 };
 
+__PACKAGE__->table('cart_items');
+__PACKAGE__->autoupdate(1);
+__PACKAGE__->iterator_class('Handel::Iterator');
+__PACKAGE__->columns(All => qw(id cart sku quantity price description));
+__PACKAGE__->columns(Essential => qw(id cart sku quantity price description));
+__PACKAGE__->has_a(price => 'Handel::Currency');
+__PACKAGE__->add_constraint('quantity', quantity => \&constraint_quantity);
+__PACKAGE__->add_constraint('price',    price    => \&constraint_price);
+__PACKAGE__->add_constraint('id',       id       => \&constraint_uuid);
+__PACKAGE__->add_constraint('cart',     cart     => \&constraint_uuid);
+
 sub new {
-    my ($class, $data) = @_;
+    my ($self, $data) = @_;
 
     throw Handel::Exception::Argument( -details =>
         translate('Param 1 is not a HASH reference') . '.') unless
             ref($data) eq 'HASH';
 
-    my $self = bless {
-        storage => $class->schema_instance->resultset($class->schema_source)->create($data)
-    }, $class;
+    if (!defined($data->{'id'}) || !constraint_uuid($data->{'id'})) {
+        $data->{'id'} = $self->uuid;
+    };
 
-    return $self;
+    return $self->construct($data);
 };
 
 sub total {

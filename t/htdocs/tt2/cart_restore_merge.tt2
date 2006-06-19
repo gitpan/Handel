@@ -1,7 +1,7 @@
-[%# $Id: cart_restore_merge.tt2 1167 2006-05-31 01:50:19Z claco $ %]
+[%# $Id: cart_restore_merge.tt2 837 2005-09-19 22:56:39Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
-    [% IF (cart = hcart.new({
+    [% IF (cart = hcart.create({
 		description	=> 'My First Shopping Cart',
 		id			=> '32EAE1FC-FAD1-4C58-8826-5B9064DE0D63',
 		name    	=> 'New Cart 1',
@@ -25,7 +25,7 @@
 	[% ELSE %]
 		<message>Error adding cart</message>
 	[% END %]
-    [% IF (cart = hcart.new({
+    [% IF (cart = hcart.create({
 		description	=> 'My Second Shopping Cart',
 		id			=> '01B9CE36-B18D-4D30-A860-DB54993D4F80',
 		name    	=> 'New Cart 2',
@@ -50,9 +50,9 @@
 		<message>Error adding cart</message>
 	[% END %]
 
-	[% IF (cart = hcart.load({
+	[% IF (cart = hcart.fetch({
 		id 	 => '32EAE1FC-FAD1-4C58-8826-5B9064DE0D63'
-	}).first) %]
+	})) %]
 		<cart>
 			<count>[% cart.count %]</count>
 			<description>[% cart.description %]</description>
@@ -61,7 +61,7 @@
 			<shopper>[% cart.shopper %]</shopper>
 			<subtotal>[% cart.subtotal %]</subtotal>
 			<type>[% cart.type %]</type>
-			[% FOREACH item = cart.items.all %]
+			[% FOREACH item = cart.items %]
 				<item>
 					<description>[% item.description %]</description>
 					<id>[% item.id %]</id>
@@ -74,7 +74,7 @@
 			[% CALL cart.restore({id => '01B9CE36-B18D-4D30-A860-DB54993D4F80'}, hcart.CART_MODE_MERGE) %]
 			<count>[% cart.count %]</count>
 			<subtotal>[% cart.subtotal %]</subtotal>
-			[% FOREACH item = cart.items.all %]
+			[% FOREACH item = cart.items %]
 				<restoreditem>
 					<description>[% item.description %]</description>
 					<price>[% item.price %]</price>

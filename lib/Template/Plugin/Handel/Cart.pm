@@ -1,13 +1,14 @@
-# $Id: Cart.pm 1194 2006-06-02 03:00:10Z claco $
+# $Id: Cart.pm 923 2005-11-15 02:59:22Z claco $
 package Template::Plugin::Handel::Cart;
 use strict;
 use warnings;
-use base qw/Template::Plugin/;
+use base 'Template::Plugin';
+use Handel::Cart;
 use Handel::Constants ();
 
 sub new {
     my ($class, $context, @params) = @_;
-    my $self = bless {_CONTEXT => $context}, 'Template::Plugin::Handel::Cart::Proxy';
+    my $self = bless {_CONTEXT => $context}, $class;
 
     foreach my $const (@Handel::Constants::EXPORT_OK) {
         if ($const =~ /^[A-Z]{1}/) {
@@ -23,23 +24,23 @@ sub load {
     return $class;
 };
 
-package Template::Plugin::Handel::Cart::Proxy;
-use strict;
-use warnings;
-use base qw/Handel::Cart/;
-
-sub load {
+sub create {
     my ($self, $filter) = @_;
-    my $iterator = $self->SUPER::load($filter);
 
-    return $iterator;
+    return Handel::Cart->new($filter);
 };
 
-sub items {
-    my ($self, $filter) = @_;
-    my $iterator = $self->SUPER::items($filter);
+sub fetch {
+    my ($self, $filter, $wantiterator) = @_;
+    return Handel::Cart->load($filter, $wantiterator);
+};
 
-    return $iterator;
+sub guid {
+    return shift->uuid;
+};
+
+sub uuid {
+    return Handel::Cart->uuid;
 };
 
 1;
@@ -52,9 +53,9 @@ Template::Plugin::Handel::Cart - Template Toolkit plugin for shopping cart
 =head1 SYNOPSIS
 
     [% USE Handel.Cart %]
-    [% IF (cart = Handel.Cart.load({id => 'A2CCD312-73B5-4EE4-B77E-3D027349A055'}).first) %]
+    [% IF (cart = Handel.Cart.fetch(id => 'A2CCD312-73B5-4EE4-B77E-3D027349A055')) %]
         [% cart.name %]
-        [% FOREACH item IN cart.items.all %]
+        [% FOREACH item IN cart.items %]
             [% item.sku %]
         [% END %]
     [% END %]
@@ -62,15 +63,147 @@ Template::Plugin::Handel::Cart - Template Toolkit plugin for shopping cart
 =head1 DESCRIPTION
 
 C<Template::Plugin::Handel::Cart> is a TT2 (Template Toolkit 2) plugin for
-C<Handel::Cart>. It's API is exactly the same as C<Handel::Cart>.
+C<Handel::Cart>. It's API is exactly the same as C<Handel::Cart> with a few
+minor exceptions noted below.
 
-C<Handel::Constants> are imported into this module automatically. This removes
-the need to use C<Template::Plugin::Handel::Constants> separately when working
-with carts.
+Since C<new> and C<load> are used by TT2 to load plugins, Handel::Carts
+C<new> and C<load> can be accessed using C<create> and C<fetch>.
+
+Starting in version C<0.08>, C<Handel::Constants> are now imported into this
+module automatically. This removes the need to use
+C<Template::Plugin::Handel::Constants> separately when working with carts.
 
     [% USE hc = Handel.Cart %]
-    [% cart = hc.new(...) %]
+    [% cart = hc.create(...) %]
     [% cart.type(hc.CART_TYPE_TEMP) %]
+
+=head1 CAVEATS
+
+C<Template Toolkit> handles method params in a smart fashion that
+allows you to pass named parameters into methods and it will convert them
+into HASH references.
+
+For example:
+
+    [% cart.method(name1=val1, name2=val2, otherarg);
+
+is turned into:
+
+    cart->method(otherarg, {name1=>val1, name2=>val2});
+
+Unfortunately, it looks like TT2 reverses the @ARGS order during translation.
+This causes problems with C<Handel::Cart::load> and C<items> as they expect
+C<($hashref, $wantiterator)> instead.
+
+Do to this, it is recommended that you always use the same explicit form as
+you would use when calling C<Handel::Cart> when calling C<create> and C<items>:
+
+    [% cart.method({name1=>val1, name2=>val2}, $wantiterator) %]
+
+Other issue is how C<Handel::Cart> returns an iterator or an array based on its
+inspection of C<wantarray>. It appears that TT2 thwarts C<wantarray> in some
+manner.
+
+For example:
+
+    [% carts = Handel.Cart.fetch() %]
+
+returns an array reference since it's not clear at this point what you really
+want. To counteract this behavior, you can use C<RETURNAS> constants to
+specify the exact output desired:
+
+    [% carts = Handel.Cart.fetch(undef, Handel.Cart.RETURNAS_ITERATOR) %]
+
+This will force a return of a C<Handel::Iterator> in scalar context. Then you
+can simply loop through the iterator:
+
+    [% WHILE (cart = carts.next) %]
+        ...
+    [% END %]
+
+On the upshot, if you are only expecting a single result, like loading a
+specific cart by C<id>, then it will just do Do What You Want:
+
+    [% cart = Handel.Cart.fetch({id => '12345678-7654-3212-345678987654'}) %]
+    [% cart.id %]
+    [% cart.name %]
+    ...
+
+You can even use C<FOREACH> without specifying the return type as TT2 appears
+to just Do The Right Thing regardless of whether it receives an array or a
+single C<Handel::Cart> or C<Handel::Cart::Item> object:
+
+    [% FOREACH cart IN Handel.Cart.fetch({id => '12345678-7654-3212-345678987654'}}) %]
+        [% FOREACH item IN cart.items %]
+            [% item.sku %]
+        [% END %]
+    [% END %]
+
+=head1 CONSTRUCTOR
+
+Unlike using C<Handel::Cart> to create a new cart object using C<new> and
+C<load>, C<Template::Plugin::Handel::Cart> takes a slightly different
+approach to cart objects. Because C<USE>ing in TT2 calls C<new>, we first
+C<USE> or create a new C<Template::Plugin::Handel::Cart> object then
+C<create> or C<load> to return a new cart object, iterator, or array of carts.
+
+=head2 new
+
+This returns a new Handel.Cart object. This is used internally when
+loading TT2 plugins and should not be used directly.
+
+=head1 METHODS
+
+=head2 load
+
+This method is called when TT2 loaded the plugin for the first time.
+This is used internally by TT2 and should not be used directly.
+
+=head2 create(\%filter)
+
+    [% USE Handel.Cart %]
+    [% IF (cart = Handel.Cart.create({
+        shopper => '12345678-9876-5432-1234-567890987654',
+        name    => 'My New Cart',
+        description =>'Favorite Items'})) %]
+
+        [% cart.name %]
+        ...
+
+    [% END %]
+
+=head2 fetch(\%filter [, $wantiterator])
+
+The safest way to get a cart is to use FOREACH. This negates the need
+to specify C<$wanteriterator> for C<Handel::Cart::load>. See L<CAVEATS>
+for further info on C<$wantiterator>, Perls C<wantarray> within TT2.
+
+    [% USE Handel.Cart %]
+    [% FOREACH cart IN Handel.Cart.fetch({shopper => '12345678-9876-5432-1234-567890987654'}) %]
+        [% cart.id %]
+        [% cart.name %]
+        ...
+    [% END %]
+
+=head2 uuid
+
+Returns a new uuid for use in add/create:
+
+    [% USE Handel.Cart %]
+    [% IF (cart = Handel.Cart.create({
+        id      => Handel.Cart.uuid,
+        shopper => '12345678-9876-5432-1234-567890987654',
+        name    => 'My New Cart',
+        description =>'Favorite Items'})) %]
+
+        [% cart.name %]
+        ...
+
+    [% END %]
+
+=head2 guid
+
+Same as C<uuid> above.
 
 =head1 SEE ALSO
 

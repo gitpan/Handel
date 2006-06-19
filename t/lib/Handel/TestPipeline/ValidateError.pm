@@ -1,4 +1,4 @@
-# $Id: ValidateError.pm 1168 2006-05-31 01:53:05Z claco $
+# $Id: ValidateError.pm 837 2005-09-19 22:56:39Z claco $
 package Handel::TestPipeline::ValidateError;
 use strict;
 use warnings;
@@ -19,8 +19,8 @@ sub handler {
         my $subtotal = 0;
 
         eval {
-            my @items = $order->items;
-            foreach my $item (@items) {
+            my $items = $order->items(undef, RETURNAS_ITERATOR);
+            while (my $item = $items->next) {
                 $item->sku('ERRORSKU');
             };
             $order->billtofirstname('ErrorBillToFirstName');

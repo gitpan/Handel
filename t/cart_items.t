@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_items.t 1195 2006-06-02 03:02:24Z claco $
+# $Id: cart_items.t 1072 2006-01-17 03:30:38Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 467;
+        plan tests => 378;
     };
 
     use_ok('Handel::Cart');
@@ -42,19 +42,16 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        $ENV{'HandelDBIDSN'} = $db;
+        local $^W = 0;
+        Handel::DBI->connection($db);
     };
 
 
     ## load multiple item Handel::Cart object and get items array on RETURNAS_AUTO
     {
-        my $it = $subclass->load({
+        my $cart = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
         is($cart->id, '11111111-1111-1111-1111-111111111111');
@@ -107,8 +104,6 @@ sub run {
 
             try {
                 $item2->quantity(6);
-
-                fail;
             } catch Handel::Exception::Constraint with {
                 pass;
             } otherwise {
@@ -130,13 +125,9 @@ sub run {
 
     ## load multiple item Handel::Cart object and get items array on RETURNAS_LIST
     {
-        my $it = $subclass->load({
+        my $cart = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
         is($cart->id, '11111111-1111-1111-1111-111111111111');
@@ -150,7 +141,7 @@ sub run {
             is($cart->custom, 'custom');
         };
 
-        my @items = $cart->items();
+        my @items = $cart->items(undef, RETURNAS_LIST);
         is(scalar @items, $cart->count);
 
         my $item1 = $items[0];
@@ -185,13 +176,9 @@ sub run {
 
     ## load multiple item Handel::Cart object and get items Iterator
     {
-        my $it = $subclass->load({
+        my $cart = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
         is($cart->id, '11111111-1111-1111-1111-111111111111');
@@ -213,13 +200,9 @@ sub run {
 
     ## load multiple item Handel::Cart object and get filter single item
     {
-        my $it = $subclass->load({
+        my $cart = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
         is($cart->id, '11111111-1111-1111-1111-111111111111');
@@ -233,11 +216,7 @@ sub run {
             is($cart->custom, 'custom');
         };
 
-        my $itemit = $cart->items({sku => 'SKU2222'});
-        isa_ok($itemit, 'Handel::Iterator');
-        is($itemit, 1);
-
-        my $item2 = $itemit->first;
+        my $item2 = $cart->items({sku => 'SKU2222'});
         isa_ok($item2, 'Handel::Cart::Item');
         isa_ok($item2, $itemclass);
         is($item2->id, '22222222-2222-2222-2222-222222222222');
@@ -255,13 +234,9 @@ sub run {
 
     ## load multiple item Handel::Cart object and get filter single item to Iterator
     {
-        my $it = $subclass->load({
+        my $cart = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
         is($cart->id, '11111111-1111-1111-1111-111111111111');
@@ -281,15 +256,10 @@ sub run {
 
 
     ## load multiple item Handel::Cart object and get wildcard filter to Iterator
-    ## using SQL::Abstract wildcard syntax
     {
-        my $it = $subclass->load({
+        my $cart = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
         is($cart->id, '11111111-1111-1111-1111-111111111111');
@@ -303,36 +273,7 @@ sub run {
             is($cart->custom, 'custom');
         };
 
-        my $iterator = $cart->items({sku => {like=>'SKU%'}});
-        isa_ok($iterator, 'Handel::Iterator');
-        is($iterator, 2);
-    };
-
-
-    ## load multiple item Handel::Cart object and get wildcard filter to Iterator
-    ## using old style wildcard syntax
-    {
-        my $it = $subclass->load({
-            id => '11111111-1111-1111-1111-111111111111'
-        });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
-        isa_ok($cart, 'Handel::Cart');
-        isa_ok($cart, $subclass);
-        is($cart->id, '11111111-1111-1111-1111-111111111111');
-        is($cart->shopper, '11111111-1111-1111-1111-111111111111');
-        is($cart->type, CART_TYPE_TEMP);
-        is($cart->name, 'Cart 1');
-        is($cart->description, 'Test Temp Cart 1');
-        is($cart->count, 2);
-        is($cart->subtotal, 5.55);
-        if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, 'custom');
-        };
-
-        my $iterator = $cart->items({sku => 'SKU%'});
+        my $iterator = $cart->items({sku => 'SKU%'}, 1);
         isa_ok($iterator, 'Handel::Iterator');
         is($iterator, 2);
     };
@@ -340,13 +281,9 @@ sub run {
 
     ## load multiple item Handel::Cart object and get filter bogus item to Iterator
     {
-        my $it = $subclass->load({
+        my $cart = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
         is($cart->id, '11111111-1111-1111-1111-111111111111');

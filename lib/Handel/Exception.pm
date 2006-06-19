@@ -1,4 +1,4 @@
-# $Id: Exception.pm 1150 2006-05-19 00:21:13Z claco $
+# $Id: Exception.pm 1100 2006-02-01 01:15:34Z claco $
 package Handel::Exception;
 use strict;
 use warnings;
@@ -47,6 +47,7 @@ sub new {
     return $class->SUPER::new(
         -text => 'The supplied field(s) failed database constraints', @_ );
 };
+
 
 package Handel::Exception::Argument;
 use strict;

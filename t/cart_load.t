@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_load.t 1146 2006-05-17 02:18:34Z claco $
+# $Id: cart_load.t 1072 2006-01-17 03:30:38Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 444;
+        plan tests => 348;
     };
 
     use_ok('Handel::Cart');
@@ -42,7 +42,8 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        $ENV{'HandelDBIDSN'} = $db;
+        local $^W = 0;
+        Handel::DBI->connection($db);
     };
 
 
@@ -62,13 +63,9 @@ sub run {
 
     ## load a single cart returning a Handel::Cart object
     {
-        my $it = $subclass->load({
+        my $cart = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
         is($cart->id, '11111111-1111-1111-1111-111111111111');
@@ -224,60 +221,7 @@ sub run {
     };
 
 
-    ## load all carts into an array with a wildcard filter using SQL::Abstract
-    ## wildcard syntax
-    {
-        my @carts = $subclass->load({
-            name => {like => 'Cart %'}
-        });
-        is(scalar @carts, 3);
-
-        my $cart1 = $carts[0];
-        isa_ok($cart1, 'Handel::Cart');
-        isa_ok($cart1, $subclass);
-        is($cart1->id, '11111111-1111-1111-1111-111111111111');
-        is($cart1->shopper, '11111111-1111-1111-1111-111111111111');
-        is($cart1->type, CART_TYPE_TEMP);
-        is($cart1->name, 'Cart 1');
-        is($cart1->description, 'Test Temp Cart 1');
-        is($cart1->count, 2);
-        is($cart1->subtotal, 5.55);
-        if ($subclass ne 'Handel::Cart') {
-            is($cart1->custom, 'custom');
-        };
-
-        my $cart2 = $carts[1];
-        isa_ok($cart2, 'Handel::Cart');
-        isa_ok($cart2, $subclass);
-        is($cart2->id, '22222222-2222-2222-2222-222222222222');
-        is($cart2->shopper, '11111111-1111-1111-1111-111111111111');
-        is($cart2->type, CART_TYPE_TEMP);
-        is($cart2->name, 'Cart 2');
-        is($cart2->description, 'Test Temp Cart 2');
-        is($cart2->count, 1);
-        is($cart2->subtotal, 9.99);
-        if ($subclass ne 'Handel::Cart') {
-            is($cart2->custom, 'custom');
-        };
-
-        my $cart3 = $carts[2];
-        isa_ok($cart3, 'Handel::Cart');
-        isa_ok($cart3, $subclass);
-        is($cart3->id, '33333333-3333-3333-3333-333333333333');
-        is($cart3->shopper, '33333333-3333-3333-3333-333333333333');
-        is($cart3->type, CART_TYPE_SAVED);
-        is($cart3->name, 'Cart 3');
-        is($cart3->description, 'Saved Cart 1');
-        is($cart3->count, 2);
-        is($cart3->subtotal, 45.51);
-        if ($subclass ne 'Handel::Cart') {
-            is($cart3->custom, 'custom');
-        };
-    };
-
-
-    ## load all carts into an array with a wildcard filter using old
-    ## wildcard syntax
+    ## load all carts into an array with a wildcard filter
     {
         my @carts = $subclass->load({
             name => 'Cart %'

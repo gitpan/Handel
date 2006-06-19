@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_delete.t 1164 2006-05-23 23:59:47Z claco $
+# $Id: cart_delete.t 1072 2006-01-17 03:30:38Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 107;
+        plan tests => 74;
     };
 
     use_ok('Handel::Cart');
@@ -42,7 +42,8 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        $ENV{'HandelDBIDSN'} = $db;
+        local $^W = 0;
+        Handel::DBI->connection($db);
     };
 
 
@@ -60,81 +61,51 @@ sub run {
     };
 
 
-    my $total_items = $subclass->schema_instance->resultset('Items')->count;
-    ok($total_items);
-
-
     ## Delete a single cart item contents and validate counts
     {
-        my $it = $subclass->load({
+        my $cart = $subclass->load({
             id => '22222222-2222-2222-2222-222222222222'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-
-        my $related_items = $cart->count;
-        is($related_items, 1);
+        is($cart->count, 1);
         is($cart->subtotal, 9.99);
+
         is($cart->delete({sku => 'SKU3333'}), 1);
         is($cart->count, 0);
         is($cart->subtotal, 0);
 
-        my $reit = $subclass->load({
+        my $recart = $subclass->load({
             id => '22222222-2222-2222-2222-222222222222'
         });
-        isa_ok($reit, 'Handel::Iterator');
-        is($reit, 1);
-
-        my $recart = $reit->first;
         isa_ok($recart, 'Handel::Cart');
         isa_ok($recart, $subclass);
         is($recart->count, 0);
         is($recart->subtotal, 0.00);
-
-        my $remaining_items = $subclass->schema_instance->resultset('Items')->count;
-        is($remaining_items, $total_items - $related_items);
-
-        $total_items -= $related_items;
     };
 
 
-    ## Delete multiple cart item contents with wildcard filter and validate
-    ## counts using the old style wildcards
+    ## Delete multiple cart item contents with wildcard filter and validate counts
     {
-        my $it = $subclass->load({
-            id => '33333333-3333-3333-3333-333333333333'
+        my $cart = $subclass->load({
+            id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
+        is($cart->count, 2);
+        is($cart->subtotal, 5.55);
 
-        my $related_items = $cart->count;
-        is($related_items, 2);
-        is($cart->subtotal, 45.51);
         ok($cart->delete({sku => 'SKU%'}));
         is($cart->count, 0);
         is($cart->subtotal, 0);
 
-        my $reit = $subclass->load({
-            id => '33333333-3333-3333-3333-333333333333'
+        my $recart = $subclass->load({
+            id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($reit, 'Handel::Iterator');
-        is($reit, 1);
-
-        my $recart = $reit->first;
         isa_ok($recart, 'Handel::Cart');
         isa_ok($recart, $subclass);
         is($recart->count, 0);
         is($recart->subtotal, 0.00);
-
-        my $remaining_items = $subclass->schema_instance->resultset('Items')->count;
-        is($remaining_items, $total_items - $related_items);
     };
+
 };

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: subclassing.t 1172 2006-05-31 01:56:31Z claco $
+# $Id: subclassing.t 1051 2006-01-05 01:35:49Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -9,6 +9,9 @@ use Handel::TestHelper qw(executesql);
 BEGIN {
     eval 'require DBD::SQLite';
     plan skip_all => 'DBD::SQLite not installed' if($@);
+
+    eval 'use Class::DBI 3.0.8';
+    plan skip_all => 'Class::DBI 3.0.8 or greater required' if($@);
 
     plan tests => 68;
 
@@ -39,15 +42,16 @@ BEGIN {
     executesql($db, $datacart);
     executesql($db, $dataorder);
 
-    $ENV{'HandelDBIDSN'} = $db;
+    local $^W = 0;
+    Handel::DBI->connection($db);
 };
 
 
 ## Create a custom cart that still returns Handel::Cart::Item
 {
     my $cart = Handel::Subclassing::CartOnly->new({
-        custom => 'custom',
-        shopper => '00000000-0000-0000-0000-000000000000'
+        id => Handel->newuuid,
+        custom => 'custom'
     });
 
     isa_ok($cart, 'Handel::Subclassing::CartOnly');
@@ -56,9 +60,7 @@ BEGIN {
     is($cart->custom, 'custom');
 
     my $item = $cart->add({
-        sku => 'SKU123',
-        quantity => 1,
-        price => 1.11
+        sku => 'SKU123'
     });
 
     isa_ok($item, 'Handel::Cart::Item');
@@ -70,7 +72,7 @@ BEGIN {
 ## Create a custom cart that still returns custom items
 {
     my $cart = Handel::Subclassing::Cart->new({
-        shopper => '00000000-0000-0000-0000-000000000000',
+        id => Handel->newuuid,
         custom => 'custom'
     });
 
@@ -81,9 +83,7 @@ BEGIN {
 
     my $item = $cart->add({
         sku    => 'SKU123',
-        custom => 'custom',
-        quantity => 1,
-        price => 1.11
+        custom => 'custom'
     });
 
     isa_ok($item, 'Handel::Cart::Item');
@@ -97,16 +97,14 @@ BEGIN {
 ## Make sure the old stuff works like normal
 {
     my $cart = Handel::Cart->new({
-        shopper => '00000000-0000-0000-0000-000000000000'
+        id => Handel->newuuid
     });
 
     isa_ok($cart, 'Handel::Cart');
     ok(!$cart->can('custom'));
 
     my $item = $cart->add({
-        sku    => 'SKU123',
-        quantity => 1,
-        price => 1.00
+        sku    => 'SKU123'
     });
 
     isa_ok($item, 'Handel::Cart::Item');
@@ -118,7 +116,7 @@ BEGIN {
 ## Create a custom order that still returns Handel::Order::Item
 {
     my $order = Handel::Subclassing::OrderOnly->new({
-        shopper => '00000000-0000-0000-0000-000000000000',
+        id => Handel->newuuid,
         custom => 'custom'
     });
 
@@ -128,9 +126,7 @@ BEGIN {
     is($order->custom, 'custom');
 
     my $item = $order->add({
-        sku => 'SKU123',
-        quantity => 1,
-        price => 1.00
+        sku => 'SKU123'
     });
 
     isa_ok($item, 'Handel::Order::Item');
@@ -142,7 +138,7 @@ BEGIN {
 ## Create a custom order that still returns custom items
 {
     my $order = Handel::Subclassing::Order->new({
-        shopper => '00000000-0000-0000-0000-000000000000',
+        id => Handel->newuuid,
         custom => 'custom'
     });
 
@@ -153,9 +149,7 @@ BEGIN {
 
     my $item = $order->add({
         sku    => 'SKU123',
-        custom => 'custom',
-        quantity => 1,
-        price => 1
+        custom => 'custom'
     });
 
     isa_ok($item, 'Handel::Order::Item');
@@ -169,16 +163,14 @@ BEGIN {
 ## Make sure the old stuff works like normal
 {
     my $order = Handel::Order->new({
-        shopper => '00000000-0000-0000-0000-000000000000'
+        id => Handel->newuuid
     });
 
     isa_ok($order, 'Handel::Order');
     ok(!$order->can('custom'));
 
     my $item = $order->add({
-        sku    => 'SKU123',
-        quantity => 1,
-        price => 1.00
+        sku    => 'SKU123'
     });
 
     isa_ok($item, 'Handel::Order::Item');
@@ -190,8 +182,7 @@ BEGIN {
 ## Load an order after setting order_class
 {
     my $checkout = Handel::Subclassing::Checkout->new({
-        order => '11111111-1111-1111-1111-111111111111',
-        shopper => '00000000-0000-0000-0000-000000000000'
+        order => '11111111-1111-1111-1111-111111111111'
     });
 
     isa_ok($checkout, 'Handel::Subclassing::Checkout');
@@ -205,18 +196,16 @@ BEGIN {
 ## Load an order from a cart after setting cart_class using using a uuid
 {
     my $order = Handel::Subclassing::OrderCart->new({
-        cart => '11111111-1111-1111-1111-111111111111',
-        shopper => '00000000-0000-0000-0000-000000000000'
+        cart => '11111111-1111-1111-1111-111111111111'
     });
 
     isa_ok($order, 'Handel::Subclassing::OrderCart');
     isa_ok($order, 'Handel::Order');
+
     is($Handel::Subclassing::OrdersCart::Loads, 1);
 
     my $item = $order->add({
-        sku => 'SKU123',
-        quantity => 1,
-        price => 1.00
+        sku => 'SKU123'
     });
 
     isa_ok($item, 'Handel::Order::Item');
@@ -224,11 +213,11 @@ BEGIN {
     ok(!$item->can('custom'));
 };
 
+
 ## Load an order from a cart after setting cart_class using using a hash
 {
     my $order = Handel::Subclassing::OrderCart->new({
-        cart => {id => '11111111-1111-1111-1111-111111111111'},
-        shopper => '00000000-0000-0000-0000-000000000000'
+        cart => {id => '11111111-1111-1111-1111-111111111111'}
     });
 
     isa_ok($order, 'Handel::Subclassing::OrderCart');
@@ -237,9 +226,7 @@ BEGIN {
     is($Handel::Subclassing::OrdersCart::Loads, 2);
 
     my $item = $order->add({
-        sku => 'SKU123',
-        quantity => 1,
-        price => 1.00
+        sku => 'SKU123'
     });
 
     isa_ok($item, 'Handel::Order::Item');

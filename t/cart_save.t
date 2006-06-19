@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_save.t 1200 2006-06-03 02:34:11Z claco $
+# $Id: cart_save.t 1072 2006-01-17 03:30:38Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 65;
+        plan tests => 32;
     };
 
     use_ok('Handel::Cart');
@@ -42,19 +42,16 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        $ENV{'HandelDBIDSN'} = $db;
+        local $^W = 0;
+        Handel::DBI->connection($db);
     };
 
 
     ## test for Handel::Exception::Constraint for invalid type
     {
-        my $it = $subclass->load({
+        my $cart = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
 
@@ -70,52 +67,20 @@ sub run {
     };
 
 
-    ## test for Handel::Exception::Constraint for blank name
-    {
-        my $it = $subclass->load({
-            id => '22222222-2222-2222-2222-222222222222'
-        });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
-        isa_ok($cart, 'Handel::Cart');
-        isa_ok($cart, $subclass);
-
-        try {
-            $cart->name(undef);
-            $cart->save;
-
-            fail;
-        } catch Handel::Exception::Constraint with {
-            pass;
-        } otherwise {
-            fail;
-        };
-    };
-
     ## Load a cart, save it and validate type
     {
-        my $it = $subclass->load({
+        my $cart = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
         is($cart->type, CART_TYPE_TEMP);
 
         $cart->save;
 
-        my $reit = $subclass->load({
+        my $recart = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($reit, 'Handel::Iterator');
-        is($reit, 1);
-
-        my $recart = $reit->first;
         isa_ok($recart, 'Handel::Cart');
         isa_ok($recart, $subclass);
         is($cart->type, CART_TYPE_SAVED);

@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1180 2006-05-31 02:01:17Z claco $
+# $Id: Checkout.pm 1082 2006-01-19 02:08:35Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
@@ -180,7 +180,7 @@ sub order {
         } elsif (UNIVERSAL::isa($order, 'Handel::Order')) {
             $self->{'order'} = $order;
         } elsif (constraint_uuid($order)) {
-            $self->{'order'} = $self->order_class->load({id => $order})->first;
+            $self->{'order'} = $self->order_class->load({id => $order});
         } else {
             throw Handel::Exception::Argument( -details =>
                 translate('Param 1 is not a HASH reference, Handel::Order object, or order id') . '.');
@@ -238,7 +238,7 @@ sub process {
     $self->_setup($self);
 
     {
-        $self->order->schema_instance->txn_begin;
+        local $self->order->db_Main->{AutoCommit};
 
         foreach my $phase (@{$phases}) {
             next unless $phase;
@@ -251,12 +251,7 @@ sub process {
                 if ($status != CHECKOUT_HANDLER_OK && $status != CHECKOUT_HANDLER_DECLINE) {
                     $self->_teardown($self);
 
-                    $self->order->schema_instance->txn_rollback;
-                    $self->order->storage->discard_changes;
-                    foreach my $item ($self->order->items) {
-                        $item->storage->discard_changes;
-                    };
-
+                    eval {$self->order->dbi_rollback};
                     if ($@) {
                         throw Handel::Exception(-details => "Transaction aborted. Rollback failed: $@");
                     };
@@ -266,7 +261,7 @@ sub process {
             };
         };
 
-        $self->order->schema_instance->txn_commit;
+        $self->order->dbi_commit;
     };
 
     $self->_teardown($self);
@@ -317,7 +312,7 @@ sub _teardown {
 
 sub _set_search_path {
     my ($self, $opts) = @_;
-    my $config = Handel->config;
+    my $config = $Handel::Cfg;
 
     my $pluginpaths = ref $opts->{'pluginpaths'} eq 'ARRAY' ?
         join(' ', @{$opts->{'pluginpaths'}}) : $opts->{'pluginpaths'} || '';

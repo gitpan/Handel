@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_restore_append.t 1131 2006-05-16 02:38:06Z claco $
+# $Id: cart_restore_append.t 1072 2006-01-17 03:30:38Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 431;
+        plan tests => 413;
     };
 
     use_ok('Handel::Cart');
@@ -42,7 +42,8 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        $ENV{'HandelDBIDSN'} = $db;
+        local $^W = 0;
+        Handel::DBI->connection($db);
     };
 
 
@@ -50,13 +51,9 @@ sub run {
     ## just for sanity sake, we're checking all cart and item values
     {
         # load the temp cart
-        my $it = $subclass->load({
+        my $cart = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
         is($cart->id, '11111111-1111-1111-1111-111111111111');
@@ -103,13 +100,9 @@ sub run {
         };
 
         # load the saved cart
-        my $sit = $subclass->load({
+        my $saved = $subclass->load({
             id => '33333333-3333-3333-3333-333333333333'
         });
-        isa_ok($sit, 'Handel::Iterator');
-        is($sit, 1);
-
-        my $saved = $sit->first;
         isa_ok($saved, 'Handel::Cart');
         isa_ok($saved, $subclass);
         is($saved->id, '33333333-3333-3333-3333-333333333333');
@@ -123,7 +116,7 @@ sub run {
             is($saved->custom, 'custom');
         };
 
-        my $items2 = $saved->items();
+        my $items2 = $saved->items(undef, 1);
         isa_ok($items2, 'Handel::Iterator');
         is($items2->count, 2);
 
@@ -229,13 +222,9 @@ sub run {
 
 
         # load the saved cart again
-        my $saved2it = $subclass->load({
+        my $saved2 = $subclass->load({
             id => '33333333-3333-3333-3333-333333333333'
         });
-        isa_ok($saved2it, 'Handel::Iterator');
-        is($saved2it, 1);
-
-        my $saved2 = $saved2it->first;
         isa_ok($saved2, 'Handel::Cart');
         isa_ok($saved2, $subclass);
         is($saved2->id, '33333333-3333-3333-3333-333333333333');

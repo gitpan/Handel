@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_order.t 1169 2006-05-31 01:54:57Z claco $
+# $Id: checkout_order.t 1072 2006-01-17 03:30:38Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -44,7 +44,8 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        $ENV{'HandelDBIDSN'} = $db;
+        local $^W = 0;
+        Handel::DBI->connection($db);
     };
 
     ## test for Handel::Exception::Argument where first param is not a hashref
@@ -178,7 +179,7 @@ sub run {
         my $order = $orderclass->load({
             id => '11111111-1111-1111-1111-111111111111',
             type => ORDER_TYPE_TEMP
-        })->first;
+        });
         my $checkout = $subclass->new;
 
         $checkout->order($order);
@@ -198,7 +199,7 @@ sub run {
         my $order = $orderclass->load({
             id => '11111111-1111-1111-1111-111111111111',
             type => ORDER_TYPE_TEMP
-        })->first;
+        });
         my $checkout = $subclass->new({order => $order});
 
         my $loadedorder = $checkout->order;

@@ -1,14 +1,57 @@
-# $Id: Handel.pm 1208 2006-06-06 01:47:34Z claco $
+# $Id: Handel.pm 1094 2006-01-24 00:45:55Z claco $
 package Handel;
 use strict;
 use warnings;
 use vars qw($VERSION);
-use Handel::ConfigReader;
 
-$VERSION = '0.99_02';
+$VERSION = '0.33';
 
-sub config {
-    return Handel::ConfigReader->instance;
+BEGIN {
+    use Handel::ConfigReader;
+
+    $Handel::Cfg = Handel::ConfigReader->new;
+
+    my $uuidsub;
+
+    if ($^O ne 'openbsd' && eval{require APR::UUID}) {
+        $uuidsub = sub {
+            return APR::UUID->new->format;
+        };
+    } elsif (eval{require UUID}) {
+        $uuidsub = sub {
+            my ($uuid, $uuidstring);
+            UUID::generate($uuid);
+            UUID::unparse($uuid, $uuidstring);
+
+            return $uuidstring;
+        };
+    } elsif (eval{require Data::UUID}) {
+        $uuidsub = sub {
+            my $ug = Data::UUID->new;
+            my $uuid = $ug->create;
+
+            return $ug->to_string($uuid);
+        };
+    } elsif (eval{
+            # for some reason 'no warnings' won't squelch
+            # the 'too late for INIT' warning in Win32::API::Type
+            local $^W = 0;
+            require Win32::Guidgen;
+        }) {
+        $uuidsub = sub {
+            return Win32::Guidgen::create();
+        };
+    } elsif (eval{require Win32API::GUID}) {
+        $uuidsub = sub {
+            return Win32API::GUID::CreateGuid();
+        };
+    } else {
+        throw Handel::Exception(
+            -text => 'Required modules not found',
+            -details => 'UUID/Data::UUID'
+        );
+    };
+    *Handel::newuuid = $uuidsub;
 };
 
 1;
@@ -27,41 +70,31 @@ might be useful to others so here it is on CPAN.
 
 For the curious, Handel is German for commerce.
 
-=head1 METHODS
-
-=head2 config
-
-Returns a Handel::ConfigReader instance.
-
 =head1 WEBSITE
 
-You can get the latest news, source, documentation and wiki help at
-http://handelframework.com/.
+You can get the latest news, source, documentation and wiki help at http://handelframework.com/.
 
 =head1 MAILING LIST
 
-Join the mailing list at
-http://lists.rawmode.org/cgi-bin/mailman/listinfo/handel. Big thanks to
-gabb@#catalyst for the list space.
+Join the mailing list at http://lists.rawmode.org/cgi-bin/mailman/listinfo/handel.
+Big thanks to gabb@#catalyst for the list space.
 
 =head1 GOALS
 
 =over
 
-=item Database agnostic. Thanks to DBIx::Class and staying away from auto
-incrementing ids, Handel should run in any database that DBIx::Class supports.
+=item Database agnostic. Thanks to Class::DBI and staying away from auto incrementing ids,
+Handel should run in any database that Class::DBI supports.
 
-=item Implementation agnostic. Handel should be able to be used from the command
-line, from a web page, from a SOAP service, or from a GUI application. It's
-simply a data access mechanism. Any interaction with forms, web pages, browser,
-cookies, etc is the responsibility of the consumer
+=item Implementation agnostic. Handel should be able to be used from the command line,
+from a web page, from a SOAP service, or from a GUI application. It's simply a data access mechanism.
+Any interaction with forms, web pages, browser, cookies, etc is the responsibility of the consumer
 
-=item Checkout agnostic. A checkout process means different things to different
-people in different situations. The Handel checkout pipeline by itself does
-absolutely nothing with an order. It is instead a plugin manager that allows
-you to specify and build plugins to do various actions (payment authorization,
-address validation, fax delivery, etc). Each site, server, page, even process()
-call can have it's own unique order processing pipeline.
+=item Checkout agnostic. A checkout process means different things to different people in
+different situations. The Handel checkout pipeline by itself does absolutely nothing with
+an order. It is instead a plugin manager that allows you to specify and build plugins to do
+various actions (payment authorization, address validation, fax delivery, etc). Each site, server, page,
+even process() call can have it's own unique order processing pipeline.
 
 =item Easy integration into AxKit using taglibs.
 
@@ -105,9 +138,8 @@ call can have it's own unique order processing pipeline.
 Handel is a simple framework to load/upload cart/order data and shove that
 data through a plugin based pipeline.
 
-=item B<(1)> While it is not a complete web based commerce system, I do plan on
-having feature complete working demos sites so people can still quick-start
-their own projects.
+=item B<(1)> While it is not a complete web based commerce system, I do plan on having
+feature complete working demos sites so people can still quick-start their own projects.
 
 =back
 
@@ -261,9 +293,9 @@ This keeps me honest and makes sure I always C<use strict>.
 =head1 CAVEATS
 
 When using item_class to specify the item class returned from add/items in your
-subclass under Class::DBI < 3.0.8, the item_class specified will be returned
-from all cart classes, including Handel::Cart itself. In most cases, people are
-only using one subclass of Handel::Cart so this won't effect them.
+subclass under Class::DBI < 3.0.8, the item_class specified will be returned from
+all cart classes, including Handel::Cart itself. In most cases, people are only
+using one subclass of Handel::Cart so this won't effect them.
 
 If you plan on using multiple subclasses of Handel::Cart that may or may not
 return custom items, upgrade your Class::DBI to version 3.0.8 or greater.
