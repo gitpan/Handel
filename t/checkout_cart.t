@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_cart.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: checkout_cart.t 1169 2006-05-31 01:54:57Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -44,8 +44,7 @@ sub run {
         executesql($db, $createorder);
         executesql($db, $createcart);
 
-        local $^W = 0;
-        Handel::DBI->connection($db);
+        $ENV{'HandelDBIDSN'} = $db;
     };
 
 
@@ -112,7 +111,11 @@ sub run {
 
     {
         ## create and order from a cart id
-        my $cart = $subclass->new({id=>'66BFFD29-8FAD-4200-A22F-E0D80979ADBF', name=>'My First Cart'});
+        my $cart = $subclass->new({
+            id=>'66BFFD29-8FAD-4200-A22F-E0D80979ADBF',
+            shopper=>'66BFFD29-8FAD-4200-A22F-E0D80979ADBF',
+            name=>'My First Cart'
+        });
         my $item = $cart->add({
             id => '5A8E0C3D-92C3-49b1-A988-585C792B7529',
             sku => 'sku1',
@@ -129,7 +132,7 @@ sub run {
         is($order->count, $cart->count);
         is($order->subtotal, $cart->subtotal);
 
-        my $orderitem = $order->items;
+        my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
         is($orderitem->sku, $item->sku);
         is($orderitem->quantity, $item->quantity);
@@ -142,7 +145,11 @@ sub run {
 
     {
         ## create and order from a cart id object as new option
-        my $cart = $subclass->new({id=>'7B029717-08CC-414d-B3EA-680A5B8BC12C', name=>'My First Cart'});
+        my $cart = $subclass->new({
+            id=>'7B029717-08CC-414d-B3EA-680A5B8BC12C',
+            shopper=>'7B029717-08CC-414d-B3EA-680A5B8BC12C',
+            name=>'My First Cart'
+        });
         my $item = $cart->add({
             id => 'AF8F39D9-D958-4ddf-A688-433DB4B62835',
             sku => 'sku1',
@@ -158,7 +165,7 @@ sub run {
         is($order->count, $cart->count);
         is($order->subtotal, $cart->subtotal);
 
-        my $orderitem = $order->items;
+        my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
         is($orderitem->sku, $item->sku);
         is($orderitem->quantity, $item->quantity);
@@ -171,7 +178,11 @@ sub run {
 
     {
         ## create and order from a Handel::Cart object
-        my $cart = $subclass->new({id=>'989935CD-5131-4f50-9D6A-F2192468A817', name=>'My First Cart'});
+        my $cart = $subclass->new({
+            id=>'989935CD-5131-4f50-9D6A-F2192468A817',
+            shopper=>'989935CD-5131-4f50-9D6A-F2192468A817',
+            name=>'My First Cart'
+        });
         my $item = $cart->add({
             id => 'A262096F-E4A7-4c1b-8BAC-01114C68F8FA',
             sku => 'sku1',
@@ -188,7 +199,7 @@ sub run {
         is($order->count, $cart->count);
         is($order->subtotal, $cart->subtotal);
 
-        my $orderitem = $order->items;
+        my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
         is($orderitem->sku, $item->sku);
         is($orderitem->quantity, $item->quantity);
@@ -201,7 +212,11 @@ sub run {
 
     {
         ## create and order from a Handel::Cart object as new option
-        my $cart = $subclass->new({id=>'A16A5F16-840D-42d2-B414-39E745326552', name=>'My First Cart'});
+        my $cart = $subclass->new({
+            id=>'A16A5F16-840D-42d2-B414-39E745326552',
+            shopper=>'A16A5F16-840D-42d2-B414-39E745326552',
+            name=>'My First Cart'
+        });
         my $item = $cart->add({
             id => '91F44BE8-F4DD-47e5-859F-884160B96A0B',
             sku => 'sku1',
@@ -217,7 +232,7 @@ sub run {
         is($order->count, $cart->count);
         is($order->subtotal, $cart->subtotal);
 
-        my $orderitem = $order->items;
+        my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
         is($orderitem->sku, $item->sku);
         is($orderitem->quantity, $item->quantity);
@@ -230,7 +245,11 @@ sub run {
 
     {
         ## create and order from a HASH filter
-        my $cart = $subclass->new({id=>'D8FD6757-4D8C-4b60-A1AA-AD9D4270480B', name=>'My First Cart'});
+        my $cart = $subclass->new({
+            id=>'D8FD6757-4D8C-4b60-A1AA-AD9D4270480B',
+            shopper=>'D8FD6757-4D8C-4b60-A1AA-AD9D4270480B',
+            name=>'My First Cart'
+        });
         my $item = $cart->add({
             id => '67F4056F-8AC1-4810-96E2-57E1A5BE5DE3',
             sku => 'sku1',
@@ -247,7 +266,7 @@ sub run {
         is($order->count, $cart->count);
         is($order->subtotal, $cart->subtotal);
 
-        my $orderitem = $order->items;
+        my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
         is($orderitem->sku, $item->sku);
         is($orderitem->quantity, $item->quantity);
@@ -260,7 +279,11 @@ sub run {
 
     {
         ## create and order from a HASH filter as a new option
-        my $cart = $subclass->new({id=>'255EE4F0-8CB0-42ed-8853-94AB47BDF14E', name=>'My First Cart'});
+        my $cart = $subclass->new({
+            id=>'255EE4F0-8CB0-42ed-8853-94AB47BDF14E',
+            shopper=>'255EE4F0-8CB0-42ed-8853-94AB47BDF14E',
+            name=>'My First Cart'
+        });
         my $item = $cart->add({
             id => 'D399FE0A-87A0-4162-B552-6F161D671684',
             sku => 'sku1',
@@ -276,7 +299,7 @@ sub run {
         is($order->count, $cart->count);
         is($order->subtotal, $cart->subtotal);
 
-        my $orderitem = $order->items;
+        my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
         is($orderitem->sku, $item->sku);
         is($orderitem->quantity, $item->quantity);

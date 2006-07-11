@@ -1,8 +1,8 @@
-[%# $Id: checkout_order.tt2 837 2005-09-19 22:56:39Z claco $ %]
+[%# $Id: checkout_order.tt2 1167 2006-05-31 01:50:19Z claco $ %]
 [% USE hcheckout = Handel.Checkout %]
 
 <body>
-	[% IF (checkout = hcheckout.create({
+	[% IF (checkout = hcheckout.new({
 		order => '11111111-1111-1111-1111-111111111111'
 	})) %]
 		[% IF (order = checkout.order) %]
@@ -48,7 +48,7 @@
 				<total>[% order.total %]</total>
 				<tax>[% order.tax %]</tax>
 				<updated>[% order.updated %]</updated>
-				[% FOREACH item = order.items.list %]
+				[% FOREACH item = order.items.all %]
 					<item>
 						<description>[% item.description %]</description>
 						<id>[% item.id %]</id>

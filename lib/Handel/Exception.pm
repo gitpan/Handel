@@ -1,4 +1,4 @@
-# $Id: Exception.pm 1100 2006-02-01 01:15:34Z claco $
+# $Id: Exception.pm 1310 2006-07-09 04:01:49Z claco $
 package Handel::Exception;
 use strict;
 use warnings;
@@ -6,9 +6,11 @@ use warnings;
 BEGIN {
     use base 'Error';
     use Handel::L10N qw(translate);
+
     eval 'require Apache::AxKit::Exception';
     if (!$@) {
-        push @__PACKAGE__::ISA, 'Apache::AxKit::Exception';
+        no strict 'vars';
+        push @ISA, 'Apache::AxKit::Exception';
     };
 };
 
@@ -21,7 +23,7 @@ sub new {
         $args{-text} || 'An unspecified error has occurred'
     );
 
-    if ( defined( $args{-details} ) ) {
+    if ( defined($args{-details}) && ! ref $args{-details}) {
         $text .= ': ' . $args{-details};
     } else {
         # $text .= '.';
@@ -33,6 +35,9 @@ sub new {
     return $class->SUPER::new( -text => $text, %args );
 };
 
+sub details {
+    return shift->{'-details'};
+};
 
 package Handel::Exception::Constraint;
 use strict;
@@ -47,7 +52,6 @@ sub new {
     return $class->SUPER::new(
         -text => 'The supplied field(s) failed database constraints', @_ );
 };
-
 
 package Handel::Exception::Argument;
 use strict;
@@ -103,6 +107,38 @@ sub new {
     my $class = shift;
     return $class->SUPER::new(
         -text => 'An error occurred during the checkout process', @_ );
+};
+
+package Handel::Exception::Storage;
+use strict;
+use warnings;
+
+BEGIN {
+    use base 'Handel::Exception';
+};
+
+sub new {
+    my $class = shift;
+    return $class->SUPER::new(
+        -text => 'An error occurred while loading storage', @_ );
+};
+
+package Handel::Exception::Validation;
+use strict;
+use warnings;
+
+BEGIN {
+    use base 'Handel::Exception';
+};
+
+sub new {
+    my $class = shift;
+    return $class->SUPER::new(
+        -text => 'The data could not be written because it failed validation', @_ );
+};
+
+sub results {
+    return shift->{'-results'};
 };
 
 1;
@@ -164,6 +200,17 @@ This exception is thrown if a database constraint is violated. This is true for
 both raw DBI database constraint errors as well as  field updates that don't
 pass constraints in C<Handel::Constraints>.
 
+=head2 Handel::Exception::Validation
+
+This exception is thrown if the validation performed by
+Handel::Components::Validation has failed. If the validation component returned
+a result object, that can be found in $E-E<gt>object.
+
+=head2 Handel::Exception::Storage
+
+This exception is thrown if there are any configuration or setup errors in
+Handel::Storage.
+
 =head2 Handel::Exception::Argument
 
 This exception is thrown when an invalid or unexpected argument value is passed
@@ -187,6 +234,10 @@ Instead, simply use the C<throw> syntax:
     throw Handel::Exception::Taglib(
         -text => translate("Tag '[_1]' not valid inside of other Handel tags", $tag)
     ) if ($context[$#context] ne 'root');
+
+=head2 details
+
+Returns the details portion of the exception message if there are any.
 
 =head1 SEE ALSO
 

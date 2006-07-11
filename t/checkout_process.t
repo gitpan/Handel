@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_process.t 1078 2006-01-19 02:03:42Z claco $
+# $Id: checkout_process.t 1169 2006-05-31 01:54:57Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -47,8 +47,7 @@ sub run {
         executesql($db, $createcart);
         executesql($db, $data);
 
-        local $^W = 0;
-        Handel::DBI->connection($db);
+        $ENV{'HandelDBIDSN'} = $db;
     };
 
 
@@ -104,7 +103,9 @@ sub run {
 
     ## Run a successful test pipeline
     {
-        my $order = Handel::Order->new({});
+        my $order = Handel::Order->new({
+            shopper => '00000000-0000-0000-0000-000000000000'
+        });
             $order->add({
                 sku      => 'SKU1',
                 quantity => 1,
@@ -138,6 +139,7 @@ sub run {
     ## Run a failing test pipeline
     {
         my $order = Handel::Order->new({
+            shopper => '00000000-0000-0000-0000-000000000000',
             billtofirstname => 'BillToFirstName',
             billtolastname  => 'BillToLastName'
         });
@@ -179,7 +181,9 @@ sub run {
 
     ## Check stash writes and lifetime
     {
-        my $order = Handel::Order->new({});
+        my $order = Handel::Order->new({
+            shopper => '00000000-0000-0000-0000-000000000000'
+        });
             $order->add({
                 sku      => 'SKU1',
                 quantity => 1,

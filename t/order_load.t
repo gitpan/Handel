@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_load.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: order_load.t 1166 2006-05-28 02:35:11Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 249;
+        plan tests => 318;
     };
 
     use_ok('Handel::Order');
@@ -42,8 +42,7 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        local $^W = 0;
-        Handel::DBI->connection($db);
+        $ENV{'HandelDBIDSN'} = $db;
     };
 
 
@@ -63,9 +62,13 @@ sub run {
 
     ## load a single cart returning a Handel::Cart object
     {
-        my $order = $subclass->load({
+        my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->id, '11111111-1111-1111-1111-111111111111');
@@ -200,6 +203,48 @@ sub run {
     {
         my @orders = $subclass->load({
             id => '%-%'
+        });
+        is(scalar @orders, 3);
+
+        my $order1 = $orders[0];
+        isa_ok($order1, 'Handel::Order');
+        isa_ok($order1, $subclass);
+        is($order1->id, '11111111-1111-1111-1111-111111111111');
+        is($order1->shopper, '11111111-1111-1111-1111-111111111111');
+        is($order1->type, ORDER_TYPE_TEMP);
+        is($order1->count, 2);
+        if ($subclass ne 'Handel::Order') {
+            is($order1->custom, 'custom');
+        };
+
+        my $order2 = $orders[1];
+        isa_ok($order2, 'Handel::Order');
+        isa_ok($order2, $subclass);
+        is($order2->id, '22222222-2222-2222-2222-222222222222');
+        is($order2->shopper, '11111111-1111-1111-1111-111111111111');
+        is($order2->type, ORDER_TYPE_SAVED);
+        is($order2->count, 1);
+        if ($subclass ne 'Handel::Order') {
+            is($order2->custom, 'custom');
+        };
+
+        my $order3 = $orders[2];
+        isa_ok($order3, 'Handel::Order');
+        isa_ok($order3, $subclass);
+        is($order3->id, '33333333-3333-3333-3333-333333333333');
+        is($order3->shopper, '33333333-3333-3333-3333-333333333333');
+        is($order3->type, ORDER_TYPE_SAVED);
+        is($order3->count, 2);
+        if ($subclass ne 'Handel::Order') {
+            is($order3->custom, 'custom');
+        };
+    };
+
+
+    ## load all orders into an array with SQL::Abstract wildcard filter
+    {
+        my @orders = $subclass->load({
+            id => {like => '%-%'}
         });
         is(scalar @orders, 3);
 

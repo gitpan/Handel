@@ -1,4 +1,4 @@
--- $Id: handel.sqlite.sql 851 2005-09-21 00:48:31Z claco $
+-- $Id: handel.sqlite.sql 1311 2006-07-09 18:28:51Z claco $
 CREATE TABLE cart (
 	id varchar(36) NOT NULL default '',
 	shopper varchar(36) NOT NULL default '',
@@ -43,8 +43,9 @@ CREATE TABLE orders (
 	billtocountry varchar(25) NULL,
 	billtodayphone varchar(25) NULL,
 	billtonightphone varchar(25) NULL,
-	billtofax varchar(25) NULL,billtoemail varchar(50) NULL,
-	shiptosameasbillto tinyint NOT NULL  default '0',
+	billtofax varchar(25) NULL,
+	billtoemail varchar(50) NULL,
+	shiptosameasbillto tinyint(3) NOT NULL  default '0',
 	shiptofirstname varchar(25) NULL,
 	shiptolastname varchar(25) NULL,
 	shiptoaddress1 varchar(50) NULL,

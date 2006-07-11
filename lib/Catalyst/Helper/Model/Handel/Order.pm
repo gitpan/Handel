@@ -1,7 +1,8 @@
-# $Id: Order.pm 837 2005-09-19 22:56:39Z claco $
+# $Id: Order.pm 1318 2006-07-10 23:42:32Z claco $
 package Catalyst::Helper::Model::Handel::Order;
 use strict;
 use warnings;
+use Catalyst 5.7;
 
 sub mk_compclass {
     my ($self, $helper, $dsn, $user, $pass) = @_;
@@ -26,13 +27,9 @@ __model__
 package [% class %];
 use strict;
 use warnings;
-use base 'Handel::Order';
+use base qw/Handel::Order/;
 
-{
-    $^W = 0;
-    Handel::DBI->connection('[% dsn %]', '[% user %]', '[% pass %]');
-};
-
+__PACKAGE__->connection_info('[% dsn %]', '[% user %]', '[% pass %]');
 1;
 __test__
 use Test::More tests => 2;

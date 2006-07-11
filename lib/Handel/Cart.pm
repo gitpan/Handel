@@ -1,49 +1,32 @@
-# $Id: Cart.pm 1080 2006-01-19 02:05:22Z claco $
+# $Id: Cart.pm 1314 2006-07-10 00:29:55Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
 
 BEGIN {
-    use base 'Handel::DBI';
-    use Handel::Constants qw(:cart :returnas);
-    use Handel::Constraints qw(:all);
-    use Handel::Currency;
-    use Handel::L10N qw(translate);
+    use Handel;
+    use Handel::Constants qw/:cart/;
+    use Handel::Constraints qw/:all/;
+    use Handel::L10N qw/translate/;
 
-    __PACKAGE__->mk_classdata(_item_class => 'Handel::Cart::Item');
+    use base qw/Handel::Base/;
+    __PACKAGE__->storage_class('Handel::Storage::Cart');
+    __PACKAGE__->create_accessors;
 };
 
-__PACKAGE__->autoupdate(1);
-__PACKAGE__->table('cart');
-__PACKAGE__->iterator_class('Handel::Iterator');
-__PACKAGE__->columns(All => qw(id shopper type name description));
-__PACKAGE__->has_many(_items => 'Handel::Cart::Item', 'cart');
-__PACKAGE__->add_constraint('id',      id      => \&constraint_uuid);
-__PACKAGE__->add_constraint('shopper', shopper => \&constraint_uuid);
-__PACKAGE__->add_constraint('type',    type    => \&constraint_cart_type);
-
 sub new {
-    my ($self, $data) = @_;
+    my ($class, $data) = @_;
 
     throw Handel::Exception::Argument(
         -details => translate('Param 1 is not a HASH reference') . '.') unless
             ref($data) eq 'HASH';
 
-    if (!defined($data->{'id'}) || !constraint_uuid($data->{'id'})) {
-        $data->{'id'} = $self->uuid;
-    };
+    my $self = bless {
+        result => $class->storage->schema_instance->resultset($class->storage->schema_source)->create($data),
+        autoupdate => $class->storage->autoupdate
+    }, ref $class || $class;
 
-    if (!defined($data->{'type'})) {
-        $data->{'type'} = CART_TYPE_TEMP;
-    };
-
-    if ($data->{'type'} == CART_TYPE_SAVED && !$data->{'name'}) {
-        throw Handel::Exception::Constraint(
-            -details => translate(
-                'Cart name is required when creating a saved cart') . '.');
-    };
-
-    return $self->insert($data);
+    return $self;
 };
 
 sub add {
@@ -55,29 +38,29 @@ sub add {
               (ref($data) eq 'HASH' or $data->isa('Handel::Cart::Item'));
 
     if (ref($data) eq 'HASH') {
-        if (!defined($data->{'id'}) || !constraint_uuid($data->{'id'})) {
-            $data->{'id'} = $self->uuid;
-        };
-
-        return $self->add_to__items($data);
+        return bless {
+            result => $self->result->create_related($self->storage->item_relationship, $data),
+            autoupdate => $self->storage->item_class->storage->autoupdate
+        }, $self->storage->item_class;
     } else {
         my %copy;
 
-        foreach ($data->columns) {
+        foreach ($data->result->columns) {
             next if $_ =~ /^(id|cart)$/i;
-            $copy{$_} = $data->$_;
+            $copy{$_} = $data->result->$_;
         };
 
-        $copy{'id'} = $self->uuid;
-
-        return $self->add_to__items(\%copy);
+        return bless {
+            result => $self->result->create_related($self->storage->item_relationship, \%copy),
+            autoupdate => $self->storage->item_class->storage->autoupdate
+        }, $self->storage->item_class;
     };
 };
 
 sub clear {
     my $self = shift;
 
-    $self->_items->delete_all;
+    $self->result->delete_related($self->storage->item_relationship);
 
     return undef;
 };
@@ -85,7 +68,7 @@ sub clear {
 sub count {
     my $self  = shift;
 
-    return $self->_items->count || 0;
+    return $self->result->count_related($self->storage->item_relationship) || 0;
 };
 
 sub delete {
@@ -95,122 +78,68 @@ sub delete {
         translate('Param 1 is not a HASH reference') . '.') unless
             ref($filter) eq 'HASH';
 
-    ## I'd much rather use $self->_items->search_like, but it doesn't work that
-    ## way yet. This should be fine as long as :weaken refs works.
-    return $self->item_class->search_like(%{$filter},
-        cart => $self->id)->delete_all;
+    $filter = $self->storage->_migrate_wildcards($filter);
+
+    return $self->result->delete_related($self->storage->item_relationship, $filter);
 };
 
 sub destroy {
     my ($self, $filter) = @_;
 
     if (ref $self) {
-        $self->SUPER::delete;
+        $self->result->delete;
     } else {
         throw Handel::Exception::Argument( -details =>
             translate('Param 1 is not a HASH reference') . '.') unless
                 ref($filter) eq 'HASH';
 
-        my $carts = $self->load($filter, RETURNAS_ITERATOR);
-        while (my $cart = $carts->next) {
-            $cart->clear;
-            $cart->SUPER::delete;
-        };
+        $filter = $self->storage->_migrate_wildcards($filter);
+
+        $self->storage->schema_instance->resultset($self->storage->schema_source)->search($filter)->delete_all;
     };
 
     return;
 };
 
-sub item_class {
-    my ($class, $item_class) = @_;
-
-    if ($item_class) {
-        eval "require $item_class";
-
-        require version;
-        my $cdbiver = version->new(Class::DBI->VERSION);
-
-        if ($cdbiver->numify < 3.000008) {
-            undef(*_items);
-            undef(*add_to__items);
-            __PACKAGE__->has_many(_items => $item_class, 'cart');
-        } else {
-            $class->has_many(_items => $item_class, 'cart');
-        };
-    } else {
-        return $class->_item_class;
-    };
-};
-
 sub items {
-    my ($self, $filter, $wantiterator) = @_;
+    my ($self, $filter) = @_;
 
     throw Handel::Exception::Argument( -details =>
         translate('Param 1 is not a HASH reference') . '.') unless(
             ref($filter) eq 'HASH' or !$filter);
 
-    $wantiterator ||= RETURNAS_AUTO;
-    $filter       ||= {};
+    $filter = $self->storage->_migrate_wildcards($filter);
 
-    my $wildcard = Handel::DBI::has_wildcard($filter);
+    if (wantarray) {
+        my @items = $self->result->search_related($self->storage->item_relationship, $filter)->all;
 
-    ## If the filter as a wildcard, push it through a fresh search_like since it
-    ## doesn't appear to be available within a loaded object.
-    if ((wantarray && $wantiterator != RETURNAS_ITERATOR) || $wantiterator == RETURNAS_LIST) {
-        my @items = $wildcard ?
-            $self->item_class->search_like(%{$filter}, cart => $self->id) :
-            $self->_items(%{$filter});
-
-        return @items;
-    } elsif ($wantiterator == RETURNAS_ITERATOR) {
-        my $iterator = $wildcard ?
-            $self->item_class->search_like(%{$filter}, cart => $self->id) :
-            $self->_items(%{$filter});
+        return map {bless {result => $_, autoupdate => $self->storage->item_class->storage->autoupdate}, $self->storage->item_class} @items;
+    } else {
+        my $iterator = $self->result->search_related_rs($self->storage->item_relationship, $filter);
+        $iterator->result_class($self->storage->item_class);
 
         return $iterator;
-    } else {
-        my $iterator = $wildcard ?
-            $self->item_class->search_like(%{$filter}, cart => $self->id) :
-            $self->_items(%{$filter});
-        if ($iterator->count == 1 && $wantiterator != RETURNAS_ITERATOR && $wantiterator != RETURNAS_LIST) {
-            return $iterator->next;
-        } else {
-            return $iterator;
-        };
     };
 };
 
 sub load {
-    my ($self, $filter, $wantiterator) = @_;
+    my ($class, $filter) = @_;
 
     throw Handel::Exception::Argument( -details =>
         translate('Param 1 is not a HASH reference') . '.') unless(
             ref($filter) eq 'HASH' or !$filter);
 
-    $wantiterator ||= RETURNAS_AUTO;
+    $filter = $class->storage->_migrate_wildcards($filter);
 
-    ## only return array if wantarray and not explicitly asking for an iterator
-    ## or we've explicitly asked for a list/array
-    if ((wantarray && $wantiterator != RETURNAS_ITERATOR) || $wantiterator == RETURNAS_LIST) {
-        my @carts = $filter ? $self->search_like(%{$filter}) :
-            $self->retrieve_all;
-        return @carts;
-    ## return an iterator if explicitly asked for
-    } elsif ($wantiterator == RETURNAS_ITERATOR) {
-        my $iterator = $filter ?
-            $self->search_like(%{$filter}) : $self->retrieve_all;
+    if (wantarray) {
+        my @carts = $class->storage->schema_instance->resultset($class->storage->schema_source)->search($filter)->all;
+
+        return map {bless {result => $_, autoupdate => $class->storage->autoupdate}, ref $class || $class} @carts;
+    } else {
+        my $iterator = $class->storage->schema_instance->resultset($class->storage->schema_source)->search_rs($filter);
+        $iterator->result_class(ref $class || $class);
 
         return $iterator;
-    ## full out auto
-    } else {
-        my $iterator = $filter ?
-            $self->search_like(%{$filter}) : $self->retrieve_all;
-
-        if ($iterator->count == 1 && $wantiterator != RETURNAS_ITERATOR && $wantiterator != RETURNAS_LIST) {
-            return $iterator->next;
-        } else {
-            return $iterator;
-        };
     };
 };
 
@@ -224,32 +153,32 @@ sub restore {
             'Param 1 is not a HASH reference or Handel::Cart') . '.') unless(
                 ref($data) eq 'HASH' or $data->isa('Handel::Cart'));
 
+    if (ref $data eq 'HASH') {
+        $data = $self->storage->_migrate_wildcards($data);
+    };
+
     my @carts = (ref($data) eq 'HASH') ?
-        $self->search_like(%{$data}) : $data;
+        $self->load($data)->all : $data;
 
     if ($mode == CART_MODE_REPLACE) {
         $self->clear;
 
         my $first = $carts[0];
-        $self->autoupdate(0);
         $self->name($first->name);
         $self->description($first->description);
-        $self->update;
-        $self->autoupdate(1);
 
         foreach (@carts) {
-            my $iterator = $_->items(undef, 1);
-            while (my $item = $iterator->next) {
+            my @items = $_->items->all;
+            foreach my $item (@items) {
                 $self->add($item);
             };
         };
     } elsif ($mode == CART_MODE_MERGE) {
         foreach (@carts) {
-            my $iterator = $_->items(undef, 1);
-            while (my $item = $iterator->next) {
-                if (my $exists = $self->items({sku => $item->sku})){
+            my @items = $_->items->all;
+            foreach my $item (@items) {
+                if (my $exists = $self->items({sku => $item->sku})->first){
                     $exists->quantity($item->quantity + $exists->quantity);
-                    $exists->update;
                 } else {
                     $self->add($item);
                 };
@@ -257,8 +186,8 @@ sub restore {
         };
     } elsif ($mode == CART_MODE_APPEND) {
         foreach (@carts) {
-            my $iterator = $_->items(undef, 1);
-            while (my $item = $iterator->next) {
+            my @items = $_->items->all;
+            foreach my $item (@items) {
                 $self->add($item);
             };
         };
@@ -269,21 +198,22 @@ sub restore {
 };
 
 sub save {
-    $_[0]->type(CART_TYPE_SAVED);
+    my $self = shift;
+    $self->type(CART_TYPE_SAVED);
 
     return undef;
 };
 
 sub subtotal {
     my $self     = shift;
-    my $it       = $self->items(undef, 1);
+    my $it       = $self->items();
     my $subtotal = 0.00;
 
-    while ( my $item = $it->next ) {
-        $subtotal += ( $item->total );
+    while (my $item = $it->next) {
+        $subtotal += ($item->total);
     };
 
-    return Handel::Currency->new($subtotal);
+    return $self->storage->currency_class->new($subtotal);
 };
 
 1;
@@ -317,87 +247,41 @@ Handel::Cart - Module for maintaining shopping cart contents
 
 =head1 DESCRIPTION
 
-C<Handel::Cart> is quick and dirty component for maintaining simple shopping
-cart data.
-
-While C<Handel::Cart> subclasses L<Class::DBI>, it is strongly recommended that
-you not use its methods unless it's absolutely necessary. Stick to the
-documented methods here and you'll be safe should I decide to implement some
-other data access mechanism. :-)
+Handel::Cart is component for maintaining simple shopping cart data.
 
 =head1 CONSTRUCTOR
 
-There are two ways to create a new cart object. You can either pass a hashref
-into C<new> containing all the required values needed to create a new shopping
-cart record or pass a hashref into C<load> containing the search criteria to use
-to load an existing shopping cart.
+=head2 new
 
 =over
 
-=item C<Handel::Cart-E<gt>new(\%data)>
+=item Arguments: \%data
+
+=back
+
+Creates a new shopping cart instance containing the specified data.
 
     my $cart = Handel::Cart->new({
         shopper => '10020400-E260-11CF-AE68-00AA004A34D5',
         name    => 'My Shopping Cart'
     });
 
-=item C<Handel::Cart-E<gt>load([\%filter, $wantiterator])>
-
-    my $cart = Handel::Cart->load({
-        id => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E'
-    });
-
-You can also omit \%filter to load all available carts.
-
-    my @carts = Handel::Cart->load();
-
-In scalar context C<load> returns a C<Handel::Cart> object if there is a single
-result, or a L<Handel::Iterator> object if there are multiple results. You can
-force C<load> to always return an iterator even if only one cart exists by
-setting the C<$wantiterator> parameter to C<RETURNAS_ITERATOR>.
-
-    my $iterator = Handel::Cart->load(undef, RETURNAS_ITERATOR);
-    while (my $item = $iterator->next) {
-        print $item->sku;
-    };
-
-See L<Handel::Contstants> for the available C<RETURNAS> options.
-
-A C<Handel::Exception::Argument> exception is thrown if the first parameter is
-not a hashref.
-
-=back
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
+thrown if the first parameter is not a hashref.
 
 =head1 METHODS
 
-=head2 item_class($classname)
-
-Sets the name of the class to be used when returning or creating cart items.
-While you can set this directly in your application, it's best to set it
-in a custom subclass of Handel::Cart.
-
-    package CustomCart;
-    use strict;
-    use warnings;
-    use base 'Handel::Cart';
-
-    __PACKAGE__->item_class('CustomCart::CustomItem';
-
-    1;
-
-=head2 Adding Cart Items
-
-You can add items to the shopping cart by supplying a hashref containing the
-required name/values or by passing in a newly create Handel::Cart::Item
-object. If successful, C<add> will return a L<Handel::Cart::Item> object
-reference.
-
-Yes, I know. Why a hashref and not just a hash? So I can add new params
-later if need be. Oh yeah, and "Because I Can". :-P
+=head2 add
 
 =over
 
-=item C<$cart-E<gt>add(\%data)>
+=item Arguments: \%data or $item
+
+=back
+
+Adds a new item to the current shopping cart and returns an instance of the
+item class specified in this classes storage. You can either pass the item
+data as a hash reference:
 
     my $item = $cart->add({
         shopper  => '10020400-E260-11CF-AE68-00AA004A34D5',
@@ -406,148 +290,157 @@ later if need be. Oh yeah, and "Because I Can". :-P
         price    => 1.25
     });
 
-=item C<$cart-E<gt>add($object)>
+or pass an existing cart item:
 
-    my $item = Handel::Cart::Item->new({
-        sku      => 'SKU1234',
-        quantity => 1,
-        price    => 1.25
+    my $wishlist = Handel::Cart->load({
+        shopper => '10020400-E260-11CF-AE68-00AA004A34D5',
+        type    => CART_TYPE_SAVED
     });
-    ...
-    $cart->add($item);
+    
+    $cart->add(
+        $wishlist->items({sku => 'ABC-123'})
+    );
 
-A C<Handel::Exception::Argument> exception is thrown if the first parameter
-isn't a hashref or a C<Handel::Cart::Item> object.
+When passing an existing cart item to add, all columns in the source item will
+be copied into the destination item if the column exists in the destination,
+and the column isn't the primary key or the foreign key of the item
+relationship.
 
-=back
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
+thrown if the first parameter isn't a hashref or an object that subclasses
+Handel::Cart::Item.
 
-=head2 Fetching Cart Items
+=head2 clear
 
-You can retrieve all or some of the items contained in the cart via the C<items>
-method. In a scalar context, items returns an iterator object which can be used
-to cycle through items one at a time. In list context, it will return an array
-containing all items.
+Deletes all items from the current cart.
+
+    $cart->clear;
+
+=head2 count
+
+Returns the number of items in the cart object.
+
+    my $numitems = $cart->count;
+
+=head2 delete
 
 =over
 
-=item C<$cart-E<gt>items()>
+=item Arguments: \%filter
+
+=back
+
+Deleted the item matching the supplied filter from the current cart.
+
+    $cart->delete({
+        sku => 'ABC-123'
+    });
+
+=head2 destroy
+
+=over
+
+=item \%filter
+
+=back
+
+Deletes entire shopping carts (and their items) from the database. When called
+as an instance method, this will delete all items from the current cart instance
+and delete the cart container. C<filter> will be ignored.
+
+    $cart->destroy;
+
+When called as a class method, this will delete all carts matching C<filter>.
+
+    Handel::Cart->destroy({
+        shopper => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E'
+    });
+
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception will be
+thrown if C<filter> is not a HASH reference.
+
+=head2 items
+
+=over
+
+=item Arguments: \%filter
+
+=back
+
+Loads the current carts items matching the specified filter and returns a
+L<Handel::Iterator|Handel::Iterator> in scalar context, or a list of items in
+list context.
 
     my $iterator = $cart->items;
     while (my $item = $iterator->next) {
         print $item->sku;
     };
 
-    my @items = $cart->items;
-    ...
-    dosomething(\@items);
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
+thrown if parameter one isn't a hashref or undef.
 
-=item C<$cart-E<gt>items(\%filter [, $wantiterator])>
+=head2 load
 
-When filtering the items in the shopping cart in scalar context, a
-C<Handel::Cart::Item> object will be returned if there is only one result. If
-there are multiple results, a Handel::Iterator object will be returned
-instead. You can force C<items> to always return a C<Handel::Iterator> object
-even if only one item exists by setting the $wantiterator parameter to
-C<RETURNAS_ITERATOR>.
+=over
 
-    my $item = $cart->items({sku => 'SKU1234'}, RETURNAS_ITERATOR);
-    if ($item->isa('Handel::Cart::Item)) {
-        print $item->sku;
-    } else {
-        while ($item->next) {
-            print $_->sku;
-        };
+=item Arguments: \%filter
+
+=back
+
+Loads existing carts matching the specified filter and returns a
+L<Handel::Iterator|Handel::Iterator> in scalar context, or a list of carts in
+list context.
+
+    my $iterator = Handel::Cart->load({
+        shopper => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E',
+        type    => CART_TYPE_SAVED
+    });
+    
+    while (my $cart = $iterator->next) {
+        print $cart->id;
     };
 
-See the C<RETURNAS> constants in L<Handel::Constants> for other options.
+    my @carts = Handel::Cart->load();
 
-In list context, filtered items return an array of items just as when items is
-called without a filter specified.
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
+thrown if the first parameter is not a hashref.
 
-    my @items - $cart->items((sku -> 'SKU1%'});
+=head2 save
 
-A C<Handel::Exception::Argument> exception is thrown if parameter one isn't a
-hashref or undef.
+Marks the current shopping cart type as C<CART_TYPE_SAVED>.
 
-=back
+    $cart->save
 
-=head2 Removing Cart Items
-
-=over
-
-=item C<$cart-E<gt>clear()>
-
-This method removes all items from the current cart object.
-
-    $cart->clear;
-
-=item C<$cart-E<gt>delete(\%filter)>
-
-This method deletes the cart item(s) matching the supplied filter values and
-returns the number of items deleted.
-
-    if ( $cart->delete({id => '8D4B0BE1-C02E-11D2-A33D-00A0C94B8D0E'}) ) {
-        print 'Item deleted';
-    };
-
-=back
-
-=head2 Removing the Entire Cart
+=head2 restore
 
 =over
 
-=item C<$cart-E<gt>destroy(\%filter)>
+=item Arguments: \%filter [, $mode]
 
-=item C<Handel::Cart-E<gt>destroy(\%filter)>
-
-When called used as an instance method, this will delete all items from the
-current cart instance and delete the cart container. C<filter> will be ignored.
-
-When called as a package method, this will delete all carts matching C<filter>.
-A Handel::Exception::Argument exception will be thrown is C<filter> is not a
-HASH reference.
+=item Arguments: $cart [, $mode]
 
 =back
 
-=head2 Saving Your Cart
+Copies (restores) items from a cart, or a set of carts back into the current
+shopping cart. You may either pass in a hashref containing the search criteria
+of the shopping cart(s) to restore:
 
-By default every shopping cart created is considered temporary
-(C<CART_TYPE_TEMP>) and could be deleted by cleanup processes at any time after
-the defined inactivity period. This could also be considered characteristic of
-whether the shopper id is from a temporary part of where it's used, or whether
-it is generated and stored within a customer profile assigned during
-authentication.
+    $cart->restore({
+        shopper => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E',
+        type    => CART_TYPE_SAVED
+    });
 
-By saving your shopping cart, you are marking it as C<CART_TYPE_SAVED> and it
-should be left alone by any cleanup processes and available to that shopper at
-any time.
+or you can pass in an existing C<Handel::Cart> object or subclass.
 
-For all intents and purposes, a saved cart is a wishlist. At some point in the
-future they may be treated differently.
-
-=over
-
-=item C<$cart-E<gt>save()>
-
-=back
-
-=head2 Restoring A Previously Saved Cart
-
-There are two basic ways to restore a previously saved shopping cart into the
-current shopping cart object. You may either pass in a hashref containing the
-search criteria of the shopping cart(s) to restore or you can pass in an
-existing C<Handel::Cart> object.
-
-=over
-
-=item C<$cart-E<gt>restore(\%search, [$mode])>
-
-=item C<$cart-E<gt>restore($object, [$mode])>
-
-=back
+    my $wishlist = Handel::Cart->load({
+        id   => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E',
+        type => CART_TYPE_SAVED
+    });
+    
+    $cart->restore($wishlist);
 
 For either method, you may also specify the mode in which the cart should be
-restored. $mode can be one of the following:
+restored. The following modes are available:
 
 =over
 
@@ -569,46 +462,45 @@ All items in the saved cart will be appended to the list of items in the current
 cart. No effort will be made to merge items with the same SKU and duplicates
 will be ignored.
 
-A C<Handel::Exception::Argument> exception is thrown if the first parameter
-isn't a hashref or a C<Handel::Cart> object.
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
+thrown if the first parameter isn't a hashref or a C<Handel::Cart> object or
+subclass.
 
 =back
 
-=head2 Misc. Methods
+=head1 COLUMNS
+
+The following methods are mapped to columns in the default cart schema. These
+methods may or may not be available in any subclasses, or in situations where
+a custom schema is being used that has different column names.
+
+=head2 id
+
+Returns the id of the current cart.
+
+    print $cart->id;
+
+=head2 shopper
 
 =over
 
-=item C<$cart-E<gt>count()>
+=item Arguments: $shopper
 
-Returns the number of items in the cart object.
+=back
 
-    my $numitems = $cart->count;
+Gets/set the id of the shopper the cart should be associated with.
 
-=item C<$cart-E<gt>description([$description])>
+    print $cart->shopper;
 
-Returns/sets the description of the current cart.
+=head2 type
 
-=item C<$cart-E<gt>name([$name])>
+=over
 
-Returns/set the name of the current cart.
+=item Arguments: $type
 
-=item C<$cart-E<gt>subtotal()>
+=back
 
-Returns the current total price of all the items in the cart object. This is
-equivalent to:
-
-    my $iterator = $cart->items;
-    while (my $item = $iterator->next) {
-        $subtotal += $item->quantity*$item->price;
-    };
-
-Starting in version C<0.12>, C<subtotal> now returns a stringified L<Handel::Currency>
-object. This can be used to format the price, and hopefully to convert it's currency
-to another locale in the future.
-
-=item C<$cart-E<gt>type()>
-
-Returns the type of the current cart. Currently the two types are
+Gets/sets the type of the current cart. Currently the two types allowed are:
 
 =over
 
@@ -624,11 +516,47 @@ shopper at any time.
 
 =back
 
+=head2 name
+
+=over
+
+=item Arguments: $name
+
 =back
+
+Gets/sets the name of the current cart.
+
+    $cart->name('My Naw Cart');
+
+=head2 description
+
+=over
+
+=item Arguments: $description
+
+=back
+
+Gets/sets the description of the current cart.
+
+    $cart->description('New Cart');
+    print $cart->description;
+
+=head2 subtotal
+
+Returns the current total price of all the items in the cart object. This is
+equivalent to:
+
+    my $iterator = $cart->items;
+    while (my $item = $iterator->next) {
+        $subtotal += $item->quantity*$item->price;
+    };
+
+By default, a L<Handel::Currency|Handel::Currency> object will be returned.
+
 
 =head1 SEE ALSO
 
-L<Handel::Constants>
+L<Handel::Cart::Item>, L<Handel::Constants>
 
 =head1 AUTHOR
 

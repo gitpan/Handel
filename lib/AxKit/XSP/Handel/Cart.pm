@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1102 2006-02-01 03:24:15Z claco $
+# $Id: Cart.pm 1314 2006-07-10 00:29:55Z claco $
 package AxKit::XSP::Handel::Cart;
 use strict;
 use warnings;
@@ -171,7 +171,7 @@ sub uuid_start {
     my ($e, $tag, %attr) = @_;
 
     $e->start_expr($tag);
-    $e->append_to_script("Handel::Cart->uuid");
+    $e->append_to_script("Handel::Cart->storage->new_uuid");
     $e->end_expr($tag);
 
     return;
@@ -365,7 +365,7 @@ sub new_results_shopper_start {
         ## cart:uuid
         if ($tag =~ /^(g|u)uid$/) {
             $e->start_expr($tag);
-            $e->append_to_script("Handel::Cart->uuid");
+            $e->append_to_script("Handel::Cart->storage->new_uuid");
             $e->end_expr($tag);
 
         ## cart:new
@@ -857,11 +857,13 @@ sub new_results_shopper_start {
                 pop @context;
                 return '
                     $_xsp_handel_cart_cart->update;
+                    $_xsp_handel_cart_cart->autoupdate(1);
                 ';
             } elsif ($context[$#context-2] =~ /^(item(s?))$/) {
                 pop @context;
                 return '
                     $_xsp_handel_cart_item->update;
+                    $_xsp_handel_cart_item->autoupdate(1);
                 ';
             };
 

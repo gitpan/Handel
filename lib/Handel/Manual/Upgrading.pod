@@ -1,0 +1,206 @@
+=head1 NAME
+
+Handel::Manual::Upgrading - A guide to upgrading your Handel installation.
+
+=head1 DESCRIPTION
+
+Handel 1.0 is a major update from the 0.3x versions. While the public API is mostly compatible, there are
+a few changes to what is returned from the public methods. How subclasses are configured has
+completely changed in 1.0. Depending on how much customization you have done, you may or may not have
+to make a lot of changes to your existing code. While there are many many change under the hood, this
+document will only cover changes that effect the public API, or changes that effect subclassing Handel
+classes.
+
+=head1 FROM 0.3x TO 1.0
+
+=head2 Public API Changes
+
+The following changes will have to be made to any software using the default classes in Handel 0.33 and
+below after upgrading to Handel 1.0.
+
+=head3 RETURN_AS is dead.
+
+The RETURN_AS constants and parameters are dead. Gone. Buried. That are an ex-parrot. They were a
+bad idea from my inexperience at dealing with context issues in Template Toolkit. While they are still
+declared in Handel::Constants, they are not used anywhere. They will go away eventually.
+
+All of the methods that used them now only return one of two things: A list of objects in list context, or a
+Handel::Iterator in scalar context. No single/multiple result magic exists.
+
+Version 0.3x:
+
+    my $cart = Handel::Cart->load({id => '11111111-1111-1111-1111-111111111111'});
+    # $cart isa Handel::Cart
+    
+    print $cart->name;
+
+Version 1.0
+
+    my $it = Handel::Cart->load({id => '11111111-1111-1111-1111-111111111111'});
+    # $it isa Handel::Iterator
+    
+    my $cart = $it->first;
+    # $cart isa Handel::Cart
+    
+    print $cart->name;
+
+This effects all calls to load/items in Handel::Cart and Handel::Order. If you are using the Template Toolkit
+plugins, they now always return a Handel::Iterator object. If you need/want an list of results, you can simply
+call $iterator->all to get them within TT.
+
+=head2 Subclassing Changes
+
+The following changes will have to be made to any custom subclasses of the Handel classes:
+
+=head3 Classes are not Class::DBI classes
+
+In version 0.3x, the Cart/Order/Item classes were subclasses of Handel::DBI, which was a subclass of
+Class::DBI itself. In 1.0, Cart/Order/Item classes are no longer Class::DBI subclasses. Instead, they each
+subclass L<Handel::Base|Handel::Base>, and each has its own instance of
+L<Handel::Storage|Handel::Storage>. Handel::Storage is now responsible for all of the data/schema related 
+settings. As such, most of the common data-related settings have either been moved into the local instance
+of storage, or have been pushed way down into the schema itself.
+
+In general, one only has to move most of the settings down a level into the storage instance. Here's is a brief
+example of the changes necessary for add_constraint/add_column:
+
+Version 0.3x
+
+    package MyCart;
+    use base qw/Handel::Cart/;
+    
+    __PACKAGE__->add_columns(qw/foo bar/);
+    __PACKAGE__->add_constraints('Check Name', 'name' => \&mysub);
+
+Version 1.0
+
+    package MyCart;
+    use base qw/Handel::Cart/;
+    
+    __PACKAGE__->storage->add_columns(qw/foo bar/);
+    __PACKAGE__->storage->add_constraints('name', 'Check Name' => \&mysub);
+
+I<Take special note of the parameter order for add_constraint. More on that below.>
+
+That's all there is to it. Any other Class::DBI method, like C<table>, C<has_many>, C<columns>, etc now
+reside in the Handel::Cart/Order::Schema itself. For most subclasses, this will be the extent of the changes
+necessary to get everything to work. If you have performed deeper magic to alter the table name, you will
+have to create your own schema, rather than use the default schema. Don't worry, that's what Handel 1.0 is
+all about: interchanging schemas; possibly without even changing any code in your program.
+
+As another example, here's the top section of Handel::Cart before and after the changes:
+
+Version 0.3x
+
+    use base qw/Handel::DBI/;
+    __PACKAGE__->mk_classdata(_item_class => 'Handel::Cart::Item');
+    __PACKAGE__->autoupdate(1);
+    __PACKAGE__->table('cart');
+    __PACKAGE__->iterator_class('Handel::Iterator');
+    __PACKAGE__->columns(All => qw(id shopper type name description));
+    __PACKAGE__->has_many(_items => 'Handel::Cart::Item', 'cart');
+    __PACKAGE__->add_constraint('id',      id      => \&constraint_uuid);
+    __PACKAGE__->add_constraint('shopper', shopper => \&constraint_uuid);
+    __PACKAGE__->add_constraint('type',    type    => \&constraint_cart_type);
+
+Version 1.0
+
+    use base qw/Handel::Base/;
+    __PACKAGE__->storage_class('Handel::Storage::Cart');
+    __PACKAGE__->storage({
+        schema_class   => 'Handel::Cart::Schema',
+        schema_source  => 'Carts',
+        item_class     => 'Handel::Cart::Item',
+        constraints    => {
+            id      => {'Check Id'      => \&constraint_uuid},
+            shopper => {'Check Shopper' => \&constraint_uuid},
+            type    => {'Check Type'    => \&constraint_cart_type},
+            name    => {'Check Name'    => \&constraint_cart_name}},
+        default_values => {
+            id         => \&Handel::Storage::uuid,
+            type       => CART_TYPE_TEMP}
+    });
+
+For the most part, their concepts are quite similar. C<table>, C<columns> and C<has_many> are now set in
+L<Handel::Schema::Cart|Handel::Schema::Cart> itself. C<autoupdate>, C<item_class> and
+C<add_constraint> are now set on the local storage object instead of on the cart object itself.
+
+Things like constraints and columns can be set either in the storage() arguments, or you can set them
+afterwords using the method syntax:
+
+    use base qw/Handel::Base/;
+    __PACKAGE__->storage_class('Handel::Storage::Cart');
+    __PACKAGE__->storage({
+        schema_class   => 'Handel::Cart::Schema',
+        schema_source  => 'Carts',
+        item_class     => 'Handel::Cart::Item',
+        default_values => {
+            id         => \&Handel::Storage::uuid,
+            type       => CART_TYPE_TEMP}
+    });
+    __PACKAGE__->storage->add_constraint('id',      'Check Id'      => \&constraint_uuid);
+    __PACKAGE__->storage->add_constraint('shopper', 'Check Shopper' => \&constraint_uuid);
+    __PACKAGE__->storage->add_constraint('type',    'Check Type'    => \&constraint_cart_type);
+    __PACKAGE__->storage->add_constraint('name',    'Check Name'   => \&constraint_cart_name);
+
+The two examples above are exactly the same in terms of functionality. In terms of migration, it's mostly just
+a matter of changing how some options get set; B<if> you are using the default Handel schema.
+
+See L<Handel::Storage|Handel::Storage> for the list of available options for things like add/remove columns,
+add/remove/constraints, setting the item class, autoupdates, etc.
+
+=head3 add_constraints parameters are reversed
+
+As with Class::DBI, you can have more than on constraint tied to the same column. All constraints are stored
+internally by name, grouped by column. In an effort to make C<add_constraint> better match the
+C<constraints> storage setup option and the internal configuration data, the parameters have been reversed:
+
+Version 0.3x
+
+    __PACKAGE__->add_constraint('ConstraintName', 'columnname' => \&mysub);
+
+Version 1.0
+
+    __PACKAGE__->storage->add_constraint('columnname', 'ConstraintName' => \&mysub);
+
+=head3 Constraint methods receive different parameters
+
+The constraint_* methods in Handel::Constraints followed the Class::DBI constraint format. Now that we're
+not using Class::DBI any more, the format has remained similar, but contains slightly different things:
+
+Version 0.3x
+
+    sub constraint_checkit {
+        my ($value, $object, $column, $changing) = @_;
+        # $value:    the field value
+        # $object:   the actual cart object
+        # $column:   the column name
+        # $changing: hashref of changing values
+        ...
+    };
+
+Version 1.0
+
+    sub constraint_checkit {
+        my ($value, $result, $column, $data) = @_;
+        # $value:  the field value
+        # $result: the actual schema result/row object. NOT a cart object
+        # $column: the column name
+        # data:    hashref of column values
+        ...
+    };
+
+C<$result> is a DBIx::Class::ResultSource/Row object that can be used to get/set or inspect any column in
+the current row, taking the place of of both the old Class::DBI C<$object> and C<$changing>. Any rows
+changed in C<$data> will be set just as if you had also called $result-E<gt>set_column($column, $value).
+
+=head1 SEE ALSO
+
+L<Handel::Base>, L<Handel::Storage>, L<DBIx::Class::Schema>
+
+=head1 AUTHOR
+
+    Christopher H. Laco
+    CPAN ID: CLACO
+    claco@chrislaco.com
+    http://today.icantfocus.com/blog/

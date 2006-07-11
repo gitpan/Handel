@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 1101 2006-02-01 03:23:52Z claco $
+# $Id: Makefile.PL 1298 2006-07-08 01:09:20Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -17,30 +17,14 @@ if (Test::More->VERSION < 0.48) {
 };
 
 eval 'require Handel';
-if (!$@ && Handel->VERSION eq '0.17') {
+if (!$@ && $Handel::VERSION <= '1.00') {
     print "\a\a\a\a\a";
     print "----------------------------------------------------------\n";
     print "BREAKING API CHANGES!!!!\n\n";
-    print "Handel::Order >= 0.18 is incompatable with Handel::Order\n";
-    print "version 0.17 only. Earlier versions of Handel without\n";
-    print "Handel::Order are not effected.\n";
+    print "Handel 1.0+ is not API compatable with Handel <= 0.32.\n";
+    print "Please read the documentation for further details.\n";
     print "----------------------------------------------------------\n";
     sleep 5;
-};
-
-my %modules;
-
-if ($^O eq 'MSWin32') {
-    eval 'use UUID 0.02;';
-    eval 'use Win32::Guidgen 0.02;' if $@;
-    eval 'use Win32API::GUID 0.02;' if $@;
-
-    %modules = ('UUID' => 0.02) if $@;
-} else {
-    %modules = ('Data::UUID' => 0.10);
-};
-if ($^O ne 'openbsd' && eval {require APR::UUID}) {
-    %modules = ();
 };
 
 if ($ENV{TEST_HTTP}) {
@@ -79,6 +63,8 @@ my @clean = qw(
     t/order*.db
     t/checkout*.db
     t/subclassing.db
+    t/storage*.db
+    t/base*.db
     t/TEST
     t/SMOKE
     t/logs
@@ -98,14 +84,17 @@ WriteMakefile(
     AUTHOR       => 'Christopher H. Laco <claco@chrislaco.com>',
     ABSTRACT     => 'Simple ecommerce framework with AxKit support',
     PREREQ_PM    => {
-        'Class::DBI'        => '0.96',
-        'Class::Data::Inheritable' => '0',
-        'DBI'               => '1.36',
-        'Error'             => '0.14',
-        'Locale::Maketext'  => '1.06',
-        'Module::Pluggable' => '2.95',
-        'version'           => '0',
-        %modules
+        'DBIx::Class'              => '0.07',
+        'DBIx::Class::UUIDColumns' => '0',
+        'DBIx::Class::Validation'  => '0',
+        'Class::Accessor::Grouped' => '0.02',
+        'Class::ISA'               => '0',
+        'Class::Inspector'         => '0',
+        'Clone'                    => '0',
+        'Error'                    => '0.14',
+        'Locale::Maketext'         => '1.06',
+        'Module::Pluggable'        => '2.95',
+        'Scalar::Util'             => '0'
     },
     (ExtUtils::MakeMaker->VERSION >= 6.11) ?
     (NO_META      => 1) : (),
@@ -114,5 +103,5 @@ WriteMakefile(
         PREOP => 'pod2text lib/Handel.pm > $(DISTVNAME)/README',
     },
     clean => { FILES => join ' ', @clean },
-    test  => { TESTS => join ' ', (glob("t/*.t"))}
+    test  => { TESTS => join ' ', (glob("t/*.t t/*/*.t"))}
 );

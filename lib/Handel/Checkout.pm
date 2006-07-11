@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1082 2006-01-19 02:08:35Z claco $
+# $Id: Checkout.pm 1310 2006-07-09 04:01:49Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
@@ -14,11 +14,14 @@ BEGIN {
     use Handel::L10N qw(translate);
     use Handel::Order;
     use Module::Pluggable 2.95 instantiate => 'new', sub_name => '_plugins';
-    use base qw(Class::Data::Inheritable);
+    use Class::Inspector;
 
-    __PACKAGE__->mk_classdata(_order_class => 'Handel::Order');
-    __PACKAGE__->mk_classdata(_stash_class => 'Handel::Checkout::Stash');
+    use base qw/Class::Accessor::Grouped/;
+    __PACKAGE__->mk_group_accessors('component_class', qw/order_class stash_class/);
 };
+
+__PACKAGE__->order_class('Handel::Order');
+__PACKAGE__->stash_class('Handel::Checkout::Stash');
 
 sub new {
     my $class = shift;
@@ -160,17 +163,6 @@ sub messages {
     return wantarray ? @{$self->{'messages'}} : $self->{'messages'};
 };
 
-sub order_class {
-    my ($self, $order_class) = @_;
-
-    if ($order_class) {
-        eval "require $order_class";
-        $self->_order_class($order_class);
-    };
-
-    return $self->_order_class;
-};
-
 sub order {
     my ($self, $order) = @_;
 
@@ -180,7 +172,7 @@ sub order {
         } elsif (UNIVERSAL::isa($order, 'Handel::Order')) {
             $self->{'order'} = $order;
         } elsif (constraint_uuid($order)) {
-            $self->{'order'} = $self->order_class->load({id => $order});
+            $self->{'order'} = $self->order_class->load({id => $order})->first;
         } else {
             throw Handel::Exception::Argument( -details =>
                 translate('Param 1 is not a HASH reference, Handel::Order object, or order id') . '.');
@@ -238,7 +230,7 @@ sub process {
     $self->_setup($self);
 
     {
-        local $self->order->db_Main->{AutoCommit};
+        $self->order->storage->schema_instance->txn_begin;
 
         foreach my $phase (@{$phases}) {
             next unless $phase;
@@ -251,7 +243,12 @@ sub process {
                 if ($status != CHECKOUT_HANDLER_OK && $status != CHECKOUT_HANDLER_DECLINE) {
                     $self->_teardown($self);
 
-                    eval {$self->order->dbi_rollback};
+                    $self->order->storage->schema_instance->txn_rollback;
+                    $self->order->result->discard_changes;
+                    foreach my $item ($self->order->items) {
+                        $item->result->discard_changes;
+                    };
+
                     if ($@) {
                         throw Handel::Exception(-details => "Transaction aborted. Rollback failed: $@");
                     };
@@ -261,23 +258,12 @@ sub process {
             };
         };
 
-        $self->order->dbi_commit;
+        $self->order->storage->schema_instance->txn_commit;
     };
 
     $self->_teardown($self);
 
     return CHECKOUT_STATUS_OK;
-};
-
-sub stash_class {
-    my ($self, $stash_class) = @_;
-
-    if ($stash_class) {
-        eval "require $stash_class";
-        $self->_stash_class($stash_class);
-    };
-
-    return $self->_stash_class;
 };
 
 sub stash {
@@ -312,7 +298,7 @@ sub _teardown {
 
 sub _set_search_path {
     my ($self, $opts) = @_;
-    my $config = $Handel::Cfg;
+    my $config = Handel->config;
 
     my $pluginpaths = ref $opts->{'pluginpaths'} eq 'ARRAY' ?
         join(' ', @{$opts->{'pluginpaths'}}) : $opts->{'pluginpaths'} || '';
@@ -358,6 +344,28 @@ sub _path_to_array {
     $path =~ s/,/ /g;
 
     return split /\s+/, $path;
+};
+
+sub get_component_class {
+    my ($self, $field) = @_;
+
+    return $self->get_inherited($field);
+};
+
+sub set_component_class {
+    my ($self, $field, $value) = @_;
+
+    if ($value) {
+        if (!Class::Inspector->loaded($value)) {
+            eval "use $value";
+    
+            throw Handel::Exception::Checkout(
+                -details => translate('The [_1] [_2] could not be loaded', $field, $value) . '.')
+                    if $@;
+        };
+    };
+
+    $self->set_inherited($field, $value);
 };
 
 1;

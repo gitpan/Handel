@@ -1,8 +1,9 @@
-# $Id: Scaffold.pm 844 2005-09-21 00:17:51Z claco $
+# $Id: Scaffold.pm 1318 2006-07-10 23:42:32Z claco $
 package Catalyst::Helper::Handel::Scaffold;
 use strict;
 use warnings;
 use Path::Class;
+use Catalyst 5.7;
 
 sub mk_stuff {
     my ($self, $helper, $dsn, $user, $pass, $cart, $order, $checkout) = @_;

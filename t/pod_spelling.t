@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: pod_spelling.t 970 2005-11-25 03:10:07Z claco $
+# $Id: pod_spelling.t 1310 2006-07-09 04:01:49Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -120,3 +120,19 @@ wildcard
 wildcards
 lastskuadded
 wT
+schemas
+ModPerl
+autoupdate
+resultset
+xxxx
+xxxxxxxx
+xxxxxxxxxxxx
+WORKFLOW
+preloading
+refactor
+IRC
+MSSQL
+Postgres
+SQLite
+dsns
+username

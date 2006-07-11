@@ -1,4 +1,4 @@
-# $Id: Order.pm 923 2005-11-15 02:59:22Z claco $
+# $Id: Order.pm 1314 2006-07-10 00:29:55Z claco $
 package AxKit::XSP::Handel::Order;
 use strict;
 use warnings;
@@ -87,7 +87,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:uuid
         if ($tag =~ /^(g|u)uid$/) {
             $e->start_expr($tag);
-            $e->append_to_script("Handel::Order->uuid");
+            $e->append_to_script("Handel::Order->storage->new_uuid");
             $e->end_expr($tag);
 
         ## order:new
@@ -603,11 +603,13 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                 pop @context;
                 return '
                     $_xsp_handel_order_order->update;
+                    $_xsp_handel_order_order->autoupdate(1);
                 ';
             } elsif ($context[$#context-2] =~ /^(item(s?))$/) {
                 pop @context;
                 return '
                     $_xsp_handel_order_item->update;
+                    $_xsp_handel_order_item->autoupdate(1);
                 ';
             };
 

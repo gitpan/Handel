@@ -1,12 +1,18 @@
 #!perl -wT
-# $Id: cart_item_new.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: cart_item_new.t 1131 2006-05-16 02:38:06Z claco $
 use strict;
 use warnings;
 use Test::More;
 use lib 't/lib';
+use Handel::TestHelper qw(executesql);
 
 BEGIN {
-    plan tests => 39;
+    eval 'require DBD::SQLite';
+    if($@) {
+        plan skip_all => 'DBD::SQLite not installed';
+    } else {
+        plan tests => 39;
+    };
 
     use_ok('Handel::Cart::Item');
     use_ok('Handel::Subclassing::CartItem');
@@ -16,11 +22,26 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
-&run('Handel::Cart::Item');
-&run('Handel::Subclassing::CartItem');
+&run('Handel::Cart::Item', 1);
+&run('Handel::Subclassing::CartItem', 2);
 
 sub run {
-    my ($subclass) = @_;
+    my ($subclass, $dbsuffix) = @_;
+
+
+    ## Setup SQLite DB for tests
+    {
+        my $dbfile  = "t/cart_item_new_$dbsuffix.db";
+        my $db      = "dbi:SQLite:dbname=$dbfile";
+        my $create  = 't/sql/cart_create_table.sql';
+        my $data    = 't/sql/cart_fake_data.sql';
+
+        unlink $dbfile;
+        executesql($db, $create);
+        executesql($db, $data);
+
+        $ENV{'HandelDBIDSN'} = $db;
+    };
 
 
     ## test for Handel::Exception::Argument where first param is not a hashref
@@ -43,7 +64,8 @@ sub run {
             sku         => 'sku1234',
             price       => 1.23,
             quantity    => 2,
-            description => 'My SKU'
+            description => 'My SKU',
+            cart        => '00000000-0000-0000-0000-000000000000'
         };
         if ($subclass ne 'Handel::Cart::Item') {
             $data->{'custom'} = 'custom';

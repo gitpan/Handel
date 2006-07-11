@@ -1,8 +1,8 @@
-# $Id: Constants.pm 923 2005-11-15 02:59:22Z claco $
+# $Id: Constants.pm 1167 2006-05-31 01:50:19Z claco $
 package Template::Plugin::Handel::Constants;
 use strict;
 use warnings;
-use base 'Template::Plugin';
+use base qw/Template::Plugin/;
 use Handel::Constants ();
 
 sub new {
@@ -48,20 +48,6 @@ access C<Handel::Constants> inside of TT2 pages.
 
 It contains all of the exportable constants declared in
 C<@Handel::Constants::EXPORT_OK>.
-
-=head1 CONSTRUCTOR
-
-=head2 new
-
-This returns a new Handel.Constants object. This is used internally when
-loading TT2 plugins and should not be used directly.
-
-=head1 METHODS
-
-=head2 load
-
-This method is called when TT2 loaded the plugin for the first time.
-This is used internally by TT2 and should not be used directly.
 
 =head1 SEE ALSO
 

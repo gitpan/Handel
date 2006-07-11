@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: l10n.t 837 2005-09-19 22:56:39Z claco $
+# $Id: l10n.t 1313 2006-07-09 22:18:12Z claco $
 use strict;
 use warnings;
 use Test::More tests => 11;
@@ -81,7 +81,7 @@ BEGIN {
 
 ## test translation within another module that uses the exceptions
 {
-    local %ENV = ();
+    local %ENV = (Path => '');
     local $ENV{'LANG'} = 'fr';
 
     require Handel::Cart;

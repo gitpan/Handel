@@ -1,43 +1,51 @@
-# $Id: Item.pm 923 2005-11-15 02:59:22Z claco $
+# $Id: Item.pm 1314 2006-07-10 00:29:55Z claco $
 package Handel::Cart::Item;
 use strict;
 use warnings;
 
 BEGIN {
-    use base 'Handel::DBI';
+    use Handel;
     use Handel::Constraints qw(:all);
-    use Handel::Currency;
     use Handel::L10N qw(translate);
+
+    use base qw/Handel::Base/;
+    __PACKAGE__->storage({
+        schema_class     => 'Handel::Cart::Schema',
+        schema_source    => 'Items',
+        currency_columns => [qw/price/],
+        constraints      => {
+            quantity     => {'Check Quantity' => \&constraint_quantity},
+            price        => {'Check Price'    => \&constraint_price},
+            id           => {'Check Id'       => \&constraint_uuid},
+            cart         => {'Check Cart'     => \&constraint_uuid}
+        },
+        default_values   => {
+            id           => __PACKAGE__->storage_class->can('new_uuid'),
+            price        => 0,
+            quantity     => 1
+        }
+    });
+    __PACKAGE__->create_accessors;
 };
 
-__PACKAGE__->table('cart_items');
-__PACKAGE__->autoupdate(1);
-__PACKAGE__->iterator_class('Handel::Iterator');
-__PACKAGE__->columns(All => qw(id cart sku quantity price description));
-__PACKAGE__->columns(Essential => qw(id cart sku quantity price description));
-__PACKAGE__->has_a(price => 'Handel::Currency');
-__PACKAGE__->add_constraint('quantity', quantity => \&constraint_quantity);
-__PACKAGE__->add_constraint('price',    price    => \&constraint_price);
-__PACKAGE__->add_constraint('id',       id       => \&constraint_uuid);
-__PACKAGE__->add_constraint('cart',     cart     => \&constraint_uuid);
-
 sub new {
-    my ($self, $data) = @_;
+    my ($class, $data) = @_;
 
     throw Handel::Exception::Argument( -details =>
         translate('Param 1 is not a HASH reference') . '.') unless
             ref($data) eq 'HASH';
 
-    if (!defined($data->{'id'}) || !constraint_uuid($data->{'id'})) {
-        $data->{'id'} = $self->uuid;
-    };
+    my $self = bless {
+        result => $class->storage->schema_instance->resultset($class->storage->schema_source)->create($data),
+        autoupdate => $class->storage->autoupdate
+    }, $class;
 
-    return $self->construct($data);
+    return $self;
 };
 
 sub total {
     my $self = shift;
-    return Handel::Currency->new($self->quantity * $self->price);
+    return $self->storage->currency_class->new($self->quantity * $self->price);
 };
 
 1;

@@ -1,10 +1,48 @@
 Revision history for Perl module Handel
 
-0.33 Mon Jun 19 19:31:23 2006
+0.99_03 Mon Jul 10 21:05:27 2006
+    - Fixed AxKit Exception Error (RT#19707,TKP)
+    - Added start of Handel::Manual
+    - uuid is now new_uuid, and now in Storage
+    - Removed setup_columns_accessors in favor or create_accessors in Base
+    - Cart/Order/Item classes now have a instance of storage instead of
+        subclassing it
+    - Added Handel::Base as super class for Cart/Order/Item classes
+    - Added Handel::Storage tests
+    - Handel::Storage now does all schema configurate during first
+        schema_instance call
+    - Added Handel::Storage::new/setup
+    - Cart/Order/Item classes now delegate direct schema access to Storage
+    - Added validation/constraint/default_value_class to Storage
+    - Converted Storage from Class::Data::Accessor to Class::Accesssor::Grouped
+    - Refactored injection of components into schema source classes
+    - schema_instance now creates a clone using compose_namespace and
+        does its component injection into the clone instead
+    - Added currency_class/currency_columns to Storage
+    - Added value() to Handel::Currency
+    - Added autoupdate to results that inherits from storage->autoupdate
+    - Added basic compatibility layer for older subclasses
+
+0.99_02 Mon Jun 05 22:08:32 2006
+    - Fixed test counts in t/order_new.t (RT#19700,TKP)
+    - Moved _error_handler in Storage to process_error and set
+        dbh->{HandelError} using $self->can
+    - Use blessed when setting schema_instance in Storage
+    - Abstracted schema setup when setting Storage->schema_instance($schema)
+
+0.99_01
+    - RETURN_AS has been removed from the API
+    - Data filters now take SQL::Abstract syntax for wildcards
+    - Converted from Class::DBI to DBIx::Class schemas
+    - Handel::ConfigReader is now a singleton via instance()
+    - Handel::DBI is deprecated in favor if Handel::Storage
+    - Moved column defaults into Handel::Components::DefaultValues
+    - Added constraint_cart_name
+
+0.33
     - Fixed version requirement for catalyst tests
     - Fixed cart iterator tests db file creation issues
     - Cart taglib now calls tag-based functions to ease subclassing
-    - Applied Catalyst Controller Helper patch from Todd W. for Catalyst 5.6+
 
 0.32 Sun Jan 22 18:19:38 2006
     - Added order_reconcile.t tests

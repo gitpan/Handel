@@ -1,0 +1,14 @@
+=head1 NAME
+
+Handel::Manual::QuickStart - A quick start guide to getting Handel up and running.
+
+=head1 DESCRIPTION
+
+
+
+=head1 AUTHOR
+
+    Christopher H. Laco
+    CPAN ID: CLACO
+    claco@chrislaco.com
+    http://today.icantfocus.com/blog/

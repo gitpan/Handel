@@ -1,5 +1,13 @@
 TODO list for Perl module Handel (in no particular order):
 
+    - AxKit Tablibs need reworked for subclassing
+    - TT plugins need reworked for subclassing
+    - work autoupdate from storage back up to result where it belongs
+    - rework Catalyst Helpers for 5.7x
+    - further abstract storage so one can create items using per new connections
+    - better deal with copying carts to orders, custom fields, etc
+    - better abstract column names
+    - better abstract id column types
     - create sql from SQL::Translator schema scripts
     - add taglib test to check for bogus filter names
     - add sql schema and conversions using SQL::Translator
@@ -9,4 +17,3 @@ TODO list for Perl module Handel (in no particular order):
     - clean up cart test variable names
     - add additional cart restore w/filter tests for multiple saved carts
     - devise method for overriding constraints
-    - abstract DBI layer to use Class::DBI, DBIx::CDBICompat, or DBIx::Class

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_clear.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: order_clear.t 1303 2006-07-08 19:35:05Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests =>26;
+        plan tests =>44;
     };
 
     use_ok('Handel::Order');
@@ -42,30 +42,45 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        local $^W = 0;
-        Handel::DBI->connection($db);
+        $ENV{'HandelDBIDSN'} = $db;
     };
 
 
     ## Clear order contents and validate counts
     {
-        my $order = $subclass->load({
+        my $total_items = $subclass->storage->schema_instance->resultset('Items')->count;
+        ok($total_items);
+
+        my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
-        ok($order->count >= 1);
+
+        my $related_items = $order->count;
+        ok($related_items >= 1);
 
         $order->clear;
         is($order->count, 0);
 
-        my $reorder = $subclass->load({
+        my $reorderit = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($reorderit, 'Handel::Iterator');
+        is($reorderit, 1);
+
+        my $reorder = $reorderit->first;
         isa_ok($reorder, 'Handel::Order');
         isa_ok($reorder, $subclass);
 
         is($reorder->count, 0);
+
+        my $remaining_items = $subclass->storage->schema_instance->resultset('Items')->count;
+        is($remaining_items, $total_items - $related_items);
     };
 
 };

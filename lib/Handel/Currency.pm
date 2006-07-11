@@ -1,4 +1,4 @@
-# $Id: Currency.pm 923 2005-11-15 02:59:22Z claco $
+# $Id: Currency.pm 1310 2006-07-09 04:01:49Z claco $
 package Handel::Currency;
 use strict;
 use warnings;
@@ -29,7 +29,7 @@ sub format {
     eval 'use Locale::Currency::Format';
     return $self->{'price'} if $@;
 
-    my $cfg = $Handel::Cfg;
+    my $cfg = Handel->config;
 
     eval '$format = ' .  ($format || $cfg->{'HandelCurrencyFormat'});
     $code   ||= $cfg->{'HandelCurrencyCode'};
@@ -43,7 +43,7 @@ sub format {
 
 sub convert {
     my ($self, $from, $to, $format, $options) = @_;
-    my $cfg = $Handel::Cfg;
+    my $cfg = Handel->config;
 
     $from ||= $cfg->{'HandelCurrencyCode'};
     $to   ||= $cfg->{'HandelCurrencyCode'};
@@ -69,6 +69,12 @@ sub convert {
     };
 
     return $result;
+};
+
+sub value {
+    my $self = shift;
+    
+    return $self->{'price'};
 };
 
 sub stringify {
@@ -98,12 +104,12 @@ Handel::Currency - Price container to do currency conversion/formatting
 =head1 SYNOPSIS
 
     use Handel::Currency;
-
+    
     my $curr = Handel::Currenct-new(1.2);
     print $curr->format();          # 1.20 USD
     print $curr->format('CAD');     # 1.20 CAD
     print $curr->format(undef, 'FMT_SYMBOL');   # $1.20
-
+    
     print 'Your price in Canadian Dollars is: ';
     print $curr->convert('USD', 'CAD');
 
@@ -140,23 +146,13 @@ price to be formatted:
 
 =head1 METHODS
 
-=head2 format([$code, $options])
+=head2 convert
 
-The C<format> method returns the freshly formatted price in a currency and
-format declared in C<Locale::Currency::Format>. If no currency code or
-format are specified, the defaults values from C<Handel::ConfigReader> are
-used. Currently those defaults are C<USD> and C<FMT_STANDARD>.
+=over
 
-It is also acceptable to specify different default values.
-See L</"CONFIGURATION"> and C<Handel::ConfigReader> for further details.
+=item Arguments: $from, $to [, $format, $options]
 
-In situations where C<Locale::Currency::Format> isn't installed, C<format>
-simply returns the price in it's original format no harm no foul.
-
-C<format> throws a C<Handel::Exception::Argument> if C<code> isn't a valid
-currency code.
-
-=head2 convert($from, $to [, $format, $options])
+=back
 
 The C<convert> method converts the given price from one currency to another
 using C<Finance::Currency::Convert::WebserviceX>.
@@ -172,6 +168,39 @@ valid currency codes.
 If C<$format> is true, the result of the conversion will also be formatted
 using the formatting C<options> given or the default in
 C<HandelCurrencyFormat>.
+
+=head2 format
+
+=over
+
+=item Arguments: $code [, $options]
+
+=back
+
+The C<format> method returns the freshly formatted price in a currency and
+format declared in C<Locale::Currency::Format>. If no currency code or
+format are specified, the defaults values from C<Handel::ConfigReader> are
+used. Currently those defaults are C<USD> and C<FMT_STANDARD>.
+
+It is also acceptable to specify different default values.
+See L</"CONFIGURATION"> and C<Handel::ConfigReader> for further details.
+
+In situations where C<Locale::Currency::Format> isn't installed, C<format>
+simply returns the price in it's original format no harm no foul.
+
+C<format> throws a C<Handel::Exception::Argument> if C<code> isn't a valid
+currency code.
+
+=head2 stringify
+
+Returns C<value> in scalar context. For now, this returns the same things as
+C<new>. This maybe change in the future.
+
+=head2 value
+
+Returns the original price value given to C<new>. Always use this instead of
+relying on stringification when deflating currency objects in DBIx::Class
+schemas.
 
 =head1 CONFIGURATION
 

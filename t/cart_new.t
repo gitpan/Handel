@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_new.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: cart_new.t 1131 2006-05-16 02:38:06Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -43,8 +43,7 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        local $^W = 0;
-        Handel::DBI->connection($db);
+        $ENV{'HandelDBIDSN'} = $db;
     };
 
 

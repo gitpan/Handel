@@ -1,10 +1,10 @@
-[%# $Id: cart_fetch_filtered_no_results.tt2 837 2005-09-19 22:56:39Z claco $ %]
+[%# $Id: cart_fetch_filtered_no_results.tt2 1167 2006-05-31 01:50:19Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
 	[% IF (cart = hcart.fetch({
 		type => hcart.CART_TYPE_SAVED,
 		id 	 => 'D65692C4-B043-43A7-BFAA-D5326C09C45D'
-	})) %]
+	}).first) %]
 		<cart>
 			<count>[% cart.count %]</count>
 			<description>[% cart.description %]</description>

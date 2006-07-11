@@ -1,7 +1,8 @@
-# $Id: Cart.pm 918 2005-11-13 19:07:51Z claco $
+# $Id: Cart.pm 1318 2006-07-10 23:42:32Z claco $
 package Catalyst::Helper::Model::Handel::Cart;
 use strict;
 use warnings;
+use Catalyst 5.7;
 
 sub mk_compclass {
     my ($self, $helper, $dsn, $user, $pass) = @_;
@@ -26,12 +27,9 @@ __model__
 package [% class %];
 use strict;
 use warnings;
-use base 'Handel::Cart';
+use base qw/Handel::Cart/;
 
-{
-    $^W = 0;
-    Handel::DBI->connection('[% dsn %]', '[% user %]', '[% pass %]');
-};
+__PACKAGE__->connection_info('[% dsn %]', '[% user %]', '[% pass %]');
 
 1;
 __test__

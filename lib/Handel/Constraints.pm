@@ -1,4 +1,4 @@
-# $Id: Constraints.pm 1039 2005-12-24 03:29:34Z claco $
+# $Id: Constraints.pm 1198 2006-06-03 02:32:37Z claco $
 package Handel::Constraints;
 use strict;
 use warnings;
@@ -16,6 +16,7 @@ BEGIN {
                 &constraint_price
                 &constraint_uuid
                 &constraint_cart_type
+                &constraint_cart_name
                 &constraint_currency_code
                 &constraint_checkout_phase
                 &constraint_order_type
@@ -29,7 +30,7 @@ sub constraint_quantity {
     my $value = defined $_[0] ? shift : '';
     my ($object, $column, $changing) = @_;
 
-    my $cfg    = $Handel::Cfg;
+    my $cfg    = Handel->config;
     my $max    = $cfg->{'HandelMaxQuantity'};
     my $action = $cfg->{'HandelMaxQuantityAction'};
 
@@ -73,6 +74,17 @@ sub constraint_cart_type {
     };
     return 1;
 };
+
+sub constraint_cart_name {
+    my ($value, $object, $column, $changing) = @_;
+    my $type = ref $changing ? $changing->{'type'} : '';
+
+    if (constraint_cart_type($type) && $type == CART_TYPE_SAVED && !length($value || '')) {
+        return 0;
+    };
+    return 1;
+};
+
 
 sub constraint_currency_code {
     my $value = defined $_[0] ? uc(shift) : '';
@@ -190,6 +202,11 @@ otherwise it returns C<undef>.
 
 Returns 1 if the value passed is C<ORDER_TYPE_SAVED> or C<ORDER_TYPE_TEMP>,
 otherwise it returns C<undef>.
+
+=head2 constraint_cart_name
+
+Returns 0 if the cart type is C<CART_TYPE_SAVED> and the name is undefined,
+otherwise it returns 1.
 
 =head1 EXPORT_TAGS
 

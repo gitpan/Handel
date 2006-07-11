@@ -1,7 +1,7 @@
-[%# $Id: order_items.tt2 837 2005-09-19 22:56:39Z claco $ %]
+[%# $Id: order_items.tt2 1167 2006-05-31 01:50:19Z claco $ %]
 [% USE horder  = Handel.Order %]
 <body>
-    [% IF (order = horder.create({
+    [% IF (order = horder.new({
 		id			=> 'E516A609-1905-4C7B-AC82-C33D50DE7AB3',
         shopper 	=> '162B8421-4A16-4C13-AB95-968CB2BB5564',
 		type		=> horder.ORDER_TYPE_TEMP,
@@ -61,10 +61,10 @@
 		}) %]
 	[% END %]
 
-	[% IF (order = horder.fetch({
+	[% IF (order = horder.load({
 		type => horder.ORDER_TYPE_TEMP,
 		id 	 => 'E516A609-1905-4C7B-AC82-C33D50DE7AB3'
-	})) %]
+	}).first) %]
 		<order>
 			<count>[% order.count %]</count>
 			<id>[% order.id %]</id>
@@ -107,7 +107,7 @@
 			<total>[% order.total %]</total>
 			<tax>[% order.tax %]</tax>
 			<updated>[% order.updated %]</updated>
-			[% FOREACH item = order.items %]
+			[% FOREACH item = order.items.all %]
 				<item>
 					<description>[% item.description %]</description>
 					<id>[% item.id %]</id>

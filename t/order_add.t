@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_add.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: order_add.t 1166 2006-05-28 02:35:11Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 236;
+        plan tests => 290;
     };
 
     use_ok('Handel::Order');
@@ -38,15 +38,18 @@ sub run {
     {
         my $dbfile  = "t/order_add_$dbsuffix.db";
         my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/order_create_table.sql';
-        my $data    = 't/sql/order_fake_data.sql';
+        my $cartcreate   = 't/sql/order_create_table.sql';
+        my $cartdata     = 't/sql/order_fake_data.sql';
+        my $ordercreate  = 't/sql/cart_create_table.sql';
+        my $orderdata    = 't/sql/cart_fake_data.sql';
 
         unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
+        executesql($db, $cartcreate);
+        executesql($db, $cartdata);
+        executesql($db, $ordercreate);
+        executesql($db, $orderdata);
 
-        local $^W = 0;
-        Handel::DBI->connection($db);
+        $ENV{'HandelDBIDSN'} = $db;
     };
 
 
@@ -83,9 +86,13 @@ sub run {
 
     ## add a new item by passing a hashref
     {
-        my $order = $subclass->load({
+        my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
 
@@ -116,14 +123,22 @@ sub run {
         is($order->count, 3);
         is($order->subtotal, 5.55);
 
-        my $reorder = $subclass->load({
+        my $reit = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($reit, 'Handel::Iterator');
+        is($reit, 1);
+
+        my $reorder = $reit->first;
         isa_ok($reorder, 'Handel::Order');
         isa_ok($reorder, $subclass);
         is($reorder->count, 3);
 
-        my $reitem = $reorder->items({sku => 'SKU9999'});
+        my $reitemit = $reorder->items({sku => 'SKU9999'});
+        isa_ok($reitemit, 'Handel::Iterator');
+        is($reitemit, 1);
+
+        my $reitem = $reitemit->first;
         isa_ok($reitem, 'Handel::Order::Item');
         isa_ok($reitem, $itemclass);
         is($reitem->orderid, $reorder->id);
@@ -145,7 +160,8 @@ sub run {
             quantity    => 1,
             price       => 1.11,
             description => 'Line Item SKU 8',
-            total       => 2.22
+            total       => 2.22,
+            orderid     => '00000000-0000-0000-0000-000000000000'
         };
         if ($itemclass ne 'Handel::Order::Item') {
             $data->{'custom'} = 'custom';
@@ -155,9 +171,13 @@ sub run {
         isa_ok($newitem, 'Handel::Order::Item');
         isa_ok($newitem, $itemclass);
 
-        my $order = $subclass->load({
+        my $it = $subclass->load({
             id => '22222222-2222-2222-2222-222222222222'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
 
@@ -177,14 +197,22 @@ sub run {
         is($order->count, 2);
         is($order->subtotal, 5.55);
 
-        my $reorder = $subclass->load({
+        my $reit = $subclass->load({
             id => '22222222-2222-2222-2222-222222222222'
         });
+        isa_ok($reit, 'Handel::Iterator');
+        is($reit, 1);
+
+        my $reorder = $reit->first;
         isa_ok($reorder, 'Handel::Order');
         isa_ok($reorder, $subclass);
         is($reorder->count, 2);
 
-        my $reitem = $order->items({sku => 'SKU8888'});
+        my $reitemit = $order->items({sku => 'SKU8888'});
+        isa_ok($reitemit, 'Handel::Iterator');
+        is($reitemit, 1);
+
+        my $reitem = $reitemit->first;
         isa_ok($reitem, 'Handel::Order::Item');
         isa_ok($reitem, $itemclass);
         is($reitem->orderid, $reorder->id);
@@ -205,13 +233,18 @@ sub run {
             sku         => 'SKU9999',
             quantity    => 2,
             price       => 1.11,
-            description => 'Line Item SKU 9'
+            description => 'Line Item SKU 9',
+            cart        => '00000000-0000-0000-0000-000000000000'
         });
         isa_ok($newitem, 'Handel::Cart::Item');
 
-        my $order = $subclass->load({
+        my $it = $subclass->load({
             id => '22222222-2222-2222-2222-222222222222'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
 
@@ -231,14 +264,22 @@ sub run {
         is($order->count, 3);
         is($order->subtotal, 5.55);
 
-        my $reorder = $subclass->load({
+        my $reit = $subclass->load({
             id => '22222222-2222-2222-2222-222222222222'
         });
+        isa_ok($reit, 'Handel::Iterator');
+        is($reit, 1);
+
+        my $reorder = $reit->first;
         isa_ok($reorder, 'Handel::Order');
         isa_ok($reorder, $subclass);
         is($reorder->count, 3);
 
-        my $reitem = $order->items({sku => 'SKU9999'});
+        my $reitemit = $order->items({sku => 'SKU9999'});
+        isa_ok($reitemit, 'Handel::Iterator');
+        is($reitemit, 1);
+
+        my $reitem = $reitemit->first;
         isa_ok($reitem, 'Handel::Order::Item');
         isa_ok($reitem, $itemclass);
         is($reitem->orderid, $reorder->id);

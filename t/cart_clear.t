@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_clear.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: cart_clear.t 1300 2006-07-08 01:12:16Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 23;
+        plan tests => 41;
     };
 
     use_ok('Handel::Cart');
@@ -42,29 +42,43 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        local $^W = 0;
-        Handel::DBI->connection($db);
+        $ENV{'HandelDBIDSN'} = $db;
     };
 
 
     ## Clear cart contents and validate counts
     {
-        my $cart = $subclass->load({
+        my $total_items = $subclass->storage->schema_instance->resultset('Items')->count;
+        ok($total_items);
+
+        my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        ok($cart->count >= 1);
 
+        my $related_items = $cart->count;
+        ok($related_items >= 1);
         $cart->clear;
         is($cart->count, 0);
 
-        my $recart = $subclass->load({
+        my $reit = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($reit, 'Handel::Iterator');
+        is($reit, 1);
+
+        my $recart = $reit->first;
         isa_ok($recart, $subclass);
 
         is($recart->count, 0);
+
+        my $remaining_items = $subclass->storage->schema_instance->resultset('Items')->count;
+        is($remaining_items, $total_items - $related_items);
     };
 
 };

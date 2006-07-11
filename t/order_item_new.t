@@ -1,9 +1,10 @@
 #!perl -wT
-# $Id: order_item_new.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: order_item_new.t 1166 2006-05-28 02:35:11Z claco $
 use strict;
 use warnings;
 use Test::More;
 use lib 't/lib';
+use Handel::TestHelper qw(executesql);
 
 BEGIN {
     plan tests => 38;
@@ -30,11 +31,26 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
-&run('Handel::Order::Item');
-&run('Handel::Subclassing::OrderItem');
+&run('Handel::Order::Item', 1);
+&run('Handel::Subclassing::OrderItem', 2);
 
 sub run {
-    my ($subclass) = @_;
+    my ($subclass, $dbsuffix) = @_;
+
+
+    ## Setup SQLite DB for tests
+    {
+        my $dbfile  = "t/order_item_new_$dbsuffix.db";
+        my $db      = "dbi:SQLite:dbname=$dbfile";
+        my $create  = 't/sql/order_create_table.sql';
+        my $data    = 't/sql/order_fake_data.sql';
+
+        unlink $dbfile;
+        executesql($db, $create);
+        executesql($db, $data);
+
+        $ENV{'HandelDBIDSN'} = $db;
+    };
 
 
     ## create a new order item object
@@ -44,7 +60,8 @@ sub run {
             price       => 1.23,
             quantity    => 2,
             description => 'My SKU',
-            total       => 2.46
+            total       => 2.46,
+            orderid     => '00000000-0000-0000-0000-000000000000'
         };
         if ($subclass ne 'Handel::Order::Item') {
             $data->{'custom'} = 'custom';

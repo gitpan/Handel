@@ -1,9 +1,9 @@
-# $Id: Checkout.pm 1215 2006-06-19 23:39:31Z claco $
+# $Id: Checkout.pm 1318 2006-07-10 23:42:32Z claco $
 package Catalyst::Helper::Controller::Handel::Checkout;
 use strict;
 use warnings;
 use Path::Class;
-use Catalyst 5.56;
+use Catalyst 5.7;
 
 sub mk_compclass {
     my ($self, $helper, $cmodel, $omodel, $ccontroller, $ocontroller) = @_;
@@ -293,8 +293,7 @@ sub begin : Private {
 sub end : Private {
     my ($self, $c) = @_;
 
-    $c->forward($c->view('TT'))
-        unless ( $c->res->output || $c->res->body || ! $c->stash->{template} );
+    $c->forward($c->view('TT')) unless $c->res->output;
 
     if ($c->req->method eq 'POST' && $c->stash->{'messages'} && $FIF) {
         ## Merge (erase) DFV Missing/Invalid fields from params before formfill
@@ -326,7 +325,7 @@ sub default : Local {
 sub edit : Local {
     my ($self, $c) = @_;
 
-    $c->stash->{'template'} = '[% uri.replace('^/', '') %]/edit.tt';
+    $c->stash->{'template'} = '[% uri %]/edit.tt';
 };
 
 sub update : Local {
@@ -378,10 +377,10 @@ sub update : Local {
             push @messages, map {$_} values %{$results->msgs};
         };
         if (scalar @messages) {
-            $c->stash->{'template'} = '[% uri.replace('^/', '') %]/edit.tt';
+            $c->stash->{'template'} = '[% uri %]/edit.tt';
             $c->stash->{'messages'} = \@messages;
         } else {
-            $c->res->redirect($c->req->base . '[% uri.replace('^/', '') %]/preview/');
+            $c->res->redirect($c->req->base . '[% uri %]/preview/');
         };
     };
 };
@@ -389,14 +388,14 @@ sub update : Local {
 sub preview : Local {
     my ($self, $c) = @_;
 
-    $c->stash->{'template'} = '[% uri.replace('^/', '') %]/preview.tt';
+    $c->stash->{'template'} = '[% uri %]/preview.tt';
 };
 
 sub payment : Local {
     my ($self, $c) = @_;
     my @messages;
 
-    $c->stash->{'template'} = '[% uri.replace('^/', '') %]/payment.tt';
+    $c->stash->{'template'} = '[% uri %]/payment.tt';
 
     if ($c->req->method eq 'POST') {
         my $results;
@@ -453,7 +452,7 @@ sub payment : Local {
 sub complete : Local {
     my ($self, $c) = @_;
 
-    $c->stash->{'template'} = '[% uri.replace('^/', '') %]/complete.tt';
+    $c->stash->{'template'} = '[% uri %]/complete.tt';
 };
 
 1;
@@ -469,7 +468,7 @@ __edit__
 [% USE HTML %]
 <h1>Billing/Shipping Information</h1>
 <p>
-    <a href="[% base _ '[- curi.replace('^/', '') -]/' %]">View Cart</a>
+    <a href="[% base _ '[- curi -]/' %]">View Cart</a>
 </p>
 [% IF messages %]
     <ul>
@@ -478,7 +477,7 @@ __edit__
         [% END %]
     </ul>
 [% END %]
-<form action="[% base _ '[- uri.replace('^/', '') -]/update/' %]" method="post">
+<form action="[% base _ '[- uri -]/update/' %]" method="post">
     <table border="0" cellpadding="3" cellspacing="5">
         <tr>
             <th colspan="2" align="left">Billing</th>
@@ -604,8 +603,8 @@ __preview__
 [% USE HTML %]
 <h1>Order Preview</h1>
 <p>
-    <a href="[% base _ '[- curi.replace('^/', '') -]/' %]">View Cart</a> |
-    <a href="[% base _ '[- uri.replace('^/', '') -]/edit/' %]">Edit Billing/Shipping</a>
+    <a href="[% base _ '[- curi -]/' %]">View Cart</a> |
+    <a href="[% base _ '[- uri -]/edit/' %]">Edit Billing/Shipping</a>
 </p>
 [% IF messages %]
     <ul>
@@ -771,7 +770,7 @@ __preview__
                 </tr>
                 <tr>
                     <td colspan="5" align="right">
-                        <form action="[% base _ '[- uri.replace('^/', '') -]/payment/' %]" method="get">
+                        <form action="[% base _ '[- uri -]/payment/' %]" method="get">
                             <input type="submit" value="Continue">
                         </form>
                     </td>
@@ -785,8 +784,8 @@ __payment__
 [% USE HTML %]
 <h1>Payment Information</h1>
 <p>
-    <a href="[% base _ '[- curi.replace('^/', '') -]/' %]">View Cart</a> |
-    <a href="[% base _ '[- uri.replace('^/', '') -]/preview/' %]">Preview</a>
+    <a href="[% base _ '[- curi -]/' %]">View Cart</a> |
+    <a href="[% base _ '[- uri -]/preview/' %]">Preview</a>
 </p>
 [% IF messages %]
     <ul>
@@ -795,7 +794,7 @@ __payment__
         [% END %]
     </ul>
 [% END %]
-<form action="[% base _ '[- uri.replace('^/', '') -]/payment/' %]" method="post">
+<form action="[% base _ '[- uri -]/payment/' %]" method="post">
     <table border="0" cellpadding="3" cellspacing="5">
         <tr>
             <td align="right">Name On Card:</td>
@@ -834,7 +833,7 @@ __complete__
 [% USE HTML %]
 <h1>Order Complete!</h1>
 <p>
-    <a href="[% base _ '[- ouri.replace('^/', '') -]/list/' %]">View Orders</a>
+    <a href="[% base _ '[- ouri -]/list/' %]">View Orders</a>
 </p>
 [% IF messages %]
     <ul>

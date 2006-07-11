@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_items.t 1072 2006-01-17 03:30:38Z claco $
+# $Id: order_items.t 1166 2006-05-28 02:35:11Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 294;
+        plan tests => 374;
     };
 
     use_ok('Handel::Order');
@@ -42,16 +42,19 @@ sub run {
         executesql($db, $create);
         executesql($db, $data);
 
-        local $^W = 0;
-        Handel::DBI->connection($db);
+        $ENV{'HandelDBIDSN'} = $db;
     };
 
 
     ## load multiple item Handel::Order object and get items array on RETURNAS_AUTO
     {
-        my $order = $subclass->load({
+        my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->id, '11111111-1111-1111-1111-111111111111');
@@ -95,9 +98,13 @@ sub run {
 
     ## load multiple item Handel::Order object and get items array on RETURNAS_LIST
     {
-        my $order = $subclass->load({
+        my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->id, '11111111-1111-1111-1111-111111111111');
@@ -141,9 +148,13 @@ sub run {
 
     ## load multiple item Handel::Order object and get items Iterator
     {
-        my $order = $subclass->load({
+        my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->id, '11111111-1111-1111-1111-111111111111');
@@ -162,9 +173,13 @@ sub run {
 
     ## load multiple item Handel::Order object and get filter single item
     {
-        my $order = $subclass->load({
+        my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->id, '11111111-1111-1111-1111-111111111111');
@@ -175,7 +190,11 @@ sub run {
             is($order->custom, 'custom');
         };
 
-        my $item2 = $order->items({sku => 'SKU2222'});
+        my $itemit = $order->items({sku => 'SKU2222'});
+        isa_ok($itemit, 'Handel::Iterator');
+        is($itemit, 1);
+
+        my $item2 = $itemit->first;
         isa_ok($item2, 'Handel::Order::Item');
         isa_ok($item2, $itemclass);
         is($item2->id, '22222222-2222-2222-2222-222222222222');
@@ -192,9 +211,13 @@ sub run {
 
     ## load multiple item Handel::Order object and get filter single item to Iterator
     {
-        my $order = $subclass->load({
+        my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->id, '11111111-1111-1111-1111-111111111111');
@@ -212,9 +235,13 @@ sub run {
 
     ## load multiple item Handel::Order object and get wilcard filter to Iterator
     {
-        my $order = $subclass->load({
+        my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->id, '11111111-1111-1111-1111-111111111111');
@@ -231,11 +258,40 @@ sub run {
     };
 
 
-    ## load multiple item Handel::Order object and get filter bogus item to Iterator
+    ## load multiple item Handel::Order object and get wilcard filter to Iterator
     {
-        my $order = $subclass->load({
+        my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
+        isa_ok($order, 'Handel::Order');
+        isa_ok($order, $subclass);
+        is($order->id, '11111111-1111-1111-1111-111111111111');
+        is($order->shopper, '11111111-1111-1111-1111-111111111111');
+        is($order->type, ORDER_TYPE_TEMP);
+        is($order->count, 2);
+        if ($subclass ne 'Handel::Order') {
+            is($order->custom, 'custom');
+        };
+
+        my $iterator = $order->items({sku => {like => 'SKU%'}}, 1);
+        isa_ok($iterator, 'Handel::Iterator');
+        is($iterator, 2);
+    };
+
+
+    ## load multiple item Handel::Order object and get filter bogus item to Iterator
+    {
+        my $it = $subclass->load({
+            id => '11111111-1111-1111-1111-111111111111'
+        });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->id, '11111111-1111-1111-1111-111111111111');
