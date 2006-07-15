@@ -1,4 +1,4 @@
-# $Id: Schema.pm 1177 2006-05-31 01:59:23Z claco $
+# $Id: Schema.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::Order::Schema;
 use strict;
 use warnings;
@@ -18,9 +18,9 @@ Handel::Order::Schema - Default Schema class for Handel::Order
     use Handel::Order::Schema;
     use strict;
     use warnings;
-
+    
     my $schema = Handel::Order::Schema->connect;
-
+    
     my $cart = $schema->resultset("Orders")->find('12345678-9098-7654-3212-345678909876');
 
 =head1 DESCRIPTION
@@ -30,7 +30,7 @@ Handel::Order.
 
 =head1 SEE ALSO
 
-L<DBIx::Class::Schema>
+L<Handel::Schema::Order>, L<Handel::Schema::Order::Item>, L<DBIx::Class::Schema>
 
 =head1 AUTHOR
 

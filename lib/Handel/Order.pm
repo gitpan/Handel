@@ -1,4 +1,4 @@
-# $Id: Order.pm 1314 2006-07-10 00:29:55Z claco $
+# $Id: Order.pm 1339 2006-07-15 21:49:41Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -6,7 +6,7 @@ use warnings;
 BEGIN {
     use Handel;
     use Handel::Checkout;
-    use Handel::Constants qw/:checkout :returnas :order/;
+    use Handel::Constants qw/:checkout :order/;
     use Handel::Constraints qw/:all/;
     use Handel::Currency;
     use Handel::L10N qw/translate/;
@@ -58,10 +58,8 @@ sub new {
         $data->{'shopper'} = $cart->shopper unless $data->{'shopper'};
     };
 
-    my $order = bless {
-        result => $class->storage->schema_instance->resultset($class->storage->schema_source)->create($data),
-        autoupdate => $class->storage->autoupdate
-    }, ref $class || $class;
+    my $result = $class->storage->schema_instance->resultset($class->storage->schema_source)->create($data);
+    my $order = $class->create_result($result);
 
 
     if (defined $cart) {
@@ -126,10 +124,9 @@ sub add {
               (ref($data) eq 'HASH' or $data->isa('Handel::Order::Item') or $data->isa('Handel::Cart::Item'));
 
     if (ref($data) eq 'HASH') {
-        return bless {
-            result => $self->result->create_related($self->storage->item_relationship, $data),
-            autoupdate => $self->storage->item_class->storage->autoupdate
-        }, $self->storage->item_class;
+        return $self->storage->item_class->create_result(
+            $self->result->create_related($self->storage->item_relationship, $data)
+        );
     } else {
         my %copy;
 
@@ -141,10 +138,9 @@ sub add {
             $copy{'total'} = $data->total;
         };
 
-        return bless {
-            result => $self->result->create_related($self->storage->item_relationship, \%copy),
-            autoupdate => $self->storage->item_class->storage->autoupdate
-        }, $self->storage->item_class;
+        return $self->storage->item_class->create_result(
+            $self->result->create_related($self->storage->item_relationship, \%copy)
+        );
     };
 };
 
@@ -178,7 +174,11 @@ sub destroy {
     my ($self, $filter) = @_;
 
     if (ref $self) {
-        $self->result->delete;
+        my $result = $self->result->delete;
+        if ($result) {
+            undef ($self);
+        } 
+        return $result;
     } else {
         throw Handel::Exception::Argument( -details =>
             translate('Param 1 is not a HASH reference') . '.') unless
@@ -201,14 +201,12 @@ sub items {
 
     $filter = $self->storage->_migrate_wildcards($filter);
 
+    my $iterator = $self->result->search_related($self->storage->item_relationship, $filter);
+    $iterator->result_class($self->storage->item_class);
+
     if (wantarray) {
-        my @items = $self->result->search_related($self->storage->item_relationship, $filter)->all;
-
-        return map {bless {result => $_, autoupdate => $self->storage->item_class->storage->autoupdate}, $self->storage->item_class} @items;
+        return $iterator->all;
     } else {
-        my $iterator = $self->result->search_related_rs($self->storage->item_relationship, $filter);
-        $iterator->result_class($self->storage->item_class);
-
         return $iterator;
     };
 };
@@ -222,14 +220,12 @@ sub load {
 
     $filter = $class->storage->_migrate_wildcards($filter);
 
+    my $iterator = $class->storage->schema_instance->resultset($class->storage->schema_source)->search_rs($filter);
+    $iterator->result_class(ref $class || $class);
+    
     if (wantarray) {
-        my @carts = $class->storage->schema_instance->resultset($class->storage->schema_source)->search($filter)->all;
-
-        return map {bless {result => $_, autoupdate => $class->storage->autoupdate}, ref $class || $class} @carts;
+        return $iterator->all;
     } else {
-        my $iterator = $class->storage->schema_instance->resultset($class->storage->schema_source)->search_rs($filter);
-        $iterator->result_class(ref $class || $class);
-
         return $iterator;
     };
 };
@@ -243,7 +239,7 @@ sub reconcile {
         throw Handel::Exception::Argument( -details =>
           translate(
               'Cart reference is not a HASH reference or Handel::Cart') . '.') unless
-                  (ref($cart) eq 'HASH' or UNIVERSAL::isa($cart, 'Handel::Cart') or $is_uuid);
+                  (ref($cart) eq 'HASH' or (blessed($cart) && $cart->isa('Handel::Cart')) or $is_uuid);
 
         if (ref $cart eq 'HASH') {
             $cart = $self->storage->cart_class->load($cart)->first;
@@ -281,10 +277,12 @@ Handel::Order - Module for maintaining order contents
 
 =head1 SYNOPSIS
 
+    use Handel::Order;
+    
     my $order = Handel::Order->new({
         id => '12345678-9098-7654-322-345678909876'
     });
-
+    
     my $iterator = $order->items;
     while (my $item = $iterator->next) {
         print $item->sku;
@@ -294,53 +292,39 @@ Handel::Order - Module for maintaining order contents
 
 =head1 DESCRIPTION
 
-C<Handel::Order> is a component for maintaining simple order records.
-
-While C<Handel::Order> subclasses L<Class::DBI>, it is strongly recommended that
-you not use its methods unless it's absolutely necessary. Stick to the
-documented methods here and you'll be safe should I decide to implement some
-other data access mechanism. :-)
+Handel::Order is a component for maintaining simple order records.
 
 =head1 CONSTRUCTOR
 
-There are three ways to create a new order object. You can either pass a hashref
-into C<new> containing all the required values needed to create a new order
-record or pass a hashref into C<load> containing the search criteria to use
-to load an existing order or set of orders.
-
-B<BREAKING API CHANGE:> Starting in version 0.17_04, new no longer automatically
-creates a checkout process for C<CHECKOUT_PHASE_INITIALIZE>. The C<$noprocess>
-parameter has been renamed to C<$process>. The have the new order automatically
-run a checkout process, set $process to 1.
-
-B<NOTE:> Starting in version 0.17_02, the cart is no longer required! You can
-create an order record that isn't associated with a current cart.
-
-B<NOTE:> As of version 0.17_02, Order::subtotal and Order::Item:: total are
-calculated once B<only> when creating an order from an existing cart. After that
-order is created, any changes to items price/wuantity/totals and the orders subtotals
-must be calculated manually and put into the database by the user though their methods.
-
-If the cart key is passed, a new order record will be created from the specified
-carts contents. The cart key can be a cart id (uuid), a cart object, or a has reference
-contain the search criteria to load matching carts.
+=head2 new
 
 =over
 
-=item C<Handel::Order-E<gt>new(\%data [, $process])>
+=item Arguments: \%data [, $process]
+
+=back
+
+Creates a new order object containing the specified data.
+
+If the cart key is passed, a new order record will be created from the specified
+carts contents. The cart key can be a cart id (uuid), a cart object, or a hash
+reference contain the search criteria to load matching carts.
+
+By default, new will use Handel::Cart to load the specified cart, unless you
+have set C<cart_class>on in the local <storage> object to use another class.
 
     my $order = Handel::Order->new({
         shopper => '10020400-E260-11CF-AE68-00AA004A34D5',
         id => '111111111-2222-3333-4444-555566667777',
         cart => $cartobject
     });
-
+    
     my $order = Handel::Order->new({
         shopper => '10020400-E260-11CF-AE68-00AA004A34D5',
         id => '111111111-2222-3333-4444-555566667777',
         cart => '11112222-3333-4444-5555-666677778888'
     });
-
+    
     my $order = Handel::Order->new({
         shopper => '10020400-E260-11CF-AE68-00AA004A34D5',
         id => '111111111-2222-3333-4444-555566667777',
@@ -350,48 +334,19 @@ contain the search criteria to load matching carts.
         }
     });
 
-=item C<Handel::Order-E<gt>load([\%filter, $wantiterator])>
-
-    my $order = Handel::Order->load({
-        id => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E'
-    });
-
-You can also omit \%filter to load all available orders.
-
-    my @orders = Handel::Order->load();
-
-In scalar context C<load> returns a C<Handel::Order> object if there is a single
-result, or a L<Handel::Iterator> object if there are multiple results. You can
-force C<load> to always return an iterator even if only one cart exists by
-setting the C<$wantiterator> parameter to C<RETURNAS_ITERATOR>.
-
-    my $iterator = Handel::Order->load(undef, RETURNAS_ITERATOR);
-    while (my $item = $iterator->next) {
-        print $item->sku;
-    };
-
-See L<Handel::Constants> for the available C<RETURNAS> options.
-
-A C<Handel::Exception::Argument> exception is thrown if the first parameter is
-not a hashref.
-
-=back
-
 =head1 METHODS
 
-=head2 add(\%data)
-
-You can add items to the order by supplying a hashref containing the
-required name/values or by passing in a newly create Handel::Order::Item
-object. If successful, C<add> will return a L<Handel::Order::Item> object
-reference.
-
-Yes, I know. Why a hashref and not just a hash? So I can add new params
-later if need be. Oh yeah, and "Because I Can". :-P
+=head2 add
 
 =over
 
-=item C<$cart-E<gt>add(\%data)>
+=item Arguments: \%data | $item
+
+=back
+
+Adds a new item to the current order and returns an instance of the item class
+specified in order object storage. You can either pass the item data as a hash
+reference:
 
     my $item = $cart->add({
         shopper  => '10020400-E260-11CF-AE68-00AA004A34D5',
@@ -400,43 +355,75 @@ later if need be. Oh yeah, and "Because I Can". :-P
         price    => 1.25
     });
 
-=item C<$cart-E<gt>add($object)>
+or pass an existing item:
 
-    my $item = Handel::Cart::Item->new({
-        sku      => 'SKU1234',
-        quantity => 1,
-        price    => 1.25
-    });
-    ...
-    $cart->add($item);
+    $order->add(
+        $cart->items->first
+    );
+
+When passing an existing cart/order item to add, all columns in the source item
+will be copied into the destination item if the column exists in both the
+destination and source, and the column isn't the primary key or the foreign
+key of the item relationship.
 
 A C<Handel::Exception::Argument> exception is thrown if the first parameter
-isn't a hashref or a C<Handel::Cart::Item> object.
+isn't a hashref or an object that subclasses Handel::Cart::Item.
+
+=head2 cart_class
+
+=over
+
+=item Arguments: $order_class
 
 =back
 
+Gets/sets the name of the class to use when loading existing cart into the
+new order. By default, it loads carts using Handel::Cart. While you can set this
+directly in your application, it's best to set it in a custom subclass of
+Handel::Order.
+
+    package CustomOrder;
+    use strict;
+    use warnings;
+    use base qw/Handel::Order/;
+    __PACKAGE__->cart_class('CustomCart');
+
 =head2 clear
 
-This method removes all items from the current cart object.
+Deletes all items from the current order.
 
     $cart->clear;
 
+=head2 count
+
+Returns the number of items in the order object.
+
+    my $numitems = $order->count;
+
 =head2 copy_cart
+
+=over
+
+=item Arguments: $order, $cart
+
+=back
 
 When creating a new order from an existing cart, C<copy_cart> will be called to
 copy the carts contents into the new order object. If you are using custom cart
 or order subclasses, the default copy_cart will only copy the fields declared in
 Handel::Cart, ignoring any custom fields you may add.
 
-To fix this, simply subclass Handel::Order and override copy_cart. As its
+To fix this, simply subclass Handel::Order and override C<copy_cart>. As its
 parameters, it will receive the order and cart objects.
 
     package CustomOrder;
-    use base 'Handel::Order';
-
+    use strict;
+    use warnings;
+    use base qw/Handel::Order/;
+    
     sub copy_cart {
         my ($self, $order, $cart) = @_;
-
+    
         # copy stock fields
         $self->SUPER::copy_cart($order, $cart);
 
@@ -446,126 +433,142 @@ parameters, it will receive the order and cart objects.
 
 =head2 copy_cart_items
 
+=over
+
+=item Arguments: $order, $cart
+
+=back
+
 When creating a new order from an existing cart, C<copy_cart_items> will be
-called to copy the cart items into the new order object items. If you are using
-custom cart or order subclasses, the default copy_cart_item will only copy the
-fields declared in Handel::Cart::Item, ignoring any custom fields you may add.
+called to copy the cart items into the new order object. If you are using
+custom cart or order subclasses, the default C<copy_cart_item> will only copy
+the fields that in both the cart item and the order item schemas.
 
-To fix this, simply subclass Handel::Order and override copy_cart. As its
+To fix this, simply subclass Handel::Order and override C<copy_cart>. As its
 parameters, it will receive the order and cart objects.
-
-    package CustomOrder;
-    use base 'Handel::Order';
-
-    __PACKAGE__->cart_class('CustomCart');
-
-    sub copy_cart_items {
-        my ($self, $order, $cart) = @_;
-        my $items = $cart->items(undef, RETURNAS_ITERATOR);
-
-        while (my $item = $items->next) {
-            my %copy;
-
-            foreach (CustomCart::Item->columns) {
-                next if $_ =~ /^(id|cart)$/i;
-                $copy{$_} = $item->$_;
-            };
-
-            $copy{'id'} = $self->uuid unless constraint_uuid($copy{'id'});
-            $copy{'orderid'} = $order->id;
-            $copy{'total'} = $copy{'quantity'}*$copy{'price'};
-
-            $order->add_to__items(\%copy);
-        };
-    };
-
-=head2 delete(\%filter)
-
-This method deletes the order item(s) matching the supplied filter values and
-returns the number of items deleted.
-
-    if ( $cart->delete({id => '8D4B0BE1-C02E-11D2-A33D-00A0C94B8D0E'}) ) {
-        print 'Item deleted';
-    };
-
-=head2 destroy(\%filter)
-
-When called used as an instance method, this will delete all items from the
-current cart instance and delete the cart container. C<filter> will be ignored.
-
-When called as a package method, this will delete all carts matching C<filter>.
-A Handel::Exception::Argument exception will be thrown is C<filter> is not a
-HASH reference.
-
-=head2 cart_class($orderclass)
-
-Gets/Sets the name of the class to use when loading existing cart into the
-new order. By default, it loads carts using Handel::Cart. While you can set this
-directly in your application, it's best to set it in a custom subclass of
-Handel::Order.
-
-    package CustomOrder;
-    use base 'Handel::Order';
-    __PACKAGE__->cart_class('CustomCart');
-
-=head2 item_class($classname)
-
-Gets/Sets the name of the class to be used when returning or creating order items.
-While you can set this directly in your application, it's best to set it
-in a custom subclass of Handel::Order.
 
     package CustomOrder;
     use strict;
     use warnings;
-    use base 'Handel::Order';
+    use base qw/Handel::Order/;
+    
+    __PACKAGE__->cart_class('CustomCart');
+    
+    sub copy_cart_items {
+        my ($self, $order, $cart) = @_;
+        my $items = $cart->items(undef, RETURNAS_ITERATOR);
+    
+        while (my $item = $items->next) {
+            my %copy;
+    
+            foreach (CustomCart::Item->columns) {
+                next if $_ =~ /^(id|cart)$/i;
+                $copy{$_} = $item->$_;
+            };
+    
+            $copy{'id'} = $self->uuid unless constraint_uuid($copy{'id'});
+            $copy{'orderid'} = $order->id;
+            $copy{'total'} = $copy{'quantity'}*$copy{'price'};
+    
+            $order->add_to__items(\%copy);
+        };
+    };
 
-    __PACKAGE__->item_class('CustomOrder::CustomItem';
+=head2 delete
 
-    1;
+=over
 
-=head2 items([\%filter, [$wantiterator])
+=item Arguments: \%filter
 
-You can retrieve all or some of the items contained in the order via the C<items>
-method. In a scalar context, items returns an iterator object which can be used
-to cycle through items one at a time. In list context, it will return an array
-containing all items.
+=back
+
+Deletes the item matching the supplied filter from the current order.
+
+    $order->delete({
+        sku => 'ABC-123'
+    });
+
+=head2 destroy
+
+=over
+
+=item \%filter
+
+=back
+
+Deletes entire orders (and their items) from the database. When called
+as an object method, this will delete all items from the current order object
+and deletes the order object itself. C<filter> will be ignored.
+
+    $order->destroy;
+
+When called as a class method, this will delete all orders matching C<filter>.
+
+    Handel::Order->destroy({
+        shopper => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E'
+    });
+
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception will be
+thrown if C<filter> is not a HASH reference.
+
+=head2 items
+
+=over
+
+=item Arguments: \%filter
+
+=back
+
+Loads the current orders items matching the specified filter and returns a
+L<Handel::Iterator|Handel::Iterator> in scalar context, or a list of items in
+list context.
 
     my $iterator = $order->items;
     while (my $item = $iterator->next) {
         print $item->sku;
     };
-
+    
     my @items = $order->items;
-    ...
-    dosomething(\@items);
 
-When filtering the items in the order in scalar context, a
-C<Handel::Order::Item> object will be returned if there is only one result. If
-there are multiple results, a Handel::Iterator object will be returned
-instead. You can force C<items> to always return a C<Handel::Iterator> object
-even if only one item exists by setting the $wantiterator parameter to
-C<RETURNAS_ITERATOR>.
+By default, the items returned as Handel::Order::Item objects. To return
+something different, set C<item_class> in the local C<storage> object.
 
-    my $item = $order->items({sku => 'SKU1234'}, RETURNAS_ITERATOR);
-    if ($item->isa('Handel::Order::Item)) {
-        print $item->sku;
-    } else {
-        while ($item->next) {
-            print $_->sku;
-        };
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
+thrown if parameter one isn't a hashref or undef.
+
+=head2 load
+
+=over
+
+=item Arguments: \%filter
+
+=back
+
+Loads existing orders matching the specified filter and returns a
+L<Handel::Iterator|Handel::Iterator> in scalar context, or a list of orders in
+list context.
+
+    my $iterator = Handel::Order->load({
+        shopper => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E',
+        type    => CART_TYPE_SAVED
+    });
+    
+    while (my $order = $iterator->next) {
+        print $order->id;
     };
+    
+    my @orders = Handel::Orders->load();
 
-See the C<RETURNAS> constants in L<Handel::Constants> for other options.
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
+thrown if the first parameter is not a hashref.
 
-In list context, filtered items return an array of items just as when items is
-called without a filter specified.
+=head2 reconcile
 
-    my @items - $order->items((sku -> 'SKU1%'});
+=over
 
-A C<Handel::Exception::Argument> exception is thrown if parameter one isn't a
-hashref or undef.
+=item Arguments: $cart_id | $cart | \%filter
 
-=head2 reconcile($cart)
+=back
 
 This method copies the specified carts items into the order only if the item
 count or the subtotal differ.
@@ -573,233 +576,796 @@ count or the subtotal differ.
 The cart key can be a cart id (uuid), a cart object, or a hash reference
 contain the search criteria to load matching carts.
 
-=head2 billtofirstname
+    $order->reconcile('11111111-1111-1111-1111-111111111111');
+    $order->reconcile({name => 'My Cart'});
+    
+    my $cart = Handel::Cart->load({
+        id => '11111111-1111-1111-1111-111111111111'
+    });
+    $order->reconcile($cart);
 
-Gets/sets the bill to first name
+By default, new will use Handel::Cart to load the specified cart, unless you
+have set C<cart_class>on in the local <storage> object to use another class.
 
-=head2 billtolastname
+=head1 COLUMNS
 
-Gets/sets the bill to last name
-
-=head2 billtoaddress1
-
-Gets/sets the bill to address line 1
-
-=head2 billtoaddress2
-
-Gets/sets the bill to address line 2
-
-=head2 billtoaddress3
-
-Gets/sets the bill to address line 3
-
-=head2 billtocity
-
-Gets/sets the bill to city
-
-=head2 billtostate
-
-Gets/sets the bill to state/province
-
-=head2 billtozip
-
-Gets/sets the bill to zip/postal code
-
-=head2 billtocountry
-
-Gets/sets the bill to country
-
-=head2 billtodayphone
-
-Gets/sets the bill to day phone number
-
-=head2 billtonightphone
-
-Gets/sets the bill to night phone number
-
-=head2 billtofax
-
-Gets/sets the bill to fax number
-
-=head2 billtoemail
-
-Gets/sets the bill to email address
-
-=head2 ccn*
-
-Gets/sets the credit cart number.
-
-B<NOTE:> This field is stored in memory for the life of the order instance and
-is not a real database field.
-
-=head2 cctype*
-
-Gets/sets the credit cart type.
-
-B<NOTE:> This field is stored in memory for the life of the order instance and
-is not a real database field.
-
-=head2 ccm*
-
-Gets/sets the credit cart expiration month.
-
-B<NOTE:> This field is stored in memory for the life of the order instance and
-is not a real database field.
-
-=head2 ccy*
-
-Gets/sets the credit cart expiration year.
-
-B<NOTE:> This field is stored in memory for the life of the order instance and
-is not a real database field.
-
-=head2 ccvn*
-
-Gets/sets the credit cart verification number.
-
-B<NOTE:> This field is stored in memory for the life of the order instance and
-is not a real database field.
-
-=head2 ccname*
-
-Gets/sets the credit cart holders name as it appears on the card.
-
-B<NOTE:> This field is stored in memory for the life of the order instance and
-is not a real database field.
-
-=head2 ccissuenumber*
-
-Gets/sets the credit cart issue number.
-
-B<NOTE:> This field is stored in memory for the life of the order instance and
-is not a real database field.
-
-=head2 ccstartdate*
-
-Gets/sets the credit cart start date.
-
-B<NOTE:> This field is stored in memory for the life of the order instance and
-is not a real database field.
-
-=head2 ccenddate*
-
-Gets/sets the credit cart end date.
-
-B<NOTE:> This field is stored in memory for the life of the order instance and
-is not a real database field.
-
-=head2 comments
-
-Gets/sets the comments for this order
-
-=head2 count
-
-Gets the number of items in the order
-
-=head2 created
-
-Gets/sets the created date of the order
-
-=head2 handling
-
-Gets/sets the handling charge
+The following methods are mapped to columns in the default order schema. These
+methods may or may not be available in any subclasses, or in situations where
+a custom schema is being used that has different column names.
 
 =head2 id
 
-Gets/sets the record id
+Returns the id of the current order.
 
-=head2 number
+    print $order->id;
 
-Gets/sets the order number
-
-=head2 shipmethod
-
-Gets/sets the shipping method
-
-=head2 shipping
-
-Gets/sets the shipping cost
-
-=head2 shiptosameasbillto
-
-Gets/sets the ship to same as bill to flag. When set, the ship to information
-will be copied from the bill to
-
-=head2 shiptofirstname
-
-Gets/sets the ship to first name
-
-=head2 shiptolastname
-
-Gets/sets the ship to last name
-
-=head2 shiptoaddress1
-
-Gets/sets the ship to address line 1
-
-=head2 shiptoaddress2
-
-Gets/sets the ship to address line 2
-
-=head2 shiptoaddress3
-
-Gets/sets the ship to address line 3
-
-=head2 shiptocity
-
-Gets/sets the ship to city
-
-=head2 shiptostate
-
-Gets/sets the ship to state
-
-=head2 shiptozip
-
-Gets/sets the ship to zip/postal code
-
-=head2 shiptocountry
-
-Gets/sets the ship to country
-
-=head2 shiptodayphone
-
-Gets/sets the ship to day phone number
-
-=head2 shiptonightphone
-
-Gets/sets the ship to night phone number
-
-=head2 shiptofax
-
-Gets/sets the ship to fax number
-
-=head2 shiptoemail
-
-Gets/sets the ship to email address
+See L<Handel::Schema::Order/id> for more information about this column.
 
 =head2 shopper
 
-Gets/sets the shopper id
+=over
 
-=head2 subtotal
+=item Arguments: $shopper
 
-Gets/sets the orders subtotal
+=back
 
-=head2 tax
+Gets/sets the id of the shopper the order should be associated with.
 
-Gets/sets the orders tax
+    $order->shopper('11111111-1111-1111-1111-111111111111');
+    print $order->shopper;
 
-=head2 total
-
-Gets/sets the orders total
+See L<Handel::Schema::Order/shopper> for more information about this column.
 
 =head2 type
 
-Gets/sets the order type
+=over
+
+=item Arguments: $type
+
+=back
+
+Gets/sets the type of the current order. Currently the two types allowed are:
+
+=over
+
+=item C<ORDER_TYPE_TEMP>
+
+The order is temporary and may be purged during any [external] cleanup process
+after the designated amount of inactivity.
+
+=item C<ORDER_TYPE_SAVED>
+
+The order should be left untouched by any cleanup process and is available to
+the shopper at any time.
+
+=back
+
+    $order->type(ORDER_TYPE_SAVED);
+    print $order->type;
+
+See L<Handel::Schema::Order/type> for more information about this column.
+
+=head2 number
+
+=over
+
+=item Arguments: $number
+
+=back
+
+Gets/sets the order number.
+
+    $order->number(1015275);
+    print $order->number;
+
+See L<Handel::Schema::Order/number> for more information about this column.
+
+=head2 created
+
+=over
+
+=item $datetime
+
+=back
+
+Gets/sets the date/time when the order was created. The date is returned as a
+stringified L<DateTime|DateTime> object.
+
+    $order->created('2006-04-11T12:34:65');
+    print $order->created;
+
+See L<Handel::Schema::Order/created> for more information about this column.
 
 =head2 updated
 
-Gets/sets the last updated date of the order
+=over
+
+=item $datetime
+
+=back
+
+Gets/sets the date/time when the order was last updated. The date is returned
+as a stringified L<DateTime|DateTime> object.
+
+    $order->updated('2006-04-11T12:34:65');
+    print $order->updated;
+
+See L<Handel::Schema::Order/updated> for more information about this column.
+
+=head2 comments
+
+=over
+
+=item $comments
+
+=back
+
+Gets/sets the comments for this order.
+
+    $order->comments('Handel with care');
+    print $order->comments;
+
+See L<Handel::Schema::Order/comments> for more information about this column.
+
+=head2 shipmethod
+
+=over
+
+=item $shipmethod
+
+=back
+
+Gets/sets the shipping method for this order.
+
+    $order->shipmethod('UPS 2nd Day');
+    print $order->shipmethod;
+
+See L<Handel::Schema::Order/shipmethod> for more information about this column.
+
+=head2 shipping
+
+=over
+
+=item Arguments: $price
+
+=back
+
+Gets/sets the shipping cost for the order item. The price is returned as a
+stringified L<Handel::Currency|Handel::Currency> object.
+
+    $item->shipping(12.95);
+    print $item->shipping;
+    print $item->shipping->format;
+
+See L<Handel::Schema::Order/shipping> for more information about this column.
+
+=head2 handling
+
+=over
+
+=item Arguments: $price
+
+=back
+
+Gets/sets the handling cost for the order item. The price is returned as a
+stringified L<Handel::Currency|Handel::Currency> object.
+
+    $item->handling(12.95);
+    print $item->handling;
+    print $item->handling->format;
+
+See L<Handel::Schema::Order/handling> for more information about this column.
+
+=head2 tax
+
+=over
+
+=item Arguments: $price
+
+=back
+
+Gets/sets the tax for the order item. The price is returned as a
+stringified L<Handel::Currency|Handel::Currency> object.
+
+    $item->tax(12.95);
+    print $item->tax;
+    print $item->tax->format;
+
+See L<Handel::Schema::Order/tax> for more information about this column.
+
+=head2 subtotal
+
+=over
+
+=item Arguments: $price
+
+=back
+
+Gets/sets the subtotal for the order item. The price is returned as a
+stringified L<Handel::Currency|Handel::Currency> object.
+
+    $item->subtotal(12.95);
+    print $item->subtotal;
+    print $item->subtotal->format;
+
+See L<Handel::Schema::Order/subtotal> for more information about this column.
+
+=head2 total
+
+=over
+
+=item Arguments: $price
+
+=back
+
+Gets/sets the total for the order item. The price is returned as a
+stringified L<Handel::Currency|Handel::Currency> object.
+
+    $item->total(12.95);
+    print $item->total;
+    print $item->total->format;
+
+See L<Handel::Schema::Order/total> for more information about this column.
+
+=head2 billtofirstname
+
+=over
+
+=item Arguments: $firstname
+
+=back
+
+Gets/sets the bill to first name.
+
+    $order->billtofirstname('Chistopher');
+    print $order->billtofirstname;
+
+See L<Handel::Schema::Order/billtofirstname> for more information about this
+column.
+
+=head2 billtolastname
+
+=over
+
+=item Arguments: $lastname
+
+=back
+
+Gets/sets the bill to last name
+
+    $order->billtolastname('Chistopher');
+    print $order->billtolastname;
+
+See L<Handel::Schema::Order/billtolastname> for more information about this
+column.
+
+=head2 billtoaddress1
+
+=over
+
+=item Arguments: $address1
+
+=back
+
+Gets/sets the bill to address line 1
+
+    $order->billtoaddress1('1234 Main Street');
+    print $order->billtoaddress1;
+
+See L<Handel::Schema::Order/billtoaddress1> for more information about this
+column.
+
+=head2 billtoaddress2
+
+=over
+
+=item Arguments: $address2
+
+=back
+
+Gets/sets the bill to address line 2
+
+    $order->billtoaddress2('Suite 34b');
+    print $order->billtoaddress2;
+
+See L<Handel::Schema::Order/billtoaddress2> for more information about this
+column.
+
+
+=head2 billtoaddress3
+
+=over
+
+=item Arguments: $address3
+
+=back
+
+Gets/sets the bill to address line 3
+
+    $order->billtoaddress3('Floor 5');
+    print $order->billtoaddress3;
+
+See L<Handel::Schema::Order/billtoaddress3> for more information about this
+column.
+
+=head2 billtocity
+
+=over
+
+=item Arguments: $city
+
+=back
+
+Gets/sets the bill to city
+
+    $order->billtocity('Smallville');
+    print $order->billtocity;
+
+See L<Handel::Schema::Order/billtocity> for more information about this
+column.
+
+=head2 billtostate
+
+=over
+
+=item Arguments: $state
+
+=back
+
+Gets/sets the bill to state/province
+
+    $order->billtostate('OH');
+    print $order->billtostate;
+
+See L<Handel::Schema::Order/billtostate> for more information about this
+column.
+
+=head2 billtozip
+
+=over
+
+=item Arguments: $zip
+
+=back
+
+Gets/sets the bill to zip/postal code
+
+    $order->billtozip('12345-6500');
+    print $order->billtozip;
+
+See L<Handel::Schema::Order/billtozip> for more information about this
+column.
+
+=head2 billtocountry
+
+=over
+
+=item Arguments: $country
+
+=back
+
+Gets/sets the bill to country
+
+    $order->billtocountry('US');
+    print $order->billtocountry;
+
+See L<Handel::Schema::Order/billtocountry> for more information about this
+column.
+
+=head2 billtodayphone
+
+=over
+
+=item Arguments: $phone
+
+=back
+
+Gets/sets the bill to day phone number
+
+    $order->billtodayphone('800-867-5309');
+    print $order->billtodayphone;
+
+See L<Handel::Schema::Order/billtodayphone> for more information about this
+column.
+
+=head2 billtonightphone
+
+=over
+
+=item Arguments: $phone
+
+=back
+
+Gets/sets the bill to night phone number
+
+    $order->billtonightphone('800-867-5309');
+    print $order->billtonightphone;
+
+See L<Handel::Schema::Order/billtonightphone> for more information about this
+column.
+
+=head2 billtofax
+
+=over
+
+=item Arguments: $fax
+
+=back
+
+Gets/sets the bill to fax number
+
+    $order->billtofax('888-132-4335');
+    print $order->billtofax;
+
+See L<Handel::Schema::Order/billtofax> for more information about this
+column.
+
+=head2 billtoemail
+
+=over
+
+=item Arguments: $email
+
+=back
+
+Gets/sets the bill to email address
+
+    $order->billtoemail('claco@chrislaco.com');
+    print $order->billtoemail;
+
+See L<Handel::Schema::Order/billtoemail> for more information about this
+column.
+
+=head2 shiptosameasbillto
+
+=over
+
+=item Arguments: 0|1
+
+=back
+
+When true, the ship address is the same as the bill to address.
+
+    $order->shiptosameasbillto(1);
+    print $order->shiptosameasbillto;
+
+See L<Handel::Schema::Order/shiptosameasbillto> for more information about this
+column.
+
+=head2 shiptofirstname
+
+=over
+
+=item Arguments: $firstname
+
+=back
+
+Gets/sets the ship to first name.
+
+    $order->shiptofirstname('Chistopher');
+    print $order->shiptofirstname;
+
+See L<Handel::Schema::Order/shiptofirstname> for more information about this
+column.
+
+=head2 shiptolastname
+
+=over
+
+=item Arguments: $lastname
+
+=back
+
+Gets/sets the ship to last name
+
+    $order->shiptolastname('Chistopher');
+    print $order->shiptolastname;
+
+See L<Handel::Schema::Order/shiptolastname> for more information about this
+column.
+
+=head2 shiptoaddress1
+
+=over
+
+=item Arguments: $address1
+
+=back
+
+Gets/sets the ship to address line 1
+
+    $order->shiptoaddress1('1234 Main Street');
+    print $order->shiptoaddress1;
+
+See L<Handel::Schema::Order/shiptoaddress1> for more information about this
+column.
+
+=head2 shiptoaddress2
+
+=over
+
+=item Arguments: $address2
+
+=back
+
+Gets/sets the ship to address line 2
+
+    $order->shiptoaddress2('Suite 34b');
+    print $order->shiptoaddress2;
+
+See L<Handel::Schema::Order/shiptoaddress2> for more information about this
+column.
+
+
+=head2 shiptoaddress3
+
+=over
+
+=item Arguments: $address3
+
+=back
+
+Gets/sets the ship to address line 3
+
+    $order->shiptoaddress3('Floor 5');
+    print $order->shiptoaddress3;
+
+See L<Handel::Schema::Order/shiptoaddress3> for more information about this
+column.
+
+=head2 shiptocity
+
+=over
+
+=item Arguments: $city
+
+=back
+
+Gets/sets the ship to city
+
+    $order->shiptocity('Smallville');
+    print $order->shiptocity;
+
+See L<Handel::Schema::Order/shiptocity> for more information about this
+column.
+
+=head2 shiptostate
+
+=over
+
+=item Arguments: $state
+
+=back
+
+Gets/sets the ship to state/province
+
+    $order->shiptostate('OH');
+    print $order->shiptostate;
+
+See L<Handel::Schema::Order/shiptostate> for more information about this
+column.
+
+=head2 shiptozip
+
+=over
+
+=item Arguments: $zip
+
+=back
+
+Gets/sets the ship to zip/postal code
+
+    $order->shiptozip('12345-6500');
+    print $order->shiptozip;
+
+See L<Handel::Schema::Order/shiptozip> for more information about this
+column.
+
+=head2 shiptocountry
+
+=over
+
+=item Arguments: $country
+
+=back
+
+Gets/sets the ship to country
+
+    $order->shiptocountry('US');
+    print $order->shiptocountry;
+
+See L<Handel::Schema::Order/shiptocountry> for more information about this
+column.
+
+=head2 shiptodayphone
+
+=over
+
+=item Arguments: $phone
+
+=back
+
+Gets/sets the ship to day phone number
+
+    $order->shiptodayphone('800-867-5309');
+    print $order->shiptodayphone;
+
+See L<Handel::Schema::Order/shiptodayphone> for more information about this
+column.
+
+=head2 shiptonightphone
+
+=over
+
+=item Arguments: $phone
+
+=back
+
+Gets/sets the ship to night phone number
+
+    $order->shiptonightphone('800-867-5309');
+    print $order->shiptonightphone;
+
+See L<Handel::Schema::Order/shiptonightphone> for more information about this
+column.
+
+=head2 shiptofax
+
+=over
+
+=item Arguments: $fax
+
+=back
+
+Gets/sets the ship to fax number
+
+    $order->shiptofax('888-132-4335');
+    print $order->shiptofax;
+
+See L<Handel::Schema::Order/shiptofax> for more information about this
+column.
+
+=head2 shiptoemail
+
+=over
+
+=item Arguments: $email
+
+=back
+
+Gets/sets the ship to email address
+
+    $order->shiptoemail('claco@chrislaco.com');
+    print $order->shiptoemail;
+
+See L<Handel::Schema::Order/shiptoemail> for more information about this
+column.
+
+=head1 TEMPORARY COLUMNS
+
+The following columns are really just methods to hold sensitive 
+order data that we don't want to actually store in the database.
+
+=head2 ccn
+
+=over
+
+=item Arguments: $ccn
+
+=back
+
+Gets/sets the credit cart number.
+
+    $order->ccn(4444333322221111);
+    print $order->ccn;
+
+=head2 cctype
+
+=over
+
+=item Arguments: $type
+
+=back
+
+Gets/sets the credit cart type.
+
+    $order->cctype('MasterCard');
+    print $order->cctype;
+
+=head2 ccm
+
+=over
+
+=item Arguments: $month
+
+=back
+
+Gets/sets the credit cart expiration month.
+
+    $order->ccm(1);
+    print $order->ccm;
+
+=head2 ccy
+
+=over
+
+=item Arguments: $year
+
+=back
+
+Gets/sets the credit cart expiration year.
+
+    $order->ccyear(2010);
+    print $order->ccyear;
+
+=head2 ccvn
+
+=over
+
+=item Arguments: $cvvn
+
+=back
+
+Gets/sets the credit cart verification number.
+
+    $order->cvvn(102);
+    print $order->cvvn;
+
+=head2 ccname
+
+=over
+
+=item Arguments: $name
+
+=back
+
+Gets/sets the credit cart holders name as it appears on the card.
+
+    $order->ccname('CHRISTOPHER H. LACO');
+    print $order->ccname;
+
+=head2 ccissuenumber
+
+=over
+
+=item Arguments: $number
+
+=back
+
+Gets/sets the credit cart issue number.
+
+    $order->ccissuenumber(16544);
+    print $order->ccissuenumber;
+
+=head2 ccstartdate
+
+=over
+
+=item Arguments: $startdate
+
+=back
+
+Gets/sets the credit cart start date.
+
+    $order->ccstartdate('1/2/2009');
+    print $order->ccstartdate;
+
+=head2 ccenddate
+
+=over
+
+=item Arguments: $enddate
+
+=back
+
+Gets/sets the credit cart end date.
+
+    $order->ccenddate('12/31/2011');
+    print $order->ccenddate;
+
+=head1 SEE ALSO
+
+L<Handel::Order::Item>, L<Handel::Schema::Order>, L<Handel::Constants>
 
 =head1 AUTHOR
 

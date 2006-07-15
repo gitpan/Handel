@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1271 2006-06-30 16:11:22Z claco $
+# $Id: Cart.pm 1334 2006-07-14 03:22:20Z claco $
 package Handel::Schema::Cart;
 use strict;
 use warnings;
@@ -62,7 +62,7 @@ Handel::Schema::Cart - Schema class for the cart table
 Handel::Schema::Cart is loaded by Handel::Cart::Schema to read/write data to
 the cart table.
 
-=head1 FIELDS
+=head1 COLUMNS
 
 =head2 id
 
@@ -77,7 +77,7 @@ string.
 
 =head2 shopper
 
-Contains the keys used to tie each cart to a specific shopper.By default, this
+Contains the keys used to tie each cart to a specific shopper. By default, this
 is a uuid string.
 
     shopper => {
@@ -123,7 +123,7 @@ Contains the description of the current cart.
 
 =head1 SEE ALSO
 
-L<Handel::Cart::Schema>, L<DBIx::Class::Schema>
+L<Handel::Schema::Cart::Item>, L<DBIx::Class::Schema>
 
 =head1 AUTHOR
 

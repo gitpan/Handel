@@ -1,11 +1,11 @@
-# $Id: Storage.pm 1318 2006-07-10 23:42:32Z claco $
+# $Id: Storage.pm 1327 2006-07-12 22:54:29Z claco $
 package Handel::Storage;
 use strict;
 use warnings;
 use Handel::Exception qw/:try/;
 use Handel::L10N qw/translate/;
 use DBIx::Class::UUIDColumns;
-use Scalar::Util qw/blessed/;
+use Scalar::Util qw/blessed weaken/;
 use Clone;
 use Class::Inspector;
 
@@ -281,14 +281,20 @@ sub schema_instance {
     };
 
     if (blessed $schema_instance) {
-        my $namespace = "$package\:\:".uc($self->new_uuid);
-        $namespace =~ s/-//g;
+        {
+            no warnings 'redefine';
+            local *Class::C3::reinitialize = sub {};
 
-        my $clone_schema = $schema_instance->compose_namespace($namespace);
+            my $namespace = "$package\:\:".uc($self->new_uuid);
+            $namespace =~ s/-//g;
 
-        $self->_schema_instance($clone_schema);
-        $self->_configure_schema_instance;
-        $self->set_inherited('schema_class', blessed $clone_schema);
+            my $clone_schema = $schema_instance->compose_namespace($namespace);
+
+            $self->_schema_instance($clone_schema);
+            $self->_configure_schema_instance;
+            $self->set_inherited('schema_class', blessed $clone_schema);
+        };
+        Class::C3->reinitialize;
     };
 
     if (!$self->_schema_instance) {
@@ -296,15 +302,21 @@ sub schema_instance {
             -details => translate('No schema_class is specified') . '.') unless
                 $self->schema_class;
 
-        my $namespace = "$package\:\:".uc($self->new_uuid);
-        $namespace =~ s/-//g;
+        {
+            no warnings 'redefine';
+            local *Class::C3::reinitialize = sub {};
 
-        my $clone_schema = $self->schema_class->compose_namespace($namespace);
-        my $schema = $clone_schema->connect(@{$self->connection_info || []});
+            my $namespace = "$package\:\:".uc($self->new_uuid);
+            $namespace =~ s/-//g;
 
-        $self->_schema_instance($schema);
-        $self->_configure_schema_instance;
-        $self->set_inherited('schema_class', blessed $schema);
+            my $clone_schema = $self->schema_class->compose_namespace($namespace);
+            my $schema = $clone_schema->connect(@{$self->connection_info || []});
+
+            $self->_schema_instance($schema);
+            $self->_configure_schema_instance;
+            $self->set_inherited('schema_class', blessed $schema);
+        };
+        Class::C3->reinitialize;
     };
 
     return $self->_schema_instance;
@@ -321,7 +333,14 @@ sub _configure_schema_instance {
     my $item_source_class;
     my $source = $schema_instance->source($schema_source);
 
+    # make this schema aware of this storage to make inflate_result happier
+    $schema_instance->{'__handel_storage'} = $self;
+    weaken $self;
+
+    # change the table name
     $source->name($self->table_name) if $self->table_name;
+
+    # change the iterator class
     $source->resultset_class($iterator_class);
 
     # twiddle source columns
@@ -399,15 +418,20 @@ sub _configure_schema_instance {
 
     # load class and item class validation
     if (my $profile = $self->validation_profile) {
-        $self->_inject_schema_validation($source_class, $self->validation_class);
+        {
+            no warnings 'redefine';
+            local *Class::C3::reinitialize = sub {};
+            $source_class->load_components('+'.$self->validation_class);
+        };
         $source_class->validation_profile($profile);
         $source_class->validation_module($self->validation_module);
     };
     if ($item_class && $item_class->storage->validation_profile) {
-        $self->_inject_schema_validation(
-            $item_source_class,
-            $item_class->storage->validation_class
-        );
+        {
+            no warnings 'redefine';
+            local *Class::C3::reinitialize = sub {};
+            $item_source_class->load_components('+'.$item_class->storage->validation_class);
+        };
         $item_source_class->validation_profile(
             $item_class->storage->validation_profile
         );
@@ -418,14 +442,19 @@ sub _configure_schema_instance {
 
     # load class and item class constraints
     if (my $constraints = $self->constraints) {
-        $self->_inject_schema_constraints($source_class, $self->constraints_class);
+        {
+            no warnings 'redefine';
+            local *Class::C3::reinitialize = sub {};
+            $source_class->load_components('+'.$self->constraints_class);
+        };
         $source_class->constraints($constraints);
     };
     if ($item_class && $item_class->storage->constraints) {
-        $self->_inject_schema_constraints(
-            $item_source_class,
-            $item_class->storage->constraints_class
-        );
+        {
+            no warnings 'redefine';
+            local *Class::C3::reinitialize = sub {};
+            $item_source_class->load_components('+'.$item_class->storage->constraints_class);
+        };
         $item_source_class->constraints(
             $item_class->storage->constraints
         );
@@ -433,71 +462,22 @@ sub _configure_schema_instance {
 
     # load class and item class default values
     if (my $defaults = $self->default_values) {
-        $self->_inject_schema_default_values($source_class, $self->default_values_class);
+        {
+            no warnings 'redefine';
+            local *Class::C3::reinitialize = sub {};
+            $source_class->load_components('+'.$self->default_values_class);
+        };
         $source_class->default_values($defaults);
     };
     if ($item_class && $item_class->storage->default_values) {
-        $self->_inject_schema_default_values(
-            $item_source_class,
-            $item_class->storage->default_values_class
-        );
+        {
+            no warnings 'redefine';
+            local *Class::C3::reinitialize = sub {};
+            $item_source_class->load_components('+'.$item_class->storage->default_values_class);
+        };
         $item_source_class->default_values(
             $item_class->storage->default_values
         );
-    };
-};
-
-sub _inject_schema_validation {
-    my ($self, $source_class, $validation_class) = @_;
-
-    if (!$source_class->isa($validation_class)) {
-        no strict 'refs';
-        no warnings 'redefine';
-
-        push @{"$source_class\:\:ISA"}, $validation_class;
-        foreach (qw/insert update/) {
-            my $original = $source_class->can($_);
-            *{"$source_class\:\:$_"} = sub {
-                $_[0]->validate;
-                return $original->(@_);
-            };
-        };
-    };
-};
-
-sub _inject_schema_constraints {
-    my ($self, $source_class, $constraints_class) = @_;
-
-    if (!$source_class->isa($constraints_class)) {
-        no strict 'refs';
-        no warnings 'redefine';
-
-        push @{"$source_class\:\:ISA"}, $constraints_class;
-        foreach (qw/insert update/) {
-            my $original = $source_class->can($_);
-            *{"$source_class\:\:$_"} = sub {
-                $_[0]->check_constraints;
-                return $original->(@_);
-            };
-        };
-    };
-};
-
-sub _inject_schema_default_values {
-    my ($self, $source_class, $defaults_class) = @_;
-
-    if (!$source_class->isa($defaults_class)) {
-        no strict 'refs';
-        no warnings 'redefine';
-
-        push @{"$source_class\:\:ISA"}, $defaults_class;
-        foreach (qw/insert update/) {
-            my $original = $source_class->can($_);
-            *{"$source_class\:\:$_"} = sub {
-                $_[0]->set_default_values;
-                return $original->(@_);
-            };
-        };
     };
 };
 

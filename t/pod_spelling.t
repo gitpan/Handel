@@ -1,12 +1,13 @@
 #!perl -w
-# $Id: pod_spelling.t 1310 2006-07-09 04:01:49Z claco $
+# $Id: pod_spelling.t 1338 2006-07-15 19:40:26Z claco $
 use strict;
 use warnings;
 use Test::More;
 
+plan skip_all => 'set TEST_POD to enable this test' unless $ENV{TEST_POD};
+
 eval 'use Test::Spelling 0.11';
 plan skip_all => 'Test::Spelling 0.11 not installed' if $@;
-plan skip_all => 'set TEST_SPELLING to enable this test' unless $ENV{TEST_SPELLING};
 
 set_spell_cmd('aspell list');
 
@@ -136,3 +137,17 @@ Postgres
 SQLite
 dsns
 username
+orderid
+PROPAGE
+cenddate
+ccm
+ccname
+ccstartdate
+cctype
+ccvn
+ccy
+ccn
+pre
+ccenddate
+ccissuenumber
+DateTime

@@ -17,7 +17,7 @@ BEGIN {
     use_ok('Handel::Order');
     use_ok('Handel::Subclassing::Order');
     use_ok('Handel::Subclassing::OrderOnly');
-    use_ok('Handel::Constants', qw(:order :returnas));
+    use_ok('Handel::Constants', qw(:order));
     use_ok('Handel::Exception', ':try');
 };
 
@@ -110,7 +110,7 @@ sub run {
 
     ## Destroy multiple orders with wildcard filter
     {
-        my $orders = $subclass->load({id => '11111%'}, RETURNAS_ITERATOR);
+        my $orders = $subclass->load({id => '11111%'});
         isa_ok($orders, 'Handel::Iterator');
         is($orders, 1);
 
@@ -121,7 +121,7 @@ sub run {
             id => '111%'
         });
 
-        $orders = $subclass->load({id => '11111%'}, RETURNAS_ITERATOR);
+        $orders = $subclass->load({id => '11111%'});
         isa_ok($orders, 'Handel::Iterator');
         is($orders, 0);
 

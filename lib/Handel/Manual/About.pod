@@ -5,10 +5,9 @@ Handel::Manual::About - A few words about the Handel Framework.
 =head1 DESCRIPTION
 
 Handel is a ecommerce framework with L<AxKit|AxKit> taglib
-support , TT2 (Template Toolkit) support and L<Catalyst::Helper|Catalyst::Helper> support.
-
-It was started for the conversion of an IIS/ASP based commerce site to Apache/ModPerl, but I decided
-that it might be useful to others so here it is.
+support , TT2 (Template Toolkit) support and L<Catalyst::Helper|Catalyst::Helper> support. It was created
+for the conversion of an IIS/ASP based commerce site to Apache/ModPerl, but I decided that it might be
+useful to others so here it is.
 
 For the curious, Handel is German for commerce.
 
@@ -19,8 +18,8 @@ http://handelframework.com/.
 
 =head1 SOURCE
 
-You can browse the latest source case at L<http://handelframework.com/source/>, or get the latest version
-of the source code from the Handel Subversion Repository at
+You can browse the latest source code at L<http://handelframework.com/source/>, or get the latest version
+of the source code from the Handel subversion repository at
 L<http://svn.handelframework.com/CPAN/Handel/>.
 
 =head1 MAILING LIST
@@ -41,19 +40,20 @@ I can be found most nights on IRC in the following channels:
 
 =head2 Database Agnostic
 
-Thanks to DBIx::Class and avoidance of auto incrementing ids, Handel should run in any database that
-DBIx::Class supports.
+Thanks to DBIx::Class and a general avoidance of auto incrementing ids, Handel should run in any database
+that DBIx::Class supports.
 
 =head2 Schema Agnostic
 
-The default schema isn't enough for everyone. Some have existing schemas in place. Handel aims to have
-the ability to use as many disparate scheme configurations as possible through a storage layer to abstract
-schema access without hardcoding specifics in the top level Cart/Order/Item classes.
+The default schema isn't enough for everyone. Some have existing schemas in place, and some just need to
+add a field or two. Handel aims to have the ability to use as many disparate schema configurations as
+possible through a storage layer to abstract schema access without hardcoding specifics in the top level
+Cart/Order/Item classes.
 
 =head2 Implementation Agnostic
 
 Handel should be able to be used from the command line, from a web page, from a SOAP service, or from
-a GUI application. It's simply a data access mechanism. Any interaction with forms, web pages, browser,
+a GUI application. It's simply a data access mechanism. Any interaction with forms, web pages, browsers,
 cookies, etc is the responsibility of the consumer/programmer.
 
 =head2 Checkout Agnostic
@@ -65,7 +65,7 @@ Each site, server, page, even process() call can have its own unique order proce
 
 =head2 Easy Integration
 
-Handel needs to provide as much glue as possible for existing application and page templating systems.
+Handel aims to provide as much glue as possible for existing application and page templating systems.
 
 =head1 FEATURES
 
@@ -75,9 +75,9 @@ What cart would be complete without the usual operations: add, update, delete, s
 
 =head2 Plugin Based Order Processing Pipeline
 
-With just a few lines of code, you can add address validation, credit cart authorization, or even email
-confirmations to your checkout process. With a building block style order processing pipeline, your checkout
-process can be as easy or as complex as you need it to be.
+With just a few lines of code, you can utilize the power of CPAN to add address validation, credit card
+authorization, or even email confirmations to your checkout process. With a building block style order
+processing pipeline, your checkout process can be as easy or as complex as you need it to be.
 
 =head2 Runs On Any Database
 
@@ -161,6 +161,12 @@ Version 1.06 or greater.
 Version 2.95 or greater.
 
 =head3 Scalar::Util
+
+=head3 Tie::Hash
+
+=head3 DateTime
+
+=head3 DateTime::Format::MySQL
 
 =head2 Optional Modules
 
@@ -249,6 +255,17 @@ like good girls and boys.
 Version 0.01 or greater.
 
 This keeps me honest and makes sure I always C<use strict>.
+
+=head3 Test::Spelling
+
+Version 0.10 or greater.
+
+I can't type, or spell. This keeps the pod somewhat readable.
+
+=head1 MAD PROPAGE
+
+I big shout at to the DBix::Class folk for all the support. Without the flexibility that DBIx::Class provides,
+Handel would be a much less flexible.
 
 =head1 AUTHOR
 

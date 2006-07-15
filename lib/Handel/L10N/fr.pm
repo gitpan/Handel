@@ -1,12 +1,12 @@
-# $Id: fr.pm 769 2005-09-06 23:10:06Z claco $
+# $Id: fr.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::L10N::fr;
 use strict;
 use warnings;
 use utf8;
-use vars qw(%Lexicon);
+use vars qw/%Lexicon/;
 
 BEGIN {
-    use base 'Handel::L10N';
+    use base qw/Handel::L10N/;
 };
 
 %Lexicon = (

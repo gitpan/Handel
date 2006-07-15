@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1296 2006-07-07 20:05:55Z claco $
+# $Id: Cart.pm 1328 2006-07-12 22:54:56Z claco $
 package Handel::Storage::Cart;
 use strict;
 use warnings;
@@ -25,7 +25,7 @@ __PACKAGE__->setup({
 1;
 __END__
 
--head1 NAME
+=head1 NAME
 
 Handel::Storage::Cart - Default storage configuration for Handel::Cart
 

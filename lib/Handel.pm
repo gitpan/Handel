@@ -1,4 +1,4 @@
-# $Id: Handel.pm 1287 2006-07-06 13:54:20Z claco $
+# $Id: Handel.pm 1326 2006-07-12 02:24:05Z claco $
 package Handel;
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ use Handel::Exception qw/:try/;
 use Handel::L10N qw/translate/;
 use base qw/Class::Accessor::Grouped/;
 
-$VERSION = '0.99_03';
+$VERSION = '0.99_04';
 
 __PACKAGE__->config_class('Handel::ConfigReader');
 

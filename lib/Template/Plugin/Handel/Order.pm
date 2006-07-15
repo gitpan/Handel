@@ -1,4 +1,4 @@
-# $Id: Order.pm 1312 2006-07-09 19:46:15Z claco $
+# $Id: Order.pm 1334 2006-07-14 03:22:20Z claco $
 package Template::Plugin::Handel::Order;
 use strict;
 use warnings;
@@ -69,11 +69,11 @@ Template::Plugin::Handel::Order - Template Toolkit plugin for orders
 
 =head1 DESCRIPTION
 
-C<Template::Plugin::Handel::Order> is a TT2 (Template Toolkit 2) plugin for
-C<Handel::Order>. It's API is exactly the same as C<Handel::Order>.
+Template::Plugin::Handel::Order is a TT2 (Template Toolkit 2) plugin for
+Handel::Order. It's API is exactly the same as Handel::Order.
 
-C<Handel::Constants> are imported into this module automatically. This removes
-the need to use  C<Template::Plugin::Handel::Constants> separately when working
+Handel::Constants are imported into this module automatically. This removes
+the need to use Template::Plugin::Handel::Constants separately when working
 with orders.
 
     [% USE ho = Handel.Order %]

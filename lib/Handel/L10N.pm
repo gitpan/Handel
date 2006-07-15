@@ -1,13 +1,13 @@
-# $Id: L10N.pm 768 2005-09-05 02:25:24Z claco $
+# $Id: L10N.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::L10N;
 use strict;
 use warnings;
 use utf8;
-use vars qw(@EXPORT_OK %Lexicon $handle);
+use vars qw/@EXPORT_OK %Lexicon $handle/;
 
 BEGIN {
-    use base 'Locale::Maketext';
-    use base 'Exporter';
+    use base qw/Locale::Maketext/;
+    use base qw/Exporter/;
 };
 
 @EXPORT_OK = qw(translate);
@@ -32,7 +32,7 @@ Handel::L10N - Localization module for Handel
 =head1 SYNOPSIS
 
     use Handel::L10N qw(translate);
-
+    
     warn translate('This is my message');
 
 =head1 DESCRIPTION
@@ -44,25 +44,33 @@ export anything. You can either use it directly:
 
     warn Handel::L10N::translate('My message');
 
-You can also export C<translate> into the users namespace:
+You can also export C<translate> into the callers namespace:
 
-    use Handel::L10N qw(translate);
+    use Handel::L10N qw/translate/;
 
     warn translate('My message');
 
-Thus far, the French translation comes from Googles translation tools. IF you
-have the time and can do better, the help would be much appreciated.
+If you have the time and can do a language, the help would be much appreciated.
 
-=head1 METHODS
+=head1 FUNCTIONS
 
 =head2 translate
+
+=over
+
+=item Arguments: $message
+
+=back
 
 Translates the supplied text into the appropriate language if available. If no
 match is available, the original text is returned.
 
+    print translate('foo was here');
+
 =head1 SEE ALSO
 
-L<Locale::Maketext>, L<Handel::L10N::us_en>, L<Handel::L10N::fr>
+L<Locale::Maketext>, L<Handel::L10N::us_en>, L<Handel::L10N::fr>,
+L<Handel::L10N::zh_tw>
 
 =head1 AUTHOR
 

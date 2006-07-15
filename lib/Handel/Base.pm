@@ -1,4 +1,4 @@
-# $Id: Base.pm 1314 2006-07-10 00:29:55Z claco $
+# $Id: Base.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::Base;
 use strict;
 use warnings;
@@ -21,7 +21,7 @@ sub import {
     my $self = shift;
 
     if (!$self->has_storage) {
-        $self->storage;
+        $self->init_storage;
     };
 };
 
@@ -56,11 +56,19 @@ sub set_column {
 
 sub inflate_result {
     my $self = shift;
+    my $result = $_[0]->result_class->inflate_result(@_);
 
+    return $self->create_result($result);
+};
+
+sub create_result {
+    my ($self, $result) = @_;
+    my $class = ref $self || $self;
+    
     return bless {
-        result => $_[0]->result_class->inflate_result(@_),
-        autoupdate => $self->storage->autoupdate
-    }, $self;
+        result => $result,
+        autoupdate => $result->result_source->schema->{'__handel_storage'}->autoupdate
+    }, $class;
 };
 
 sub storage {
@@ -169,7 +177,7 @@ sub _set_storage {
 sub update {
     my $self = shift;
 
-    return $self->result->update;
+    return $self->result->update(@_);
 };
 
 1;
@@ -207,15 +215,15 @@ Handel::Base - Base class for Cart/Order/Item classes
 =head1 DESCRIPTION
 
 Handel::Base is a base class for the Cart/Order/Item classes that glues those
-classes to a L<Handel::Storage|Handel::Storage> instance.
+classes to a L<Handel::Storage|Handel::Storage> object.
 
 =head1 METHODS
 
 =head2 accessor_map
 
 Returns a hashref containing the column/accessor mapping used when
-C<create_accessors> as last called. This is used by get/set_column to get the
-accessor name for any given column.
+C<create_accessors> was last called. This is used by C<get_column>/C<set_column>
+to get the accessor name for any given column.
 
     $schema->add_column('foo' => {accessor => 'bar');
     ...
@@ -236,8 +244,32 @@ L<Handel::Storage/column_accessors>. If you have defined columns in your
 schema to have an accessor that is different than the column name, that will
 be used instead of the column name.
 
+    package CustomCart;
+    use strict;
+    use warnings;
+    use base qw/Handel::Cart/;
+    __PACKAGE__->storage->add_columns('foo');
+    __PACKAGE__->create_accessors;
+
 Each accessor will call C<get_column>/C<set_column>, passing the real database
 column name.
+
+=head2 create_result
+
+=over
+
+=item Arguments: $result
+
+=back
+
+Creates a new instance of the current class, stores the resultset result object
+inside, and does any configuration on the new object before returning it.
+
+    my $result = $schema->resultset('Carts')->create({name => 'My Cart'});
+    my $cart = Handel::Cart->create_result($result);
+
+This is used internally by C<inflate_result> and C<storage>. There's probably
+no good reason to use this yourself.
 
 =head2 get_column
 
@@ -251,20 +283,46 @@ Returns the value for the specified column from the current C<result>. If an
 accessor has been defined for the column in C<accessor_map>, that will be used
 against the result instead.
 
+    my $cart = Handel::Cart->new({name => 'My Cart'});
+    print $cart->get_column('name');
+
 =head2 has_storage
 
 Returns true if the current class has an instance of
 L<Handel::Storage|Handel::Storage>. Returns undef if it does not.
 
+    package CustomCart;
+    use strict;
+    use warnings;
+    use base qw/Handel::Cart/;
+    if (!__PACKAGE__->has_storage) {
+        __PACKAGE->init_storage;
+    };
+
 =head2 inflate_result
 
+=over
+
+=item Arguments: $result
+
+=back
+
 This method is called by L<Handel::Iterator|Handel::Iterator> to inflate
-objects returned by various iterator operations into the current class.
+objects returned by various iterator operations into the current class. There is
+probably no good reason to use this method yourself.
 
 =head2 init_storage
 
-Initializes the schema in the current class, cloning it from the superclass if
-necessary.
+Initializes the storage object in the current class, cloning it from the
+superclass if necessary.
+
+    package CustomCart;
+    use strict;
+    use warnings;
+    use base qw/Handel::Cart/;
+    if (!__PACKAGE__->has_storage) {
+        __PACKAGE->init_storage;
+    };
 
 =head2 set_column
 
@@ -274,10 +332,22 @@ necessary.
 
 =back
 
-Sets the value for the specified column to the current C<result>. If an
+Sets the value for the specified column on the current C<result>. If an
 accessor has been defined for the column in C<accessor_map>, that will be used
 against the result instead.
 
+    my $cart = Handel::Cart->new({name => 'My Cart'});
+    $cart->set_column('name', 'New Cart');
+
+If C<autoupdate> is enable for the current object, C<set_column> will call
+C<update> automatically. If C<autoupdate> is disabled, be sure to call C<update>
+to save change to the database.
+
+    my $cart = Handel::Cart->new({name => 'My Cart'});
+    $cart->set_column('name', 'New Cart');
+    if (!$cart->autoupdate) {
+        $cart->update;
+    };
 
 =head2 storage
 
@@ -287,15 +357,23 @@ against the result instead.
 
 =back
 
-Returns the local storage_class instance. If a local
-instance doesn't exist, it will create and return a new one*. If specified,
-C<options> will be passed to C<setup> on the storage instance.
+Returns the local instance of C<storage_class>. If a local object doesn't
+exist, it will create and return a new one*. If specified, C<options> will be
+passed to C<setup> on the storage object.
 
-B<*> When creating subclasses of Cart/Order/Item classes and no storage instance
+B<*> When creating subclasses of Cart/Order/Item classes and no storage object
 exists in the current class, storage will attempt to clone one from the
-immediate superclass using C<clone> first before creating a new instance.
-However, a clone will only be created if it is of the same type specified in
-C<storage_class>.
+immediate superclass using C<init_storage> and C<clone> first before creating
+a new instance. However, a clone will only be created if it is of the same type
+specified in C<storage_class>.
+
+    package CustomCart;
+    use strict;
+    use warnings;
+    use base qw/Handel::Cart/;
+    
+    my $storage = __PACKAGE__->storage;
+    ## clones a new storage object from Handel::Cart
 
 =head2 storage_class
 
@@ -305,22 +383,25 @@ C<storage_class>.
 
 =back
 
-Gets/sets the default storage class to be created by storage.
+Gets/sets the default storage class to be created by C<init_storage>.
 
     __PACKAGE__->storage_class('MyStorage');
     
     print ref __PACKAGE__->storage; # MyStorage
+
+If you are using a custom storage class, you must set C<storage_class> before
+you call C<storage> for the first time in this class.
 
 A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
 thrown if the specified class can not be loaded.
 
 =head2 result
 
-Returns the schema ResultSource/Row object for the current class instance.
+Returns the schema resultset result object for the current class object.
 There should be no need currently to access this directly unless you are
 writing custom subclasses.
 
-    my @columns = @$cart->result->columns;
+    my @columns = $cart->result->columns;
 
 See L<DBIx::Class::ResultSet|DBIx::Class::ResultSet> and
 L<DBIx::Class::Row|DBIx::Class::Row> for more information on using the result
@@ -328,12 +409,28 @@ object.
 
 =head2 update
 
+=over
+
+=item Arguments: \%data
+
+=back
+
 Sends all of the column updates to the database. If C<autoupdate> is off in the
-current storage instance, you must call this to save your changes or they will
+current object, you must call this to save your changes or they will
 be lost when the object goes out of scope.
 
-    $cart->name('MyName');
+    $cart->name('My Cart');
+    $cart->description('My Favorite Cart');
     $cart->update;
+
+You may also pass a hash reference containing name/value pairs to be applied:
+
+    $cart->update({
+        name        => 'My Cart',
+        description => 'My Favorite Cart'
+    });
+
+Be careful to always use the column name, not its accessor alias if it has one.
 
 =head1 SEE ALSO
 

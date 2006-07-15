@@ -1,11 +1,11 @@
-# $Id: Exception.pm 1310 2006-07-09 04:01:49Z claco $
+# $Id: Exception.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::Exception;
 use strict;
 use warnings;
 
 BEGIN {
-    use base 'Error';
-    use Handel::L10N qw(translate);
+    use base qw/Error/;
+    use Handel::L10N qw/translate/;
 
     eval 'require Apache::AxKit::Exception';
     if (!$@) {
@@ -37,6 +37,10 @@ sub new {
 
 sub details {
     return shift->{'-details'};
+};
+
+sub results {
+    return shift->{'-results'};
 };
 
 package Handel::Exception::Constraint;
@@ -137,10 +141,6 @@ sub new {
         -text => 'The data could not be written because it failed validation', @_ );
 };
 
-sub results {
-    return shift->{'-results'};
-};
-
 1;
 __END__
 
@@ -152,13 +152,11 @@ Handel::Exception - Exceptions used within Handel
 
     use Handel::Cart;
     use Handel::Exception' qw(:try);
-
+    
     try {
         my $cart = Handel::Cart->new('junk crap');
-
     } catch Handel::Exception::Argument with {
         print 'Passed the wrong arguments to method';
-
     } catch Handel::Exception with {
         print 'Unknown issue with Handel';
     } catch Error with {
@@ -169,8 +167,8 @@ Handel::Exception - Exceptions used within Handel
 
 =head1 DESCRIPTION
 
-C<Handel::Exception> subclasses L<Error> and attempts to throw exceptions when
-unexpected things happen.
+Handel::Exception subclasses L<Error|Error> and attempts to throw exceptions
+when unexpected things happen.
 
 =head1 EXCEPTIONS
 
@@ -197,14 +195,16 @@ exceptions.
 =head2 Handel::Exception::Constraint
 
 This exception is thrown if a database constraint is violated. This is true for
-both raw DBI database constraint errors as well as  field updates that don't
-pass constraints in C<Handel::Constraints>.
+both raw DBI database constraint errors as well as field updates that don't
+pass constraints in
+L<Handel::Components::Constraints|Handel::Components::Constraints>.
 
 =head2 Handel::Exception::Validation
 
 This exception is thrown if the validation performed by
-Handel::Components::Validation has failed. If the validation component returned
-a result object, that can be found in $E-E<gt>object.
+L<Handel::Components::Validation|Handel::Components::Validation> has failed.
+If the validation component returned a result object, that can be found in
+$E-E<gt>results.
 
 =head2 Handel::Exception::Storage
 
@@ -219,18 +219,18 @@ into methods.
 =head2 Handel::Exception::Taglib
 
 This exception is thrown when an unexpected error occurs within
-C<AxKit::XSP::Handel::Cart> taglib.
+the AxKit taglibs.
 
 =head1 METHODS
 
 =head2 new
 
-This returns a new C<Handel::Exception> object. This is mostly used internally
-by L<Error>. In most circumstance, you don't need to call C<new> at all.
+This returns a new Handel::Exception object. This is mostly used internally
+by L<Error|Error>. In most circumstances, you don't need to call C<new> at all.
 Instead, simply use the C<throw> syntax:
 
     use Handel::Exceptions;
-
+    
     throw Handel::Exception::Taglib(
         -text => translate("Tag '[_1]' not valid inside of other Handel tags", $tag)
     ) if ($context[$#context] ne 'root');
@@ -238,6 +238,11 @@ Instead, simply use the C<throw> syntax:
 =head2 details
 
 Returns the details portion of the exception message if there are any.
+
+=head2 results
+
+Returns the data validation result errors from exceptions thrown by
+L<Handel::Components::Validation|Handel::Components::Validation>.
 
 =head1 SEE ALSO
 

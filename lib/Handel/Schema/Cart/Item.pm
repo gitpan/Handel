@@ -1,4 +1,4 @@
-# $Id: Item.pm 1310 2006-07-09 04:01:49Z claco $
+# $Id: Item.pm 1334 2006-07-14 03:22:20Z claco $
 package Handel::Schema::Cart::Item;
 use strict;
 use warnings;
@@ -67,7 +67,7 @@ Handel::Schema::Cart::Item - Schema class for cart_items table
 Handel::Schema::Cart::Item is loaded by Handel::Cart::Schema to read/write data
 to the cart_items table.
 
-=head1 FIELDS
+=head1 COLUMNS
 
 =head2 id
 
@@ -136,7 +136,7 @@ Contains the description of the current cart item.
 
 =head1 SEE ALSO
 
-L<Handel::Cart::Schema>, L<DBIx::Class::Schema>
+L<Handel::Schema::Cart>, L<DBIx::Class::Schema>
 
 =head1 AUTHOR
 

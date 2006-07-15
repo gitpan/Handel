@@ -9,6 +9,19 @@ BEGIN {
     __PACKAGE__->mk_group_accessors('inherited', qw/constraints/);
 };
 
+sub add_constraint {
+    my ($self, $column, $name, $constraint) = @_;
+    my $constraints = $self->constraints || {};
+
+    if (!exists $constraints->{$column}) {
+        $constraints->{$column} = {};
+    };
+
+    $constraints->{$column}->{$name} = $constraint;
+
+    $self->constraints($constraints);
+};
+
 sub check_constraints {
     my $self = shift;
     my $constraints = $self->constraints;
@@ -68,17 +81,17 @@ Handel::Components::Constraints - Column constraints for schemas
     use strict;
     use warnings;
     use base /DBIx::Class/;
-
+    
     __PACKAGE__->load_components('+Handel::Component::Constraints');
-    __PACKAGE__->add_constraint('myconstraint', 'foocolumn' => \&mysub);
-
+    __PACKAGE__->add_constraint('column', 'Constraint Name' => \&checker);
+    
     1;
 
 =head1 DESCRIPTION
 
 Handel::Components::Constraints is a simple way to validate column data during
 inserts/updates using subroutines. It mostly acts as a compatibility layer
-for C<add_constraint> used in Class::DBI.
+for subclasses that used C<add_constraint> when Handel used Class::DBI.
 
 There is no real reason to load this component into your schema table classes
 directly. If you add constraints using Handel::Storage->add_constraint, this
@@ -86,9 +99,17 @@ component will be loaded into the appropriate schema source class automatically.
 
 =head1 METHODS
 
-=head2 add_constraint($name, $column, \&sub)
+=head2 add_constraint
 
-Adds a constraint for the specified column.
+=over
+
+=item Arguments: $column, $name, \&sub
+
+=back
+
+Adds a named constraint for the specified column.
+
+    __PACKAGE__->add_constraint('quantity', 'Check Quantity' => \%check_qty);
 
 Note: Always use the real column name in the database, not the accessor alias
 for the column.
@@ -100,7 +121,7 @@ This loops through all of the configured constraints, calling the specified
 
     sub mysub {
         my ($value, $source, $column, \%data) = @_;
-
+        
         if ($value) {
             return 1;
         } else {
@@ -116,7 +137,7 @@ The value of the column to be checked.
 
 =item source
 
-The source storage object for the row being updated/inserted.
+The result object for the row being updated/inserted.
 
 =item column
 
@@ -124,8 +145,8 @@ The name of the column being checked.
 
 =item data
 
-A hash reference containing all of the columns and their values. Changing and
-values in the hash will also change the value interested/updated in the
+A hash reference containing all of the columns and their values. Changing any
+values in the hash will also change the value inserted/updated in the
 database.
 
 =back

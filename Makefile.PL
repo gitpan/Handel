@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 1298 2006-07-08 01:09:20Z claco $
+# $Id: Makefile.PL 1338 2006-07-15 19:40:26Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -94,7 +94,10 @@ WriteMakefile(
         'Error'                    => '0.14',
         'Locale::Maketext'         => '1.06',
         'Module::Pluggable'        => '2.95',
-        'Scalar::Util'             => '0'
+        'Scalar::Util'             => '0',
+        'Tie::Hash'                => '0',
+        'DateTime'                 => '0',
+        'DateTime::Format::MySQL'  => '0'
     },
     (ExtUtils::MakeMaker->VERSION >= 6.11) ?
     (NO_META      => 1) : (),

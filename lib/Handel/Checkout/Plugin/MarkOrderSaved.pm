@@ -1,9 +1,9 @@
-# $Id: MarkOrderSaved.pm 797 2005-09-12 02:22:07Z claco $
+# $Id: MarkOrderSaved.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::Checkout::Plugin::MarkOrderSaved;
 use strict;
 use warnings;
-use base 'Handel::Checkout::Plugin';
-use Handel::Constants qw(:checkout :order);
+use base qw/Handel::Checkout::Plugin/;
+use Handel::Constants qw/:checkout :order/;
 
 sub register {
     my ($self, $ctx) = @_;
@@ -20,6 +20,7 @@ sub handler {
 };
 
 1;
+__END__
 
 =head1 NAME
 
@@ -28,13 +29,13 @@ Handel::Checkout::Plugin::MarkOrderSaved - Checkout plugin to mark the order ORD
 =head1 SYNOPSIS
 
     use Handel::Checkout;
-
+    
     my $checkout = Handel::Checkout->new({
         order       => $order,
         phases      => 'CHECKOUT_PHASE_FINALIZE',
         loadplugins => 'Handel::Checkout::Plugin::MarkOrderSaved'
     });
-
+    
     $checkout->process;
 
 =head1 DESCRIPTION

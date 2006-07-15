@@ -1,4 +1,4 @@
-# $Id: Order.pm 1305 2006-07-08 19:38:24Z claco $
+# $Id: Order.pm 1339 2006-07-15 21:49:41Z claco $
 package Handel::Storage::Order;
 use strict;
 use warnings;
@@ -29,14 +29,16 @@ __PACKAGE__->setup({
         handling => 0,
         subtotal => 0,
         tax      => 0,
-        total    => 0
+        total    => 0,
+        created  => sub {DateTime->now},
+        updated  => sub {DateTime->now}
     }
 });
 
 1;
 __END__
 
--head1 NAME
+=head1 NAME
 
 Handel::Storage::Order - Default storage configuration for Handel::Order
 

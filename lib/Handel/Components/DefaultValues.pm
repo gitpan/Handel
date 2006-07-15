@@ -18,11 +18,12 @@ sub set_default_values {
     foreach my $default (keys %{$defaults}) {;
         if (!defined $data{$default}) {
             my $value = $defaults->{$default};
-            $data{$default} = (reftype($value) && reftype($value) eq 'CODE') ? $value->() : $value ;
+            my $new_value = (reftype($value) && reftype($value) eq 'CODE') ? $value->($self) : $value ;
+            my $accessor = $self->column_info($default)->{'accessor'} || $default;
+            
+            $self->$accessor($new_value);
         };
     };
-
-    $self->set_columns(\%data);
 };
 
 sub insert {
@@ -50,14 +51,14 @@ Handel::Components::DefaultValues - Set default values for undefined columns
     use strict;
     use warnings;
     use base /DBIx::Class/;
-
+    
     __PACKAGE__->load_components('+Handel::Component::DefaultValues');
     __PACKAGE__->default_values({
         col1 => 0,
         col2 => 'My New Item',
         col3 => \&subref
     });
-
+    
     1;
 
 =head1 DESCRIPTION
@@ -71,10 +72,17 @@ component will be loaded into the appropriate schema source class automatically.
 
 =head1 METHODS
 
-=head2 default_values([\%values])
+=head2 default_values
 
-Gets/sets the default values to be used for this classes columns. Hash values
-can be either simple scalar values or code references that will be executed.
+=over
+
+=item Arguments: \%values
+
+=back
+
+Gets/sets the default values to be used for this result sources columns. Hash
+values can be either simple scalar values or code references that will be
+executed and their return values inserted into the columns.
 
 Note: Always use the real column name in the database, not the accessor alias
 for the column.

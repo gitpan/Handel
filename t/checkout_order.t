@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_order.t 1169 2006-05-31 01:54:57Z claco $
+# $Id: checkout_order.t 1336 2006-07-15 03:54:43Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -15,7 +15,7 @@ BEGIN {
     };
 
     use_ok('Handel::Checkout');
-    use_ok('Handel::Constants', qw(:order :returnas));
+    use_ok('Handel::Constants', qw(:order));
     use_ok('Handel::Exception', ':try');
     use_ok('Handel::Order');
     use_ok('Handel::Subclassing::Order');

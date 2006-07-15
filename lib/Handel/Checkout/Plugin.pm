@@ -1,4 +1,4 @@
-# $Id: Plugin.pm 923 2005-11-15 02:59:22Z claco $
+# $Id: Plugin.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::Checkout::Plugin;
 use strict;
 use warnings;
@@ -46,25 +46,25 @@ Handel::Checkout::Plugin - Base module for Handle::Checkout plugins
     package MyPackage::FaxOrder;
     use Handel::Constants qw(:checkout);
     use base 'Handel::Checkout::Plugin';
-
+    
     sub register {
         my ($self, $ctx) = @_;
 
         $ctx->add_handler(CHECKOUT_PHASE_DELIVER, \&deliver);
     };
-
+    
     sub deliver {
         my ($self, $ctx) = @_;
-
+    
         ...
-
+    
         return CHECKOUT_HANDLER_OK;
     };
 
 =head1 DESCRIPTION
 
-C<Handel::Checkout::Plugin> is the base module for all checkout pipeline
-plugins used in C<Handel::Checkout>.
+Handel::Checkout::Plugin is the base module for all checkout pipeline plugins
+used in Handel::Checkout.
 
 =head1 CONSTRUCTOR
 

@@ -1,8 +1,8 @@
 TODO list for Perl module Handel (in no particular order):
 
+    - Update create_accessors to take an accessor_map/ro/wo/rw
     - AxKit Tablibs need reworked for subclassing
     - TT plugins need reworked for subclassing
-    - work autoupdate from storage back up to result where it belongs
     - rework Catalyst Helpers for 5.7x
     - further abstract storage so one can create items using per new connections
     - better deal with copying carts to orders, custom fields, etc

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_destroy.t 1300 2006-07-08 01:12:16Z claco $
+# $Id: cart_destroy.t 1336 2006-07-15 03:54:43Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -17,7 +17,7 @@ BEGIN {
     use_ok('Handel::Cart');
     use_ok('Handel::Subclassing::Cart');
     use_ok('Handel::Subclassing::CartOnly');
-    use_ok('Handel::Constants', qw(:cart :returnas));
+    use_ok('Handel::Constants', qw(:cart));
     use_ok('Handel::Exception', ':try');
 };
 
@@ -107,7 +107,7 @@ sub run {
 
     ## Destroy multiple carts with wildcard filter
     {
-        my $carts = $subclass->load({description => {like => 'Saved%'}}, RETURNAS_ITERATOR);
+        my $carts = $subclass->load({description => {like => 'Saved%'}});
         isa_ok($carts, 'Handel::Iterator');
         is($carts, 1);
 
@@ -118,7 +118,7 @@ sub run {
             description => {like => 'Saved%'}
         });
 
-        $carts = $subclass->load({description => {like => 'Saved%'}}, RETURNAS_ITERATOR);
+        $carts = $subclass->load({description => {like => 'Saved%'}});
         isa_ok($carts, 'Handel::Iterator');
         is($carts, 0);
 

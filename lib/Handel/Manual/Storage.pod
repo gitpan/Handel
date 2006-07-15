@@ -6,8 +6,8 @@ Handel::Manual::Storage - An introduction to the storage layer and how it uses s
 
 Handel::Storage is the layer of glue that allows Handel to use disparate schemas in a generic, yet predictable
 way while maintaining the public API. It is also responsible for adding generic functionality, like column
-default values, column constraints, validation profiles, and even just adding/removing columns to whatever
-schema is being used.
+default values, column constraints, validation profiles, currency column inflation, and even just
+adding/removing columns to whatever schema is being used.
 
 =head1 WORKFLOW
 
@@ -23,7 +23,7 @@ default values. Once customization is complete, the schema is connected to the s
 returned for use by the rest of storage to alter data.
 
 As a general rule, each top level class in Handel has its own storage instance, and each storage instance has
-its own schema instance. When a subclass of a top level interface  class is created, it inherits a B>a copy>
+its own schema instance. When a subclass of a top level interface  class is created, it inherits a B<a copy>
 of its parents storage. Any changes made to the subclasses storage effects its storage only, leaving the
 parents storage instance and schema in tact. See L<Handel::Manual::Customization> for more details on how
 to use subclassing to custom Handel.
@@ -59,11 +59,11 @@ schema won't inadvertently effect other instances of the original schema in the 
 
 When cloned, the result source classes in the schema are put into a unique namespace in the form of:
 
-    STORAGE_CLASS_NAME::UUID::SOURCE_CLASS
+    STORAGE_CLASS_NAME::UUID::SOURCE_CLASS_OR_SOURCE_NAME
 
 where STORAGE_CLASS_NAME is the name of the storage class doing the cloning, and UUID is a
-uuid/guid string returned by C<new_uuid>, and SOURCE_CLASS is the short name of the original result
-source class.
+uuid/guid string returned by C<new_uuid>, and SOURCE_CLASS_OR_SOURCE_NAME is either the
+short name of the original result source class, or the name set in its source_name.
 
 For example, when we clone the default cart schema:
 
@@ -72,9 +72,8 @@ For example, when we clone the default cart schema:
     # loads Handel::Schema::Cart::Item
     my $schema = Handel::Storage->new({schema_class => 'Handel::Cart::Schema'})->schema_instance;
 
-we end up with the following schema classes:
+we end up with the following schema result source classes:
 
-    Handel::Schema::Cart
     Handel::Storage::48C3C63B1119458CACD2822491D89DDC::Cart
     Handel::Storage::48C3C63B1119458CACD2822491D89DDC::Cart::Item
 
@@ -83,34 +82,38 @@ we end up with the following schema classes:
 After a given schema is cloned, it is then configured to match the requested functionality in the options
 passed to C<new> or C<setup>. That configuration consists of the following steps.
 
-First, the specified schema source in the schema has its C<result_class> set to the specified
+=over
+
+=item * First, the specified schema source in the schema has its C<result_class> set to the specified
 C<iterator_class>.
 
-Next, any new columns will be added to the source class, then any deleted columns will be removed from the
-schema source.
+=item * Next, any new columns will be added to the source class, then any deleted columns will be removed
+from the schema source.
 
-Next, any currency columns will have their inflate/deflate column information set to inflate/deflate to and from
-the specified currency class.
+=item * Next, any currency columns will have their inflate/deflate column information set to inflate/deflate to
+and from the specified currency class.
 
-Next, if any item class was specified, the previous 2 steps will be performed on its schema source I<in this>
-schema. The schema associated with the item classes own storage will be untouched.
+=item * Next, if any item class was specified, the previous 2 steps will be performed on its schema source
+I<in this> schema. The schema associated with the item classes own storage will be untouched.
 
-The schemas database handle will have its C<HandleError> attribute set to use the local C<process_errors>
-method, used for turning database errors into Handel exceptions.
+=item * The schemas database handle will have its C<HandleError> attribute set to use the local
+C<process_errors> method, used for turning database errors into Handel exceptions.
 
-Next, if a validation profile has been specified,
+=item * Next, if a validation profile has been specified,
 L<Handel::Components::Validation|Handel::Components::Validation> will be loaded into the source class
 and configured with the specified validation profile.
 
-Next, if constraints have been specified, 
+=item * Next, if constraints have been specified, 
 L<Handel::Components::Constraints|Handel::Components::Constraints> will be loaded into the source class
 and configured with the specified constraints.
 
-Next, if and column default values have been specified, 
+=item * Next, if any column default values have been specified, 
 L<Handel::Components::DefaultValues|Handel::Components::DefaultValues> will be loaded into the
 source class and configured with the specified default values.
 
-Next, a 17th, even closer blade...
+=item * Next, a 17th, even closer blade...
+
+=back
 
 =head1 COMPONENTS
 
@@ -125,7 +128,7 @@ L<Handel::Components::DefaultValues|Handel::Components::DefaultValues> component
 the schema instance during its initialization. Default values are values to be applied to any column before it is
 written to the database. This is a means to provide a more generic way to set column value defaults rather
 than relying on the database/dbi driver to do the work for you. It also means that each storage instance can
-apply a completely different set of defaults to rows written to the same database schema.
+apply a completely different set of default values to rows written to the same database schema.
 
     my $storage = Handel::Storage->new({
         schema_class   => 'Handel::Cart::Schema',
@@ -143,7 +146,21 @@ apply a completely different set of defaults to rows written to the same databas
     });
     print $result->name; # New Cart
 
-Default values can either be literal string values, or code references that return single scalar values.
+Default values can either be literal string values, or code references that return single scalar values. If a code
+reference is used, the function will be passed the current result:
+
+    $storage->default_values->{'name'} = \%get_name;
+    
+    sub get_name {
+        my $result = shift;
+        my $type = $result->type;
+        
+        if (type == CART_TYPE_SAVED) {
+            return 'Saved Cart';
+        };
+        
+        return;
+    };
 
 =head2 Constraints
 
@@ -185,7 +202,7 @@ Constraints are run after and default values have been set, if any default value
 
 When adding a validation profile to storage, the
 L<Handel::Components::Validation|Handel::Components::Validation> component will be loaded into
-the schema instance during its initialization.  Validation profiles are used to create more complex versions
+the schema instance during its initialization. Validation profiles are used to create more complex versions
 of data validation than most constraints are designed to tackle.
 
     my $storage = Handel::Storage->new({

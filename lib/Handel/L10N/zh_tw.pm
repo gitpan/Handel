@@ -1,12 +1,12 @@
-# $Id: zh_tw.pm 915 2005-11-13 18:59:22Z claco $
+# $Id: zh_tw.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::L10N::zh_tw;
 use strict;
 use warnings;
 use utf8;
-use vars qw(%Lexicon);
+use vars qw/%Lexicon/;
 
 BEGIN {
-    use base 'Handel::L10N';
+    use base qw/Handel::L10N/;
 };
 
 %Lexicon = (

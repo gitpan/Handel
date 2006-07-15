@@ -1,5 +1,18 @@
 Revision history for Perl module Handel
 
+0.99_04 Sat Jul 15 16:21:25 2006
+    - Schema configuration now finally uses load_components without the
+        Class::C3 recalc slowdown
+    - Validation component now uses throw_exception/next::method now that
+        load_components is used
+    - Major pod cleanup
+    - Excised all forms of RETURN_AS
+    - TEST_SPELLING is now TEST_POD, which all pod tests now use
+    - Order created/updated fields now return DateTime objects using
+        DBIx::Class::InflateColumn::DateTime
+    - Excised remaining UNIVERSAL::isa mistakes. Blessed is your friend.
+    - Order created/updated fields now default to DateTime->now
+
 0.99_03 Mon Jul 10 21:05:27 2006
     - Fixed AxKit Exception Error (RT#19707,TKP)
     - Added start of Handel::Manual

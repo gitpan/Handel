@@ -1,8 +1,8 @@
-# $Id: ConfigReader.pm 1111 2006-04-12 23:44:49Z claco $
+# $Id: ConfigReader.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::ConfigReader;
 use strict;
 use warnings;
-use vars qw(%Defaults $MOD_PERL);
+use vars qw/%Defaults $MOD_PERL/;
 
 my $instance;
 
@@ -14,7 +14,7 @@ my $instance;
 
 BEGIN {
     use Tie::Hash;
-    use base 'Tie::StdHash';
+    use base qw/Tie::StdHash/;
 
     if (exists $ENV{MOD_PERL_API_VERSION} && $ENV{MOD_PERL_API_VERSION} == 2) {
         require Apache2::RequestRec;
@@ -103,14 +103,15 @@ __END__
 
 =head1 NAME
 
-Handel::ConfigReader - Read in Handel configuration settings
+Handel::ConfigReader - Read in Handel configuration settings from ENV/ModPerl
 
 =head1 SYNOPSIS
 
     use Handel::ConfigReader;
-
+    
     my $cfg = Handel::ConfigReader-new();
     my $setting = $cfg->get('HandelMaxQuantity');
+    my $other = $cfg->{'OtherSetting'};
 
 =head1 DESCRIPTION
 
@@ -118,11 +119,10 @@ Handel::ConfigReader is a generic wrapper to get various configuration
 values. As some point this will probably get worked into XS/custom httpd.conf
 directives.
 
-Starting in version 0.11, each instance is also a tied hash. The two usages are
-the same:
+Each configuration object is also a tied hash. The two usages are the same:
 
     my $cfg = Handel::ConfigReader->new();
-
+    
     my $setting = $cfg->get('Setting');
     my $setting = $cfg->{'Setting'};
 

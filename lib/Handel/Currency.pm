@@ -1,4 +1,4 @@
-# $Id: Currency.pm 1310 2006-07-09 04:01:49Z claco $
+# $Id: Currency.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::Currency;
 use strict;
 use warnings;
@@ -6,9 +6,9 @@ use overload '""' => \&stringify, fallback => 1;
 
 BEGIN {
     use Handel;
-    use Handel::Constraints qw(:all);
+    use Handel::Constraints qw/:all/;
     use Handel::Exception;
-    use Handel::L10N qw(translate);
+    use Handel::L10N qw/translate/;
 };
 
 sub new {
@@ -115,13 +115,12 @@ Handel::Currency - Price container to do currency conversion/formatting
 
 =head1 DESCRIPTION
 
-The C<Handel::Currency> module provides basic currency formatting within
-Handel. It can be used separately to format any number into a more friendly
-format:
+The Handel::Currency module provides basic currency formatting within Handel.
+It can be used separately to format any number into a more friendly format:
 
     my $price = 1.23;
     my $currency = Handel::Currency->new($price);
-
+    
     print $currency->format;
 
 A new Handel::Currency object is automatically returned within the shopping
@@ -139,6 +138,12 @@ based price.
 
 =head2 new
 
+=over
+
+=item Arguments: $price
+
+=back
+
 The create a new Handel::Currency instance, simply call C<new> and pass in the
 price to be formatted:
 
@@ -155,19 +160,18 @@ price to be formatted:
 =back
 
 The C<convert> method converts the given price from one currency to another
-using C<Finance::Currency::Convert::WebserviceX>.
+using L<Finance::Currency::Convert::WebserviceX|Finance::Currency::Convert::WebserviceX>.
 
-In situations where C<Finance::Currency::Convert::WebserviceX> isn't installed,
+In situations where Finance::Currency::Convert::WebserviceX isn't installed,
 C<convert> simply returns undef.
 
-If no C<from> is specified, C<HandelCurrencyCode> below will be used instead.
+If no C<from> is specified, C<HandelCurrencyCode> will be used instead.
 
-C<convert> throws a C<Handel::Exception::Argument> if C<from> or C<to> aren't
-valid currency codes.
+C<convert> throws a L<Handel::Exception::Argument|Handel::Exception::Argument>
+if C<from> or C<to> aren't valid currency codes.
 
-If C<$format> is true, the result of the conversion will also be formatted
-using the formatting C<options> given or the default in
-C<HandelCurrencyFormat>.
+If C<format> is true, the result of the conversion will also be formatted
+using the formatting options given or the default in C<HandelCurrencyFormat>.
 
 =head2 format
 
@@ -177,24 +181,24 @@ C<HandelCurrencyFormat>.
 
 =back
 
-The C<format> method returns the freshly formatted price in a currency and
-format declared in C<Locale::Currency::Format>. If no currency code or
+Returns the freshly formatted price in a currency and format declared in
+C<Locale::Currency::Format|Locale::Currency::Format>. If no currency code or
 format are specified, the defaults values from C<Handel::ConfigReader> are
 used. Currently those defaults are C<USD> and C<FMT_STANDARD>.
 
 It is also acceptable to specify different default values.
 See L</"CONFIGURATION"> and C<Handel::ConfigReader> for further details.
 
-In situations where C<Locale::Currency::Format> isn't installed, C<format>
-simply returns the price in it's original format no harm no foul.
+In situations where Locale::Currency::Format isn't installed, C<format>
+simply returns the price in its original format no harm no foul.
 
-C<format> throws a C<Handel::Exception::Argument> if C<code> isn't a valid
-currency code.
+C<format> throws a L<Handel::Exception::Argument|Handel::Exception::Argument>
+if C<code> isn't a valid currency code.
 
 =head2 stringify
 
-Returns C<value> in scalar context. For now, this returns the same things as
-C<new>. This maybe change in the future.
+Returns C<value> in scalar context. For now, this returns the same thing that
+was passed to C<new>. This maybe change in the future.
 
 =head2 value
 
@@ -207,15 +211,15 @@ schemas.
 =head2 HandelCurrencyCode
 
 This sets the default currency code used when no code is passed into C<format>.
-See C<Locale::Currency::Format> for all available currency codes. The default
-code is USD.
+See L<Locale::Currency::Format|Locale::Currency::Format> for all available
+currency codes. The default code is USD.
 
 =head2 HandelCurrencyFormat
 
 This sets the default options used to format the price. See
-C<Locale::Currency::Format> for all available currency codes. The default
-format used is C<FMT_STANDARD>. Just like in C<Locale::Currency::Format>,
-you can combine options using C<|>.
+L<Locale::Currency::Format|Locale::Currency::Format> for all available currency
+codes. The default format used is C<FMT_STANDARD>. Just like in
+Locale::Currency::Format, you can combine options using C<|>.
 
 =head1 SEE ALSO
 

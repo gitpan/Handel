@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_new.t 1303 2006-07-08 19:35:05Z claco $
+# $Id: order_new.t 1339 2006-07-15 21:49:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,10 +11,10 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 557;
+        plan tests => 569;
     };
 
-    use_ok('Handel::Constants', qw(:order :checkout :returnas));
+    use_ok('Handel::Constants', qw(:order :checkout));
     use_ok('Handel::Cart');
     use_ok('Handel::Constraints', 'constraint_uuid');
     use_ok('Handel::Exception', ':try');
@@ -261,15 +261,23 @@ sub run {
             shopper => '88888888-8888-8888-8888-888888888888',
             type    => ORDER_TYPE_TEMP,
             number  => 'O20050723125366',
-            created => '2005-07-23T12:53:66Z',
-            updated => '2005-08-23T12:53:66Z',
+            created => '2005-07-23 12:53:55',
+            updated => DateTime->new(
+                year   => 2005,
+                month  => 8,
+                day    => 23,
+                hour   => 12,
+                minute => 53,
+                second => 55,
+                time_zone => 'UTC'
+            ),
             comments => 'Rush Order Please',
             shipmethod => 'UPS Ground',
             shipping   => 1.23,
             handling   => 4.56,
             tax        => 7.89,
             subtotal   => 10.11,
-            total      => 12.13,
+            total      => Handel::Currency->new(12.13),
             billtofirstname    => 'Christopher',
             billtolastname     => 'Laco',
             billtoaddress1     => 'BillToAddress1',
@@ -308,8 +316,8 @@ sub run {
         is($order->type, ORDER_TYPE_TEMP);
         is($order->count, 0);
         is($order->number, 'O20050723125366');
-        is($order->created, '2005-07-23T12:53:66Z');
-        is($order->updated, '2005-08-23T12:53:66Z');
+        is($order->created, '2005-07-23T12:53:55');
+        is($order->updated, '2005-08-23T12:53:55');
         is($order->comments, 'Rush Order Please');
         is($order->shipmethod, 'UPS Ground');
         is($order->shipping, 1.23);
@@ -653,6 +661,19 @@ sub run {
         is($orderitem->orderid, $order->id);
     };
 
+
+    ## check defaults for created/updated
+    {
+        my $order = $subclass->new({
+            shopper=>'99BE4783-2A16-4172-A5A8-415A7D984BCA'
+        });
+        isa_ok($order, 'Handel::Order');
+        isa_ok($order, $subclass);
+
+        isa_ok($order->created, 'DateTime');
+        isa_ok($order->updated, 'DateTime');
+    };
+    
 
     SKIP: {
         eval 'use Test::MockObject 0.07';

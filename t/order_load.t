@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_load.t 1166 2006-05-28 02:35:11Z claco $
+# $Id: order_load.t 1336 2006-07-15 03:54:43Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -17,7 +17,7 @@ BEGIN {
     use_ok('Handel::Order');
     use_ok('Handel::Subclassing::Order');
     use_ok('Handel::Subclassing::OrderOnly');
-    use_ok('Handel::Constants', qw(:order :returnas));
+    use_ok('Handel::Constants', qw(:order));
     use_ok('Handel::Exception', ':try');
 };
 
@@ -99,7 +99,7 @@ sub run {
     };
 
 
-    ## load all carts into an array without a filter on RETURNAS_AUTO
+    ## load all carts into an array without a filter
     {
         my @orders = $subclass->load();
         is(scalar @orders, 3);
@@ -139,9 +139,9 @@ sub run {
     };
 
 
-    ## load all orders into an array without a filter on RETURNAS_LIST
+    ## load all orders into an array without a filter
     {
-        my @orders = $subclass->load(undef, RETURNAS_LIST);
+        my @orders = $subclass->load();
         is(scalar @orders, 3);
 
         my $order1 = $orders[0];

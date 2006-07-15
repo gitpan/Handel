@@ -10,7 +10,7 @@ The 1.x version of Handel is a major refactor from earlier versions. This refact
 
 =item * Remove the load/items RETURN_AS API silliness
 
-=item * Allow interchangeable schemas / work with as many diverse cart/order schemas as possible.
+=item * Allow interchangeable schemas to work with as many diverse cart/order schemas as possible.
 
 =back
 
@@ -44,7 +44,10 @@ When one of the Cart/Order/Item classes are loaded for the first time, the stora
 remember details about the schema specified and configure B<a copy> of it for future use. This is roughly:
 
     package Handel::Cart;
-    use base 'Handel::Base';
+    use strict;
+    use warnings;
+    use Handel::Constants qw/:cart/;
+    use base qw/Handel::Base/;
     __PACKAGE__->storage({
         schema_class   => 'Handel::Cart::Schema',
         schema_source  => 'Carts',
@@ -56,7 +59,7 @@ remember details about the schema specified and configure B<a copy> of it for fu
             name       => {'Check Name'    => \&constraint_cart_name}
         },
         default_values => {
-            id         => \&Handel::Storage::uuid,
+            id         => \&Handel::Storage::new_uuid,
             type       => CART_TYPE_TEMP
         }
     });

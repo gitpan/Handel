@@ -1,4 +1,4 @@
-# $Id: Compat.pm 1318 2006-07-10 23:42:32Z claco $
+# $Id: Compat.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::Compat;
 use strict;
 use warnings;
@@ -81,7 +81,7 @@ __END__
 
 =head1 NAME
 
-Handel::Compat - Compatibility layer for old subclasses
+Handel::Compat - Compatibility layer for pre 1.0 subclasses
 
 =head1 SYNOPSIS
 
@@ -99,7 +99,7 @@ Handel::Compat - Compatibility layer for old subclasses
 Handel::Compat is a thin compatibility layer to ease the process of migrating
 existing Cart/Order/Item subclasses. Simply load it before you load the
 base class and it will remap your calls to things like
-add_columns/add_constraints to the new storage layer.
+C<add_columns>/C<add_constraints> to the new storage layer.
 
 B<This class is deprecated and will cease to be in some future version. Please
 upgrade your code to use Handel::Base and Handel::Storage as soon as possible.>
@@ -114,7 +114,7 @@ upgrade your code to use Handel::Base and Handel::Storage as soon as possible.>
 
 =back
 
-Adds the specified columns to the current storage instance. When upgrading,
+Adds the specified columns to the current storage object. When upgrading,
 convert this like so:
 
     #__PACKAGE__->add_columns(qw/foo bar baz/);
@@ -128,7 +128,7 @@ convert this like so:
 
 =back
 
-Adds a new constraint to the current storage instance. When upgrading, convert
+Adds a new constraint to the current storage object. When upgrading, convert
 this like so:
 
     #__PACKAGE__->add_constraint('Check Id', id => \&constraint);

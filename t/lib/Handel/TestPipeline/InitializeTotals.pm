@@ -1,9 +1,9 @@
-# $Id: InitializeTotals.pm 1168 2006-05-31 01:53:05Z claco $
+# $Id: InitializeTotals.pm 1336 2006-07-15 03:54:43Z claco $
 package Handel::TestPipeline::InitializeTotals;
 use strict;
 use warnings;
 use base 'Handel::Checkout::Plugin';
-use Handel::Constants qw(:checkout :returnas);
+use Handel::Constants qw(:checkout);
 
 sub register {
     my ($self, $ctx) = @_;

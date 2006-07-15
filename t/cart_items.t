@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_items.t 1195 2006-06-02 03:02:24Z claco $
+# $Id: cart_items.t 1336 2006-07-15 03:54:43Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -17,7 +17,7 @@ BEGIN {
     use_ok('Handel::Cart');
     use_ok('Handel::Subclassing::Cart');
     use_ok('Handel::Subclassing::CartOnly');
-    use_ok('Handel::Constants', qw(:cart :returnas));
+    use_ok('Handel::Constants', qw(:cart));
     use_ok('Handel::Exception', ':try');
 };
 
@@ -46,7 +46,7 @@ sub run {
     };
 
 
-    ## load multiple item Handel::Cart object and get items array on RETURNAS_AUTO
+    ## load multiple item Handel::Cart object and get items array
     {
         my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
@@ -128,7 +128,7 @@ sub run {
     };
 
 
-    ## load multiple item Handel::Cart object and get items array on RETURNAS_LIST
+    ## load multiple item Handel::Cart object and get items array
     {
         my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'

@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1167 2006-05-31 01:50:19Z claco $
+# $Id: Checkout.pm 1334 2006-07-14 03:22:20Z claco $
 package Template::Plugin::Handel::Checkout;
 use strict;
 use warnings;
@@ -56,11 +56,11 @@ Template::Plugin::Handel::Checkout - Template Toolkit plugin for checkout proces
 
 =head1 DESCRIPTION
 
-C<Template::Plugin::Handel::Checkout> is a TT2 (Template Toolkit 2) plugin for
-C<Handel::Checkout>. It's API is exactly the same as C<Handel::Checkout>.
+Template::Plugin::Handel::Checkout is a TT2 (Template Toolkit 2) plugin for
+Handel::Checkout. It's API is exactly the same as Handel::Checkout.
 
-C<Handel::Constants> are imported into this module automatically. This removes
-the need to use C<Template::Plugin::Handel::Constants> separately when working
+Handel::Constants are imported into this module automatically. This removes
+the need to use Template::Plugin::Handel::Constants separately when working
 with checkout processes.
 
     [% USE hc = Handel.Checkout %]

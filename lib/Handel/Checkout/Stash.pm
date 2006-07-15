@@ -1,4 +1,4 @@
-# $Id: Stash.pm 1079 2006-01-19 02:04:42Z claco $
+# $Id: Stash.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::Checkout::Stash;
 use strict;
 use warnings;
@@ -26,10 +26,10 @@ Handel::Checkout::Stash - Basic storage for checkout plugins during processing
 =head1 SYNOPSIS
 
     use Handel::Checkout;
-
+    
     my $checkout = Handel::Checkout->new;
     $checkout->process;
-
+    
     # later in some plugin
     sub myhandler {
         my ($self, $ctx) = @_;
@@ -37,11 +37,11 @@ Handel::Checkout::Stash - Basic storage for checkout plugins during processing
         $ctx->stash->{'mystuff'};
         ...
     };
-
+    
     # later in some other plugin
     sub myhandler {
         my ($self, $ctx) = @_;
-
+    
         my $stuff = $ctx->stash->{'mystuff'};
         ...
     };
@@ -59,13 +59,13 @@ tell Handel::Checkout to use the new stash instead:
     use strict;
     use warnings;
     use base 'Handel::Checkout::Stash';
-
+    
     sub clear {};
-
+    
     ---
-
-    use Handel::Checkout;
-
+    
+    use Handel::Check out;
+    
     my $co = Handel::Checkout->new({
         stash => MyApp::Stash->new
     });

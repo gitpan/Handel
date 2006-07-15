@@ -1,4 +1,4 @@
-# $Id: Constants.pm 1167 2006-05-31 01:50:19Z claco $
+# $Id: Constants.pm 1334 2006-07-14 03:22:20Z claco $
 package Template::Plugin::Handel::Constants;
 use strict;
 use warnings;
@@ -43,11 +43,11 @@ Template::Plugin::Handel::Constants - Template Toolkit plugin for constants
 
 =head1 DESCRIPTION
 
-C<Template::Plugin::Handel::Constants> is a TT2 (Template Toolkit 2) plugin to
-access C<Handel::Constants> inside of TT2 pages.
+Template::Plugin::Handel::Constants is a TT2 (Template Toolkit 2) plugin to
+access Handel::Constants inside of TT2 pages.
 
 It contains all of the exportable constants declared in
-C<@Handel::Constants::EXPORT_OK>.
+Handel::Constants::EXPORT_OK.
 
 =head1 SEE ALSO
 

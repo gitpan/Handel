@@ -1,9 +1,9 @@
-# $Id: ReadFromStash.pm 837 2005-09-19 22:56:39Z claco $
+# $Id: ReadFromStash.pm 1336 2006-07-15 03:54:43Z claco $
 package Handel::TestPipeline::ReadFromStash;
 use strict;
 use warnings;
 use base 'Handel::Checkout::Plugin';
-use Handel::Constants qw(:checkout :returnas);
+use Handel::Constants qw(:checkout);
 
 sub register {
     my ($self, $ctx) = @_;

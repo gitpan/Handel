@@ -1,12 +1,12 @@
-# $Id: Item.pm 1314 2006-07-10 00:29:55Z claco $
+# $Id: Item.pm 1335 2006-07-15 02:43:12Z claco $
 package Handel::Cart::Item;
 use strict;
 use warnings;
 
 BEGIN {
     use Handel;
-    use Handel::Constraints qw(:all);
-    use Handel::L10N qw(translate);
+    use Handel::Constraints qw/:all/;
+    use Handel::L10N qw/translate/;
 
     use base qw/Handel::Base/;
     __PACKAGE__->storage({
@@ -35,12 +35,8 @@ sub new {
         translate('Param 1 is not a HASH reference') . '.') unless
             ref($data) eq 'HASH';
 
-    my $self = bless {
-        result => $class->storage->schema_instance->resultset($class->storage->schema_source)->create($data),
-        autoupdate => $class->storage->autoupdate
-    }, $class;
-
-    return $self;
+    my $result = $class->storage->schema_instance->resultset($class->storage->schema_source)->create($data);
+    return $class->create_result($result);
 };
 
 sub total {
@@ -53,37 +49,38 @@ __END__
 
 =head1 NAME
 
-Handel::Cart::Item - Module representing an individual shopping cart line item
+Handel::Cart::Item - Module representing an individual shopping cart item
 
 =head1 SYNOPSIS
 
     use Handel::Cart::Item;
-
+    
     my $item = Handel::Cart::Item->new({
-        sku => '1234',
-        price => 1.23,
+        cart     => '11111111-1111-1111-1111-111111111111',
+        sku      => '1234',
+        price    => 1.23,
         quantity => 1
     });
-
-    $cart->add($item);
 
 =head1 DESCRIPTION
 
-C<Handel::Cart::Item> is used in two main ways. First, you can create new line
-items and add them to an existing cart object:
+Handel::Cart::Item is used in two main ways. First, you can create or edit cart
+items individually:
 
     use Handel::Cart::Item;
-
+    
     my $item = Handel::Cart::Item->new({
+        cart => '11111111-1111-1111-1111-111111111111',
         sku => '1234',
         price => 1.23,
         quantity => 1
     });
 
-    $cart->add($item);
+As a general rule, you probably want to add/edit items using the cart objects
+C<items> and C<add> methods below instead.
 
-Second, the C<items> method of any valid C<Handel::Cart> object returns a
-collection of C<Handel::Cart::Item> objects:
+Second, the C<items> method of any valid Handel::Cart object returns a
+collection of Handel::Cart::Item objects:
 
     my @items = $cart->items;
     foreach (@items) {
@@ -94,55 +91,123 @@ collection of C<Handel::Cart::Item> objects:
 
 =head2 new
 
-You can create a new C<Handel::Cart::Item> object by calling the C<new> method:
+You can create a new Handel::Cart::Item object by calling the C<new> method:
 
     my $item = Handel::Cart::Item->new({
+        cart => '11111111-1111-1111-1111-111111111111',
         sku => '1234',
         price => 1.23,
         quantity => 1
     });
-
+    
     $item->quantity(2);
-
+    
     print $item->total;
 
-This is a lazy operation. No actual item record is created until the item object
-is passed into the C<add> method of a C<Handel::Cart> object.
+=head1 COLUMNS
 
-=head1 METHODS
+The following methods are mapped to columns in the default cart schema.
+These methods may or may not be available in any subclasses, or in situations
+where a custom schema is being used that has different column names.
+
+=head2 id
+
+Returns the id of the current cart item.
+
+    print $item->id;
+
+See L<Handel::Schema::Cart::Item/id> for more information about this column.
+
+=head2 cart
+
+Gets/sets the id of the cart this item belongs to.
+
+    $item->cart('11111111-1111-1111-1111-111111111111');
+    print $item->cart;
+
+See L<Handel::Schema::Cart::Item/cart> for more information about this column.
 
 =head2 sku
 
-Returns or sets the sku (stock keeping unit/part number) for the cart item.
+=over
+
+=item Arguments: $sku
+
+=back
+
+Gets/sets the sku (stock keeping unit/part number) for the cart item.
+
+    $item->sku('ABC123');
+    print $item->sku;
+
+See L<Handel::Schema::Cart::Item/sku> for more information about this column.
 
 =head2 quantity
 
-Returns or sets the quantity the cart item.
+=over
+
+=item Arguments: $quantity
+
+=back
+
+Gets/sets the quantity, or the number of this item being purchased.
+
+    $item->quantity(3);
+    print $item->quantity;
+
+By default, the value supplied will be checked against
+L<Handel::Constraints/constraint_quantity> to verify it is within the valid
+range of values.
+
+See L<Handel::Schema::Cart::Item/quantity> for more information about this
+column.
 
 =head2 price
 
-Returns or sets the price for the cart item.
+=over
 
-Starting in version C<0.12>, price now returns a stringified
-C<Handel::Currency> object. This can be used to format the price,
-and convert its value from on currency to another.
+=item Arguments: $price
+
+=back
+
+Gets/sets the price for the cart item. The price is returned as a stringified
+L<Handel::Currency|Handel::Currency> object.
+
+    $item->price(12.95);
+    print $item->price;
+    print $item->price->format;
+
+
+See L<Handel::Schema::Cart::Item/price> for more information about this column.
 
 =head2 total
 
-Returns the total price for the cart item. This is really just
+Returns the total price for the cart item as a stringified
+L<Handel::Currency|Handel::Currency> object. This is really just
 quantity*total and is provided for convenience.
 
-Starting in version C<0.12>, subtotal now returns a stringified
-C<Handel::Currency> object. This can be used to format the price,
-and convert its value from on currency to another.
+    print $item->total;
+    print $item->total->format;
 
 =head2 description
 
-Returns or sets the description for the cart item.
+=over
+
+=item Arguments: $description
+
+=back
+
+Gets/sets the description for the current cart item.
+
+    $item->description('Best Item Ever');
+    print $item->description;
+
+See L<Handel::Schema::Cart::Item/description> for more information about this
+column.
 
 =head1 SEE ALSO
 
-L<Handel::Cart>, L<Handel::Currency>
+L<Handel::Cart>, L<Handel::Schema::Cart::Item>, L<Handel::Currency>
 
 =head1 AUTHOR
 
@@ -150,8 +215,3 @@ L<Handel::Cart>, L<Handel::Currency>
     CPAN ID: CLACO
     claco@chrislaco.com
     http://today.icantfocus.com/blog/
-
-
-
-
-

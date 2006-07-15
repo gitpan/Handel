@@ -1,4 +1,4 @@
-# $Id: Item.pm 1311 2006-07-09 18:28:51Z claco $
+# $Id: Item.pm 1334 2006-07-14 03:22:20Z claco $
 package Handel::Schema::Order::Item;
 use strict;
 use warnings;
@@ -71,12 +71,90 @@ Handel::Schema::Order::Item - Schema class for order_items table
 
 =head1 DESCRIPTION
 
-Handel::Schema::Order::Item is loaded by Handel::Order::Schema to read/write data
-to the order_items table.
+Handel::Schema::Order::Item is loaded by Handel::Order::Schema to read/write
+data to the order_items table.
+
+=head1 COLUMNS
+
+=head2 id
+
+Contains the primary key for each cart item record. By default, this is a uuid
+string.
+
+    id => {
+        data_type      => 'varchar',
+        size           => 36,
+        is_nullable    => 0,
+    },
+
+=head2 orderid
+
+Contains the foreign key to the orders table.
+
+    orderid => {
+        data_type      => 'varchar',
+        size           => 36,
+        is_nullable    => 0,
+        is_foreign_key => 1
+    },
+
+=head2 sku
+
+Contains the sku (Stock Keeping Unit), or part number for the current order item.
+
+    sku => {
+        data_type      => 'varchar',
+        size           => 25,
+        is_nullable    => 0,
+    },
+
+=head2 quantity
+
+Contains the number of this order item being ordered.
+
+    quantity => {
+        data_type      => 'tinyint',
+        size           => 3,
+        is_nullable    => 0,
+        default_value  => 1
+    },
+
+=head2 price
+
+Contains the price of the current order item.
+
+    price => {
+        data_type      => 'decimal',
+        size           => [9,2],
+        is_nullable    => 0,
+        default_value  => '0.00'
+    },
+
+=head2 total
+
+Contains the total cost of the current order item.
+
+    total => {
+        data_type      => 'decimal',
+        size           => [9,2],
+        is_nullable    => 0,
+        default_value  => '0.00'
+    },
+
+=head2 description
+
+Contains the description of the current order item.
+
+    description => {
+        data_type     => 'varchar',
+        size          => 255,
+        is_nullable   => 1,
+        default_value => undef
+    }
 
 =head1 SEE ALSO
 
-L<DBIx::Class::Schema>
+L<Handel::Schema::Order>, L<DBIx::Class::Schema>
 
 =head1 AUTHOR
 

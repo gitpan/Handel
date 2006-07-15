@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_reconcile.t 1171 2006-05-31 01:56:01Z claco $
+# $Id: order_reconcile.t 1336 2006-07-15 03:54:43Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -14,7 +14,7 @@ BEGIN {
         plan tests => 89;
     };
 
-    use_ok('Handel::Constants', qw(:order :checkout :returnas));
+    use_ok('Handel::Constants', qw(:order :checkout));
     use_ok('Handel::Cart');
     use_ok('Handel::Constraints', 'constraint_uuid');
     use_ok('Handel::Exception', ':try');
@@ -212,7 +212,7 @@ sub run {
         $order->reconcile($cart);
 
         is($order->count, 1);
-        my $orderitem = $order->items(undef, RETURNAS_ITERATOR)->first;
+        my $orderitem = $order->items()->first;
         is($item->sku, $orderitem->sku);
         is($item->quantity, $orderitem->quantity);
         is($item->price, $orderitem->price);
@@ -235,7 +235,7 @@ sub run {
         $order->reconcile($cart->id);
 
         is($order->count, 1);
-        my $orderitem = $order->items(undef, RETURNAS_ITERATOR)->first;
+        my $orderitem = $order->items()->first;
         is($item->sku, $orderitem->sku);
         is($item->quantity, $orderitem->quantity);
         is($item->price, $orderitem->price);
@@ -258,7 +258,7 @@ sub run {
         $order->reconcile({id => $cart->id});
 
         is($order->count, 1);
-        my $orderitem = $order->items(undef, RETURNAS_ITERATOR)->first;
+        my $orderitem = $order->items()->first;
         is($item->sku, $orderitem->sku);
         is($item->quantity, $orderitem->quantity);
         is($item->price, $orderitem->price);

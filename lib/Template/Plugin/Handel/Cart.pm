@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1312 2006-07-09 19:46:15Z claco $
+# $Id: Cart.pm 1334 2006-07-14 03:22:20Z claco $
 package Template::Plugin::Handel::Cart;
 use strict;
 use warnings;
@@ -69,11 +69,11 @@ Template::Plugin::Handel::Cart - Template Toolkit plugin for shopping cart
 
 =head1 DESCRIPTION
 
-C<Template::Plugin::Handel::Cart> is a TT2 (Template Toolkit 2) plugin for
-C<Handel::Cart>. It's API is exactly the same as C<Handel::Cart>.
+Template::Plugin::Handel::Cart is a TT2 (Template Toolkit 2) plugin for
+Handel::Cart. It's API is exactly the same as Handel::Cart.
 
-C<Handel::Constants> are imported into this module automatically. This removes
-the need to use C<Template::Plugin::Handel::Constants> separately when working
+Handel::Constants are imported into this module automatically. This removes
+the need to use Template::Plugin::Handel::Constants separately when working
 with carts.
 
     [% USE hc = Handel.Cart %]

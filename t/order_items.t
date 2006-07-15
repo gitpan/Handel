@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_items.t 1166 2006-05-28 02:35:11Z claco $
+# $Id: order_items.t 1336 2006-07-15 03:54:43Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -17,7 +17,7 @@ BEGIN {
     use_ok('Handel::Order');
     use_ok('Handel::Subclassing::Order');
     use_ok('Handel::Subclassing::OrderOnly');
-    use_ok('Handel::Constants', qw(:order :returnas));
+    use_ok('Handel::Constants', qw(:order));
     use_ok('Handel::Exception', ':try');
 };
 
@@ -46,7 +46,7 @@ sub run {
     };
 
 
-    ## load multiple item Handel::Order object and get items array on RETURNAS_AUTO
+    ## load multiple item Handel::Order object and get items array
     {
         my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
@@ -96,7 +96,7 @@ sub run {
     };
 
 
-    ## load multiple item Handel::Order object and get items array on RETURNAS_LIST
+    ## load multiple item Handel::Order object and get items array
     {
         my $it = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
@@ -115,7 +115,7 @@ sub run {
             is($order->custom, 'custom');
         };
 
-        my @items = $order->items(undef, RETURNAS_LIST);
+        my @items = $order->items();
         is(scalar @items, $order->count);
 
         my $item1 = $items[0];
