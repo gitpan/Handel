@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: currency.t 837 2005-09-19 22:56:39Z claco $
+# $Id: currency.t 1354 2006-08-06 00:11:31Z claco $
 use strict;
 use warnings;
 use Test::More tests => 24;

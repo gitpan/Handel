@@ -1,4 +1,4 @@
-# $Id: Order.pm 1318 2006-07-10 23:42:32Z claco $
+# $Id: Order.pm 1353 2006-08-04 13:04:17Z claco $
 package Catalyst::Helper::Model::Handel::Order;
 use strict;
 use warnings;
@@ -36,7 +36,7 @@ use Test::More tests => 2;
 use strict;
 use warnings;
 
-use_ok(Catalyst::Test, '[% app %]');
+use_ok('Catalyst::Test', '[% app %]');
 use_ok('[% class %]');
 __END__
 

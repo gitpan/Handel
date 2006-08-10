@@ -1,4 +1,4 @@
-# $Id: Order.pm 1334 2006-07-14 03:22:20Z claco $
+# $Id: Order.pm 1355 2006-08-07 01:51:41Z claco $
 package Template::Plugin::Handel::Order;
 use strict;
 use warnings;
@@ -30,9 +30,9 @@ use base qw/Handel::Order/;
 
 __PACKAGE__->init_storage;
 
-sub load {
+sub search {
     my ($self, $filter) = @_;
-    my $iterator = $self->SUPER::load($filter);
+    my $iterator = $self->SUPER::search($filter);
 
     return $iterator;
 };

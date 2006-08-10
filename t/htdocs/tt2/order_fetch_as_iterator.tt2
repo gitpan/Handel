@@ -1,7 +1,7 @@
-[%# $Id: order_fetch_as_iterator.tt2 1167 2006-05-31 01:50:19Z claco $ %]
+[%# $Id: order_fetch_as_iterator.tt2 1355 2006-08-07 01:51:41Z claco $ %]
 [% USE horder  = Handel.Order %]
 <body>
-    [% IF (orders = horder.load) %]
+    [% IF (orders = horder.search) %]
     	[% WHILE (order = orders.next) %]
 			<order>
 				<count>[% order.count %]</count>

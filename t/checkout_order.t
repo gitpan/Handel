@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_order.t 1336 2006-07-15 03:54:43Z claco $
+# $Id: checkout_order.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -175,7 +175,7 @@ sub run {
 
     ## assign the order using a Handel::Order object
     {
-        my $order = $orderclass->load({
+        my $order = $orderclass->search({
             id => '11111111-1111-1111-1111-111111111111',
             type => ORDER_TYPE_TEMP
         })->first;
@@ -195,7 +195,7 @@ sub run {
 
     ## assign the order using a Handel::Order object as a new option
     {
-        my $order = $orderclass->load({
+        my $order = $orderclass->search({
             id => '11111111-1111-1111-1111-111111111111',
             type => ORDER_TYPE_TEMP
         })->first;

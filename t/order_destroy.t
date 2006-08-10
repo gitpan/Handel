@@ -69,7 +69,7 @@ sub run {
 
     ## Destroy a single order via instance
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -88,7 +88,7 @@ sub run {
 
         $order->destroy;
 
-        my $reit = $subclass->load({
+        my $reit = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($reit, 'Handel::Iterator');
@@ -110,7 +110,7 @@ sub run {
 
     ## Destroy multiple orders with wildcard filter
     {
-        my $orders = $subclass->load({id => '11111%'});
+        my $orders = $subclass->search({id => '11111%'});
         isa_ok($orders, 'Handel::Iterator');
         is($orders, 1);
 
@@ -121,7 +121,7 @@ sub run {
             id => '111%'
         });
 
-        $orders = $subclass->load({id => '11111%'});
+        $orders = $subclass->search({id => '11111%'});
         isa_ok($orders, 'Handel::Iterator');
         is($orders, 0);
 

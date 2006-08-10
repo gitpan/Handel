@@ -80,7 +80,7 @@ Handel::Components::Constraints - Column constraints for schemas
     package MySchema::Table;
     use strict;
     use warnings;
-    use base /DBIx::Class/;
+    use base qw/DBIx::Class/;
     
     __PACKAGE__->load_components('+Handel::Component::Constraints');
     __PACKAGE__->add_constraint('column', 'Constraint Name' => \&checker);

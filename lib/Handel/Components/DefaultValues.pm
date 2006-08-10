@@ -50,7 +50,7 @@ Handel::Components::DefaultValues - Set default values for undefined columns
     package MySchema::Table;
     use strict;
     use warnings;
-    use base /DBIx::Class/;
+    use base qw/DBIx::Class/;
     
     __PACKAGE__->load_components('+Handel::Component::DefaultValues');
     __PACKAGE__->default_values({

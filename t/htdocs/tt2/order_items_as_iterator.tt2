@@ -1,7 +1,7 @@
-[%# $Id: order_items_as_iterator.tt2 1338 2006-07-15 19:40:26Z claco $ %]
+[%# $Id: order_items_as_iterator.tt2 1355 2006-08-07 01:51:41Z claco $ %]
 [% USE horder  = Handel.Order %]
 <body>
-    [% IF (order = horder.new({
+    [% IF (order = horder.create({
 		id			=> 'E516A609-1905-4C7B-AC82-C33D50DE7AB9',
         shopper 	=> '162B8421-4A16-4C13-AB95-968CB2BB5569',
 		type		=> horder.ORDER_TYPE_TEMP,
@@ -61,7 +61,7 @@
 		}) %]
 	[% END %]
 
-	[% IF (order = horder.load({
+	[% IF (order = horder.search({
 		type => horder.ORDER_TYPE_TEMP,
 		id 	 => 'E516A609-1905-4C7B-AC82-C33D50DE7AB9'
 	}).first) %]

@@ -1,16 +1,15 @@
-# $Id: Order.pm 1339 2006-07-15 21:49:41Z claco $
+# $Id: Order.pm 1355 2006-08-07 01:51:41Z claco $
 package Handel::Order;
 use strict;
 use warnings;
 
 BEGIN {
-    use Handel;
-    use Handel::Checkout;
     use Handel::Constants qw/:checkout :order/;
     use Handel::Constraints qw/:all/;
     use Handel::Currency;
     use Handel::L10N qw/translate/;
     use Scalar::Util qw/blessed/;
+    use Carp qw/carp/;
 
     use base qw/Handel::Base/;
     __PACKAGE__->storage_class('Handel::Storage::Order');
@@ -18,13 +17,16 @@ BEGIN {
     __PACKAGE__->create_accessors;
 };
 
-sub new {
-    my ($class, $data, $process) = @_;
+sub create {
+    my ($self, $data, $opts) = @_;
 
     throw Handel::Exception::Argument(
         -details => translate('Param 1 is not a HASH reference') . '.') unless
             ref($data) eq 'HASH';
 
+    no strict 'refs';
+    my $storage = $opts->{'storage'} || $self->storage;
+    my $process = $opts->{'process'} || 0;
     my $cart = delete $data->{'cart'};
     my $is_uuid = constraint_uuid($cart);
 
@@ -35,13 +37,13 @@ sub new {
                   (ref($cart) eq 'HASH' or (blessed($cart) && $cart->isa('Handel::Cart')) or $is_uuid);
 
         if (ref $cart eq 'HASH') {
-            $cart = $class->storage->cart_class->load($cart)->first;
+            $cart = $storage->cart_class->search($cart)->first;
 
             throw Handel::Exception::Order( -details =>
                 translate(
                     'Could not find a cart matching the supplied search criteria') . '.') unless $cart;
         } elsif ($is_uuid) {
-            $cart = $class->storage->cart_class->load({id => $cart})->first;
+            $cart = $storage->cart_class->search({id => $cart})->first;
 
             throw Handel::Exception::Order( -details =>
                 translate(
@@ -58,17 +60,17 @@ sub new {
         $data->{'shopper'} = $cart->shopper unless $data->{'shopper'};
     };
 
-    my $result = $class->storage->schema_instance->resultset($class->storage->schema_source)->create($data);
-    my $order = $class->create_result($result);
-
+    my $order = $self->create_instance(
+        $storage->create($data)
+    );
 
     if (defined $cart) {
-        $class->copy_cart($order, $cart);
-        $class->copy_cart_items($order, $cart);
+        $self->copy_cart($order, $cart);
+        $self->copy_cart_items($order, $cart);
     };
 
     if ($process) {
-        my $checkout = Handel::Checkout->new;
+        my $checkout = $storage->checkout_class->new;
         $checkout->order($order);
 
         my $status = $checkout->process([CHECKOUT_PHASE_INITIALIZE]);
@@ -97,21 +99,9 @@ sub copy_cart {
 
 sub copy_cart_items {
     my ($self, $order, $cart) = @_;
-    my %columns = map {$_ => $_} $order->storage->schema_class->source($order->storage->item_class->storage->schema_source)->columns;
 
     foreach my $item ($cart->items) {
-        my %copy;
-
-        foreach ($cart->storage->item_class->storage->schema_class->source($cart->storage->item_class->storage->schema_source)->columns) {
-            next if $_ =~ /^(id|cart)$/i;
-            next unless (exists $columns{$_});
-
-            $copy{$_} = $item->result->$_;
-        };
-
-        $copy{'total'} = $copy{'quantity'}*$copy{'price'};
-
-        $order->result->create_related($order->storage->item_relationship, \%copy);
+        $order->add($item);
     };
 };
 
@@ -123,23 +113,26 @@ sub add {
           'Param 1 is not a HASH reference, Handel::Cart::Item or Handel::Order::Item') . '.') unless
               (ref($data) eq 'HASH' or $data->isa('Handel::Order::Item') or $data->isa('Handel::Cart::Item'));
 
+    my $result = $self->result;
+    my $storage = $result->storage;
+
     if (ref($data) eq 'HASH') {
-        return $self->storage->item_class->create_result(
-            $self->result->create_related($self->storage->item_relationship, $data)
+        return $storage->item_class->create_instance(
+            $result->add_item($data)
         );
     } else {
         my %copy;
 
-        foreach ($data->result->columns) {
-            next if $_ =~ /^(id|orderid|cart)$/i;
-            $copy{$_} = $data->result->$_;
-        };
-        if (blessed($data) && $data->isa('Handel::Cart::Item')) {
-            $copy{'total'} = $data->total;
+        foreach ($storage->copyable_item_columns) {
+            if ($data->result->can($_)) {
+                $copy{$_} = $data->result->$_;
+            } elsif ($data->can($_)) {
+                $copy{$_} = $data->$_;
+            };
         };
 
-        return $self->storage->item_class->create_result(
-            $self->result->create_related($self->storage->item_relationship, \%copy)
+        return $storage->item_class->create_instance(
+            $result->add_item(\%copy)
         );
     };
 };
@@ -147,15 +140,13 @@ sub add {
 sub clear {
     my $self = shift;
 
-    $self->result->delete_related($self->storage->item_relationship);
-
-    return undef;
+    return $self->result->delete_items;
 };
 
 sub count {
     my $self  = shift;
 
-    return $self->result->count_related($self->storage->item_relationship) || 0;
+    return $self->result->count_items;
 };
 
 sub delete {
@@ -165,13 +156,11 @@ sub delete {
         translate('Param 1 is not a HASH reference') . '.') unless
             ref($filter) eq 'HASH';
 
-    $filter = $self->storage->_migrate_wildcards($filter);
-
-    return $self->result->delete_related($self->storage->item_relationship, $filter);
+    return $self->result->delete_items($filter);
 };
 
 sub destroy {
-    my ($self, $filter) = @_;
+    my ($self, $filter, $opts) = @_;
 
     if (ref $self) {
         my $result = $self->result->delete;
@@ -184,9 +173,10 @@ sub destroy {
             translate('Param 1 is not a HASH reference') . '.') unless
                 ref($filter) eq 'HASH';
 
-        $filter = $self->storage->_migrate_wildcards($filter);
+        no strict 'refs';
+        my $storage = $opts->{'storage'} || $self->storage;
 
-        $self->storage->schema_instance->resultset($self->storage->schema_source)->search($filter)->delete_all;
+        return $storage->delete($filter);
     };
 
     return;
@@ -194,40 +184,36 @@ sub destroy {
 
 sub items {
     my ($self, $filter) = @_;
+    my $result = $self->result;
+    my $storage = $result->storage;
 
     throw Handel::Exception::Argument( -details =>
         translate('Param 1 is not a HASH reference') . '.') unless(
             ref($filter) eq 'HASH' or !$filter);
 
-    $filter = $self->storage->_migrate_wildcards($filter);
+    my $results = $result->search_items($filter);
+    my $iterator = $storage->iterator_class->create_iterator(
+        $results, $storage->item_class
+    );
 
-    my $iterator = $self->result->search_related($self->storage->item_relationship, $filter);
-    $iterator->result_class($self->storage->item_class);
-
-    if (wantarray) {
-        return $iterator->all;
-    } else {
-        return $iterator;
-    };
+    return wantarray ? $iterator->all : $iterator;
 };
 
-sub load {
-    my ($class, $filter) = @_;
+sub search {
+    my ($self, $filter, $opts) = @_;
+    my $class = blessed $self || $self;
 
     throw Handel::Exception::Argument( -details =>
         translate('Param 1 is not a HASH reference') . '.') unless(
             ref($filter) eq 'HASH' or !$filter);
 
-    $filter = $class->storage->_migrate_wildcards($filter);
+    no strict 'refs';
+    my $storage = $opts->{'storage'} || $self->storage;
 
-    my $iterator = $class->storage->schema_instance->resultset($class->storage->schema_source)->search_rs($filter);
-    $iterator->result_class(ref $class || $class);
-    
-    if (wantarray) {
-        return $iterator->all;
-    } else {
-        return $iterator;
-    };
+    my $results = $storage->search($filter);
+    my $iterator = $storage->iterator_class->create_iterator($results, $class);
+
+    return wantarray ? $iterator->all : $iterator;
 };
 
 sub reconcile {
@@ -242,13 +228,13 @@ sub reconcile {
                   (ref($cart) eq 'HASH' or (blessed($cart) && $cart->isa('Handel::Cart')) or $is_uuid);
 
         if (ref $cart eq 'HASH') {
-            $cart = $self->storage->cart_class->load($cart)->first;
+            $cart = $self->storage->cart_class->search($cart)->first;
 
             throw Handel::Exception::Order( -details =>
                 translate(
                     'Could not find a cart matching the supplied search criteria') . '.') unless $cart;
         } elsif ($is_uuid) {
-            $cart = $self->storage->cart_class->load({id => $cart})->first;
+            $cart = $self->storage->cart_class->search({id => $cart})->first;
 
             throw Handel::Exception::Order( -details =>
                 translate(
@@ -279,7 +265,7 @@ Handel::Order - Module for maintaining order contents
 
     use Handel::Order;
     
-    my $order = Handel::Order->new({
+    my $order = Handel::Order->create({
         id => '12345678-9098-7654-322-345678909876'
     });
     
@@ -296,11 +282,11 @@ Handel::Order is a component for maintaining simple order records.
 
 =head1 CONSTRUCTOR
 
-=head2 new
+=head2 create
 
 =over
 
-=item Arguments: \%data [, $process]
+=item Arguments: \%data [, \%options]
 
 =back
 
@@ -313,19 +299,19 @@ reference contain the search criteria to load matching carts.
 By default, new will use Handel::Cart to load the specified cart, unless you
 have set C<cart_class>on in the local <storage> object to use another class.
 
-    my $order = Handel::Order->new({
+    my $order = Handel::Order->create({
         shopper => '10020400-E260-11CF-AE68-00AA004A34D5',
         id => '111111111-2222-3333-4444-555566667777',
         cart => $cartobject
     });
     
-    my $order = Handel::Order->new({
+    my $order = Handel::Order->create({
         shopper => '10020400-E260-11CF-AE68-00AA004A34D5',
         id => '111111111-2222-3333-4444-555566667777',
         cart => '11112222-3333-4444-5555-666677778888'
     });
     
-    my $order = Handel::Order->new({
+    my $order = Handel::Order->create({
         shopper => '10020400-E260-11CF-AE68-00AA004A34D5',
         id => '111111111-2222-3333-4444-555566667777',
         cart => {
@@ -333,6 +319,23 @@ have set C<cart_class>on in the local <storage> object to use another class.
             type => CART_TYPE_TEMP
         }
     });
+
+The following options are available:
+
+=over
+
+=item process
+
+When true, the newly created order will be run through the
+C<CHECKOUT_PHASE_INITIALIZE> process before it is returned.
+
+=item storage
+
+A storage object to use to create a new order object. Currently, this storage
+object B<must> have the same columns as the default storage object for the
+current order class.
+
+=back
 
 =head1 METHODS
 
@@ -492,7 +495,7 @@ Deletes the item matching the supplied filter from the current order.
 
 =over
 
-=item \%filter
+=item Arguments: \%filter
 
 =back
 
@@ -536,11 +539,11 @@ something different, set C<item_class> in the local C<storage> object.
 A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
 thrown if parameter one isn't a hashref or undef.
 
-=head2 load
+=head2 search
 
 =over
 
-=item Arguments: \%filter
+=item Arguments: \%filter [, \%options]
 
 =back
 
@@ -548,7 +551,7 @@ Loads existing orders matching the specified filter and returns a
 L<Handel::Iterator|Handel::Iterator> in scalar context, or a list of orders in
 list context.
 
-    my $iterator = Handel::Order->load({
+    my $iterator = Handel::Order->search({
         shopper => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E',
         type    => CART_TYPE_SAVED
     });
@@ -557,10 +560,22 @@ list context.
         print $order->id;
     };
     
-    my @orders = Handel::Orders->load();
+    my @orders = Handel::Orders->search();
 
 A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
 thrown if the first parameter is not a hashref.
+
+The following options are available:
+
+=over
+
+=item storage
+
+A storage object to use to load order objects. Currently, this storage
+object B<must> have the same columns as the default storage object for the
+current order class.
+
+=back
 
 =head2 reconcile
 

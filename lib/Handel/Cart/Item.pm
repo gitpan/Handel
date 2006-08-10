@@ -1,47 +1,36 @@
-# $Id: Item.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Item.pm 1355 2006-08-07 01:51:41Z claco $
 package Handel::Cart::Item;
 use strict;
 use warnings;
 
 BEGIN {
-    use Handel;
-    use Handel::Constraints qw/:all/;
+    use base qw/Handel::Base/;
     use Handel::L10N qw/translate/;
 
-    use base qw/Handel::Base/;
-    __PACKAGE__->storage({
-        schema_class     => 'Handel::Cart::Schema',
-        schema_source    => 'Items',
-        currency_columns => [qw/price/],
-        constraints      => {
-            quantity     => {'Check Quantity' => \&constraint_quantity},
-            price        => {'Check Price'    => \&constraint_price},
-            id           => {'Check Id'       => \&constraint_uuid},
-            cart         => {'Check Cart'     => \&constraint_uuid}
-        },
-        default_values   => {
-            id           => __PACKAGE__->storage_class->can('new_uuid'),
-            price        => 0,
-            quantity     => 1
-        }
-    });
+    __PACKAGE__->storage_class('Handel::Storage::Cart::Item');
     __PACKAGE__->create_accessors;
 };
 
-sub new {
-    my ($class, $data) = @_;
+sub create {
+    my ($self, $data, $opts) = @_;
 
     throw Handel::Exception::Argument( -details =>
         translate('Param 1 is not a HASH reference') . '.') unless
             ref($data) eq 'HASH';
 
-    my $result = $class->storage->schema_instance->resultset($class->storage->schema_source)->create($data);
-    return $class->create_result($result);
+    no strict 'refs';
+    my $storage = $opts->{'storage'} || $self->storage;
+
+    return $self->create_instance(
+        $storage->create($data)
+    );
 };
 
 sub total {
     my $self = shift;
-    return $self->storage->currency_class->new($self->quantity * $self->price);
+    my $storage = $self->result->storage;
+
+    return $storage->currency_class->new($self->quantity * $self->price);
 };
 
 1;
@@ -55,7 +44,7 @@ Handel::Cart::Item - Module representing an individual shopping cart item
 
     use Handel::Cart::Item;
     
-    my $item = Handel::Cart::Item->new({
+    my $item = Handel::Cart::Item->create({
         cart     => '11111111-1111-1111-1111-111111111111',
         sku      => '1234',
         price    => 1.23,
@@ -69,7 +58,7 @@ items individually:
 
     use Handel::Cart::Item;
     
-    my $item = Handel::Cart::Item->new({
+    my $item = Handel::Cart::Item->create({
         cart => '11111111-1111-1111-1111-111111111111',
         sku => '1234',
         price => 1.23,
@@ -89,11 +78,17 @@ collection of Handel::Cart::Item objects:
 
 =head1 CONSTRUCTOR
 
-=head2 new
+=head2 create
+
+=over
+
+=item Arguments: \%data [, \%options]
+
+=back
 
 You can create a new Handel::Cart::Item object by calling the C<new> method:
 
-    my $item = Handel::Cart::Item->new({
+    my $item = Handel::Cart::Item->create({
         cart => '11111111-1111-1111-1111-111111111111',
         sku => '1234',
         price => 1.23,
@@ -103,6 +98,18 @@ You can create a new Handel::Cart::Item object by calling the C<new> method:
     $item->quantity(2);
     
     print $item->total;
+
+The following options are available:
+
+=over
+
+=item storage
+
+A storage object to use to create a new item object. Currently, this storage
+object B<must> have the same columns as the default storage object for the
+current item class.
+
+=back
 
 =head1 COLUMNS
 

@@ -1,7 +1,8 @@
-# $Id: Order.pm 1338 2006-07-15 19:40:26Z claco $
+# $Id: Order.pm 1343 2006-07-23 01:29:57Z claco $
 package Handel::Schema::Order;
 use strict;
 use warnings;
+use DateTime;
 use base qw/DBIx::Class/;
 
 __PACKAGE__->load_components(qw/InflateColumn::DateTime Core/);

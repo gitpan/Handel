@@ -1,28 +1,32 @@
-# $Id: Cart.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Cart.pm 1360 2006-08-09 03:17:09Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
 
 BEGIN {
-    use Handel;
     use Handel::Constants qw/:cart/;
     use Handel::Constraints qw/:all/;
     use Handel::L10N qw/translate/;
+    use Scalar::Util qw/blessed/;
 
     use base qw/Handel::Base/;
     __PACKAGE__->storage_class('Handel::Storage::Cart');
     __PACKAGE__->create_accessors;
 };
 
-sub new {
-    my ($class, $data) = @_;
+sub create {
+    my ($self, $data, $opts) = @_;
 
     throw Handel::Exception::Argument(
         -details => translate('Param 1 is not a HASH reference') . '.') unless
             ref($data) eq 'HASH';
 
-    my $result = $class->storage->schema_instance->resultset($class->storage->schema_source)->create($data);
-    return $class->create_result($result);
+    no strict 'refs';
+    my $storage = $opts->{'storage'} || $self->storage;
+
+    return $self->create_instance(
+        $storage->create($data)
+    );
 };
 
 sub add {
@@ -33,20 +37,26 @@ sub add {
           'Param 1 is not a HASH reference or Handel::Cart::Item') . '.') unless
               (ref($data) eq 'HASH' or $data->isa('Handel::Cart::Item'));
 
+    my $result = $self->result;
+    my $storage = $result->storage;
+
     if (ref($data) eq 'HASH') {
-        return $self->storage->item_class->create_result(
-            $self->result->create_related($self->storage->item_relationship, $data)
+        return $storage->item_class->create_instance(
+            $result->add_item($data)
         );
     } else {
         my %copy;
 
-        foreach ($data->result->columns) {
-            next if $_ =~ /^(id|cart)$/i;
-            $copy{$_} = $data->result->$_;
+        foreach ($storage->copyable_item_columns) {
+            if ($data->result->can($_)) {
+                $copy{$_} = $data->result->$_;
+            } elsif ($data->can($_)) {
+                $copy{$_} = $data->$_;
+            };
         };
 
-        return $self->storage->item_class->create_result(
-            $self->result->create_related($self->storage->item_relationship, \%copy)
+        return $storage->item_class->create_instance(
+            $result->add_item(\%copy)
         );
     };
 };
@@ -54,15 +64,13 @@ sub add {
 sub clear {
     my $self = shift;
 
-    $self->result->delete_related($self->storage->item_relationship);
-
-    return undef;
+    return $self->result->delete_items;
 };
 
 sub count {
-    my $self  = shift;
+    my $self = shift;
 
-    return $self->result->count_related($self->storage->item_relationship) || 0;
+    return $self->result->count_items;
 };
 
 sub delete {
@@ -72,13 +80,11 @@ sub delete {
         translate('Param 1 is not a HASH reference') . '.') unless
             ref($filter) eq 'HASH';
 
-    $filter = $self->storage->_migrate_wildcards($filter);
-
-    return $self->result->delete_related($self->storage->item_relationship, $filter);
+    return $self->result->delete_items($filter);
 };
 
 sub destroy {
-    my ($self, $filter) = @_;
+    my ($self, $filter, $opts) = @_;
 
     if (ref $self) {
         my $result = $self->result->delete;
@@ -91,9 +97,10 @@ sub destroy {
             translate('Param 1 is not a HASH reference') . '.') unless
                 ref($filter) eq 'HASH';
 
-        $filter = $self->storage->_migrate_wildcards($filter);
+        no strict 'refs';
+        my $storage = $opts->{'storage'} || $self->storage;
 
-        return $self->storage->schema_instance->resultset($self->storage->schema_source)->search($filter)->delete_all;
+        return $storage->delete($filter);
     };
 
     return;
@@ -101,40 +108,36 @@ sub destroy {
 
 sub items {
     my ($self, $filter) = @_;
+    my $result = $self->result;
+    my $storage = $result->storage;
 
     throw Handel::Exception::Argument( -details =>
         translate('Param 1 is not a HASH reference') . '.') unless(
             ref($filter) eq 'HASH' or !$filter);
 
-    $filter = $self->storage->_migrate_wildcards($filter);
+    my $results = $result->search_items($filter);
+    my $iterator = $storage->iterator_class->create_iterator(
+        $results, $storage->item_class
+    );
 
-    my $iterator = $self->result->search_related($self->storage->item_relationship, $filter);
-    $iterator->result_class($self->storage->item_class);
-    
-    if (wantarray) {
-        return $iterator->all;
-    } else {
-        return $iterator;
-    };
+    return wantarray ? $iterator->all : $iterator;
 };
 
-sub load {
-    my ($class, $filter) = @_;
+sub search {
+    my ($self, $filter, $opts) = @_;
+    my $class = blessed $self || $self;
 
     throw Handel::Exception::Argument( -details =>
         translate('Param 1 is not a HASH reference') . '.') unless(
             ref($filter) eq 'HASH' or !$filter);
 
-    $filter = $class->storage->_migrate_wildcards($filter);
+    no strict 'refs';
+    my $storage = $opts->{'storage'} || $self->storage;
 
-    my $iterator = $class->storage->schema_instance->resultset($class->storage->schema_source)->search_rs($filter);
-    $iterator->result_class(ref $class || $class);
+    my $results = $storage->search($filter);
+    my $iterator = $storage->iterator_class->create_iterator($results, $class);
 
-    if (wantarray) {
-        return $iterator->all;
-    } else {
-        return $iterator;
-    };
+    return wantarray ? $iterator->all : $iterator;
 };
 
 sub restore {
@@ -152,7 +155,7 @@ sub restore {
     };
 
     my @carts = (ref($data) eq 'HASH') ?
-        $self->load($data)->all : $data;
+        $self->search($data)->all : $data;
 
     if ($mode == CART_MODE_REPLACE) {
         $self->clear;
@@ -161,15 +164,15 @@ sub restore {
         $self->name($first->name);
         $self->description($first->description);
 
-        foreach (@carts) {
-            my @items = $_->items->all;
+        foreach my $cart (@carts) {
+            my @items = $cart->items->all;
             foreach my $item (@items) {
                 $self->add($item);
             };
         };
     } elsif ($mode == CART_MODE_MERGE) {
-        foreach (@carts) {
-            my @items = $_->items->all;
+        foreach my $cart (@carts) {
+            my @items = $cart->items->all;
             foreach my $item (@items) {
                 if (my $exists = $self->items({sku => $item->sku})->first){
                     $exists->quantity($item->quantity + $exists->quantity);
@@ -179,8 +182,8 @@ sub restore {
             };
         };
     } elsif ($mode == CART_MODE_APPEND) {
-        foreach (@carts) {
-            my @items = $_->items->all;
+        foreach my $cart (@carts) {
+            my @items = $cart->items->all;
             foreach my $item (@items) {
                 $self->add($item);
             };
@@ -200,14 +203,15 @@ sub save {
 
 sub subtotal {
     my $self     = shift;
-    my $it       = $self->items();
+    my $storage  = $self->result->storage;
+    my $items    = $self->items;
     my $subtotal = 0.00;
 
-    while (my $item = $it->next) {
+    while (my $item = $items->next) {
         $subtotal += ($item->total);
     };
 
-    return $self->storage->currency_class->new($subtotal);
+    return $storage->currency_class->new($subtotal);
 };
 
 1;
@@ -221,7 +225,7 @@ Handel::Cart - Module for maintaining shopping cart contents
 
     use Handel::Cart;
     
-    my $cart = Handel::Cart->new({
+    my $cart = Handel::Cart->create({
         shopper => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E'
     });
     
@@ -245,23 +249,35 @@ Handel::Cart is component for maintaining simple shopping cart data.
 
 =head1 CONSTRUCTOR
 
-=head2 new
+=head2 create
 
 =over
 
-=item Arguments: \%data
+=item Arguments: \%data [, \%options]
 
 =back
 
 Creates a new shopping cart object containing the specified data.
 
-    my $cart = Handel::Cart->new({
+    my $cart = Handel::Cart->create({
         shopper => '10020400-E260-11CF-AE68-00AA004A34D5',
         name    => 'My Shopping Cart'
     });
 
 A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
 thrown if the first parameter is not a hashref.
+
+The following options are available:
+
+=over
+
+=item storage
+
+A storage object to use to create a new cart object. Currently, this storage
+object B<must> have the same columns as the default storage object for the
+current cart class.
+
+=back
 
 =head1 METHODS
 
@@ -334,7 +350,7 @@ Deletes the item matching the supplied filter from the current cart.
 
 =over
 
-=item \%filter
+=item Arguments: \%filter
 
 =back
 
@@ -378,11 +394,11 @@ something different, set C<item_class> in the local C<storage> object.
 A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
 thrown if parameter one isn't a hashref or undef.
 
-=head2 load
+=head2 search
 
 =over
 
-=item Arguments: \%filter
+=item Arguments: \%filter [, \%options]
 
 =back
 
@@ -390,7 +406,7 @@ Loads existing carts matching the specified filter and returns a
 L<Handel::Iterator|Handel::Iterator> in scalar context, or a list of carts in
 list context.
 
-    my $iterator = Handel::Cart->load({
+    my $iterator = Handel::Cart->search({
         shopper => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E',
         type    => CART_TYPE_SAVED
     });
@@ -399,10 +415,22 @@ list context.
         print $cart->id;
     };
     
-    my @carts = Handel::Cart->load();
+    my @carts = Handel::Cart->search();
 
 A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
 thrown if the first parameter is not a hashref.
+
+The following options are available:
+
+=over
+
+=item storage
+
+A storage object to use to load cart objects. Currently, this storage
+object B<must> have the same columns as the default storage object for the
+current cart class.
+
+=back
 
 =head2 save
 

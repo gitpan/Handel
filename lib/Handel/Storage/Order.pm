@@ -1,16 +1,20 @@
-# $Id: Order.pm 1339 2006-07-15 21:49:41Z claco $
+# $Id: Order.pm 1350 2006-07-30 22:37:37Z claco $
 package Handel::Storage::Order;
 use strict;
 use warnings;
-use Handel::Constants qw/:order/;
-use Handel::Constraints qw/:all/;
-use base qw/Handel::Storage/;
+
+BEGIN {
+    use base qw/Handel::Storage/;
+    use Handel::Constants qw/ORDER_TYPE_TEMP/;
+    use Handel::Constraints qw/:all/;
+};
 
 __PACKAGE__->setup({
     schema_class   => 'Handel::Order::Schema',
     schema_source  => 'Orders',
     item_class     => 'Handel::Order::Item',
     cart_class     => 'Handel::Cart',
+    checkout_class => 'Handel::Checkout',
     constraints    => {
         id       => {'Check Id'       => \&constraint_uuid},
         shopper  => {'Check Shopper'  => \&constraint_uuid},
@@ -23,7 +27,7 @@ __PACKAGE__->setup({
     },
     currency_columns => [qw/shipping handling subtotal tax total/],
     default_values => {
-        id         => __PACKAGE__->can('new_uuid'),
+        id         => sub {__PACKAGE__->new_uuid(shift)},
         type       => ORDER_TYPE_TEMP,
         shipping => 0,
         handling => 0,

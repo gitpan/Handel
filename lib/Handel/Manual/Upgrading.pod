@@ -7,7 +7,7 @@ Handel::Manual::Upgrading - A guide to upgrading your Handel installation.
 Handel 1.0 is a major update from the 0.3x versions. While the public API is mostly compatible, there are
 a few changes to what is returned from the public methods. How subclasses are configured has also
 completely changed in 1.0. Depending on how much customization you have done, you may or may not have
-to make a lot of changes to your existing code. While there are many many change under the hood, this
+to make a lot of changes to your existing code. While there are many many changes under the hood, this
 document will only cover changes that effect the public API, or changes that effect subclassing Handel
 classes.
 
@@ -26,7 +26,7 @@ bad idea from my inexperience at dealing with context issues in Template Toolkit
 All of the methods that used them now only return one of two things: A list of objects in list context, or a
 Handel::Iterator in scalar context. No single/multiple result magic exists.
 
-Version 0.3x:
+Version 0.3x
 
     my $cart = Handel::Cart->load({id => '11111111-1111-1111-1111-111111111111'});
     # $cart isa Handel::Cart
@@ -35,7 +35,7 @@ Version 0.3x:
 
 Version 1.0
 
-    my $it = Handel::Cart->load({id => '11111111-1111-1111-1111-111111111111'});
+    my $it = Handel::Cart->search({id => '11111111-1111-1111-1111-111111111111'});
     # $it isa Handel::Iterator
     
     my $cart = $it->first;
@@ -43,9 +43,63 @@ Version 1.0
     
     print $cart->name;
 
-This effects all calls to load/items in Handel::Cart and Handel::Order. If you are using the Template Toolkit
+This effects all calls to search/items in Handel::Cart and Handel::Order. If you are using the Template Toolkit
 plugins, they now always return a Handel::Iterator object. If you need/want an list of results, you can simply
 call $iterator->all to get them within TT.
+
+=head3 Search is the new load
+
+The C<load> method in Cart/Order has been renamed to C<search>.
+
+Version 0.3x
+
+    my $cart = Handel::Cart->load({id => '11111111-1111-1111-1111-111111111111'});
+    # $cart isa Handel::Cart
+    
+    print $cart->name;
+
+Version 1.0
+
+    my $it = Handel::Cart->search({id => '11111111-1111-1111-1111-111111111111'});
+    # $it isa Handel::Iterator
+    
+    my $cart = $it->first;
+    # $cart isa Handel::Cart
+    
+    print $cart->name;
+
+=head3 Create is the new 'new'
+
+The C<new> method in Cart/Order/Item has been renamed to C<create>.
+
+Version 0.3x
+
+    my $cart = Handel::Cart->new({id => '11111111-1111-1111-1111-111111111111'});
+    
+    print $cart->name;
+
+Version 1.0
+
+    my $it = Handel::Cart->create({id => '11111111-1111-1111-1111-111111111111'});
+
+    print $cart->name;
+
+=head3 Order 'process' flag is now an option hash
+
+The 'process' argument to Order-C<gt>new is now a hash reference of options. If you are using the process
+argument, simple change it from a true value to a hash reference containing the process option.
+
+Version 0.3x
+
+    my $order = Handel::Order->new({
+        cart => '11111111-1111-1111-1111-111111111111'
+    }, 1);
+
+Version 1.0
+
+    my $order = Handel::Order->create({
+        cart => '11111111-1111-1111-1111-111111111111'
+    }, {process => 1});
 
 =head2 Subclassing Changes
 
@@ -152,17 +206,6 @@ a matter of changing how some options get set; B<if> you are using the default H
 See L<Handel::Storage|Handel::Storage> for the list of available options for things like add/remove columns,
 add/remove/constraints, setting the item class, autoupdates, etc.
 
-If you're really really daring and don't want to change code for now, You can load
-L<Handel::Compat|Handel::Compat> in your subclasses:
-
-    package MyCustomCart;
-    use strict;
-    use warnings;
-    use base qw/Handel::Compat Handel::Cart/;
-
-Handel::Compat will map most of the common subclass settings like add_constraint, add_columns, and table
-to the new storage layer format.
-
 =head3 add_constraints parameters are reversed
 
 As with Class::DBI, you can have more than on constraint tied to the same column. All constraints are stored
@@ -176,17 +219,6 @@ Version 0.3x
 Version 1.0
 
     __PACKAGE__->storage->add_constraint('columnname', 'ConstraintName' => \&mysub);
-
-If you're really really daring and don't want to change code for now, You can load
-L<Handel::Compat|Handel::Compat> in your subclasses:
-
-    package MyCustomCart;
-    use strict;
-    use warnings;
-    use base qw/Handel::Compat Handel::Cart/;
-
-Handel::Compat will map most of the common subclass settings like add_constraint, add_Columns, and table
-to the new storage layer format.
 
 =head3 Constraint methods receive different parameters
 
@@ -219,9 +251,23 @@ C<$result> is a DBIx::Class::ResultSource/Row object that can be used to get/set
 the current row, taking the place of of both the old Class::DBI C<$object> and C<$changing>. Any rows
 changed in C<$data> will be set just as if you had also called $result-E<gt>set_column($column, $value).
 
+=head2 Compat Layer
+
+If you're really really daring and don't want to change code for now, You can load
+L<Handel::Compat|Handel::Compat> in your subclasses:
+
+    package MyCustomCart;
+    use strict;
+    use warnings;
+    use base qw/Handel::Compat Handel::Cart/;
+
+Handel::Compat will map most of the common subclass settings like add_constraint, add_columns, and table
+to the new storage layer format. It will also provide the pre 1.0 new/load/items syntax that uses the now dead
+RETURN_AS constants.
+
 =head1 SEE ALSO
 
-L<Handel::Base>, L<Handel::Storage>, L<DBIx::Class::Schema>
+L<Handel::Base>, L<Handel::Storage>, L<DBIx::Class::Schema>, L<Handel::Compat>
 
 =head1 AUTHOR
 

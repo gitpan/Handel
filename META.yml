@@ -2,7 +2,7 @@
 name: Handel
 abstract: Simple commerce framework with AxKit/TT/Catalyst support
 author: Christopher H. Laco <claco@chrislaco.com>
-version: 0.99_04
+version: 0.99_05
 version_from: lib/Handel.pm
 installdirs: site
 license: perl
@@ -29,7 +29,7 @@ recommends:
   DBIx::Class: 0.06
   FormValidator::Simple: 0
   HTML::FillInForm: 1.04
-  Finance-Currency-Convert-WebserviceX: 0.03
+  Finance::Currency::Convert::WebserviceX: 0.03
   Locale::Currency::Format: 1.22
   Locale::Currency: 2.07
   Pod::Coverage: 0.14

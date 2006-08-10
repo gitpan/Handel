@@ -1,45 +1,29 @@
-# $Id: Item.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Item.pm 1355 2006-08-07 01:51:41Z claco $
 package Handel::Order::Item;
 use strict;
 use warnings;
 
 BEGIN {
-    use Handel;
-    use Handel::Constraints qw/:all/;
-    use Handel::Currency;
+    use base qw/Handel::Base/;
     use Handel::L10N qw/translate/;
 
-    use base qw/Handel::Base/;
-    __PACKAGE__->storage({
-        schema_class     => 'Handel::Order::Schema',
-        schema_source    => 'Items',
-        currency_columns => [qw/price total/],
-        constraints      => {
-            quantity     => {'Check Quantity' => \&constraint_quantity},
-            price        => {'Check Price'    => \&constraint_price},
-            total        => {'Check Total'    => \&constraint_price},
-            id           => {'Check Id'       => \&constraint_uuid},
-            orderid      => {'Check Order Id' => \&constraint_uuid}
-        },
-        default_values   => {
-            id           => __PACKAGE__->storage_class->can('new_uuid'),
-            price        => 0,
-            quantity     => 1,
-            total        => 0
-        }
-    });
+    __PACKAGE__->storage_class('Handel::Storage::Order::Item');
     __PACKAGE__->create_accessors;
 };
 
-sub new {
-    my ($class, $data) = @_;
+sub create {
+    my ($self, $data, $opts) = @_;
 
     throw Handel::Exception::Argument( -details =>
         translate('Param 1 is not a HASH reference') . '.') unless
             ref($data) eq 'HASH';
 
-    my $result = $class->storage->schema_instance->resultset($class->storage->schema_source)->create($data);
-    return $class->create_result($result);
+    no strict 'refs';
+    my $storage = $opts->{'storage'} || $self->storage;
+
+    return $self->create_instance(
+        $storage->create($data)
+    );
 };
 
 1;
@@ -53,7 +37,7 @@ Handel::Order::Item - Module representing an individual order line item
 
     use Handel::Order;
     
-    my $order = Handel::Order->new({
+    my $order = Handel::Order->create({
         id => '12345678-9098-7654-322-345678909876'
     });
     
@@ -71,7 +55,7 @@ order items individually:
 
     use Handel::Order::Item;
     
-    my $item = Handel::Order::Item->new({
+    my $item = Handel::Order::Item->create({
         cart => '11111111-1111-1111-1111-111111111111',
         sku => '1234',
         price => 1.23,
@@ -91,11 +75,17 @@ collection of Handel::Order::Item objects:
 
 =head1 CONSTRUCTOR
 
-=head2 new
+=head2 create
+
+=over
+
+=item Arguments: \%data [, \%options]
+
+=back
 
 You can create a new C<Handel::Order::Item> object by calling the C<new> method:
 
-    my $item = Handel::Order::Item->new({
+    my $item = Handel::Order::Item->create({
         sku => '1234',
         price => 1.23,
         quantity => 1,
@@ -105,6 +95,18 @@ You can create a new C<Handel::Order::Item> object by calling the C<new> method:
     $item->quantity(2);
     
     print $item->total;
+
+The following options are available:
+
+=over
+
+=item storage
+
+A storage object to use to create a new item object. Currently, this storage
+object B<must> have the same columns as the default storage object for the
+current item class.
+
+=back
 
 =head1 COLUMNS
 

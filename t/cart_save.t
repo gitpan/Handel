@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_save.t 1200 2006-06-03 02:34:11Z claco $
+# $Id: cart_save.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -48,7 +48,7 @@ sub run {
 
     ## test for Handel::Exception::Constraint for invalid type
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -72,7 +72,7 @@ sub run {
 
     ## test for Handel::Exception::Constraint for blank name
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -96,7 +96,7 @@ sub run {
 
     ## Load a cart, save it and validate type
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -109,7 +109,7 @@ sub run {
 
         $cart->save;
 
-        my $reit = $subclass->load({
+        my $reit = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($reit, 'Handel::Iterator');

@@ -1,4 +1,4 @@
-# $Id: Constants.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Constants.pm 1356 2006-08-07 22:46:03Z claco $
 package Handel::Constants;
 use strict;
 use warnings;
@@ -19,6 +19,11 @@ use constant CART_TYPE_SAVED   => 1;
 
 use constant ORDER_TYPE_TEMP   => 0;
 use constant ORDER_TYPE_SAVED  => 1;
+
+use constant RETURNAS_AUTO     => 0;
+use constant RETURNAS_ITERATOR => 1;
+use constant RETURNAS_LIST     => 2;
+use constant RETURNAS_ARRAY    => 2;
 
 use constant CHECKOUT_PHASE_INITIALIZE => 1;
 use constant CHECKOUT_PHASE_VALIDATE   => 2;
@@ -50,6 +55,10 @@ use constant CHECKOUT_HANDLER_ERROR    => 4;
                 CART_TYPE_TEMP
                 ORDER_TYPE_TEMP
                 ORDER_TYPE_SAVED
+                RETURNAS_AUTO
+                RETURNAS_ITERATOR
+                RETURNAS_LIST
+                RETURNAS_ARRAY
                 CHECKOUT_PHASE_INITIALIZE
                 CHECKOUT_PHASE_VALIDATE
                 CHECKOUT_PHASE_AUTHORIZE
@@ -75,6 +84,11 @@ use constant CHECKOUT_HANDLER_ERROR    => 4;
         )],
         order => [ qw(ORDER_TYPE_TEMP
                       ORDER_TYPE_SAVED
+        )],
+        returnas => [ qw(RETURNAS_AUTO
+                         RETURNAS_ITERATOR
+                         RETURNAS_LIST
+                         RETURNAS_ARRAY
         )],
         checkout => [ qw(CHECKOUT_PHASE_INITIALIZE
                          CHECKOUT_PHASE_VALIDATE
@@ -111,11 +125,11 @@ Handel::Constants - Common constants used in Handel
 =head1 SYNOPSIS
 
     use Handel::Constants qw(:cart);
-    
+
     my $cart = Handel::Cart->new({
         shopper => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E'
     });
-    
+
     if ($cart->type == CART_TYPE_SAVED) {
         print 'This cart is saved!';
     };
@@ -169,7 +183,7 @@ automatically reaped from the database during cleanup.
 
 =head2 CART_TYPE_TEMP
 
-Any cart with this type could be purged form the database during cleanup at any
+Any cart with this type could be purged from the database during cleanup at any
 time.
 
 =head2 CHECKOUT_PHASE_INITIALIZE
@@ -229,10 +243,20 @@ using L<Handel::Checkout/add_handler>
 Specifies that the plugin handler encountered errors and would like to abort
 the checkout process.
 
+=head2 ORDER_TYPE_SAVED
+
+Marks the order as permanent. Order with this value set should never be
+automatically reaped from the database during cleanup.
+
+=head2 ORDER_TYPE_TEMP
+
+Any order with this type could be purged from the database during cleanup at any
+time.
+
 =head1 EXPORT_TAGS
 
-The following C<%EXPORT_TAGS> are defined for C<Handel::Constants>. See
-L<Exporter> for further details on using export tags.
+The following C<%EXPORT_TAGS> are defined for Handel::Constants. See
+L<Exporter|Exporter> for further details on using export tags.
 
 =head2 :all
 
@@ -241,6 +265,15 @@ This exports all constants found in this module.
 =head2 :cart
 
 This exports all C<CART_*> constants in this module.
+
+=head2 :checkout
+
+This exports all C<CHECKOUT_*> constants in this module.
+
+
+=head2 :order
+
+This exports all C<ORDER_*> constants in this module.
 
 =head1 AUTHOR
 

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_reconcile.t 1336 2006-07-15 03:54:43Z claco $
+# $Id: order_reconcile.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -78,7 +78,7 @@ sub run {
     ## cart instance, or uuid
     {
         try {
-            my $order = $subclass->new({
+            my $order = $subclass->create({
                 id=>'66BFFD29-8FAD-4200-A22F-E0D80979ADBF',
                 shopper=>'66BFFD29-8FAD-4200-A22F-E0D80979ADBF'
             });
@@ -97,7 +97,7 @@ sub run {
     ## test for Handel::Exception::Argument where cart key ref is not a HASH
     {
         try {
-            my $order = $subclass->new({
+            my $order = $subclass->create({
                 id=>'76BFFD29-8FAD-4200-A22F-E0D80979ADBF',
                 shopper=>'76BFFD29-8FAD-4200-A22F-E0D80979ADBF'
             });
@@ -117,7 +117,7 @@ sub run {
     {
         try {
             my $fake = bless {}, 'MyObject::Foo';
-            my $order = $subclass->new({
+            my $order = $subclass->create({
                 id=>'86BFFD29-8FAD-4200-A22F-E0D80979ADBF',
                 shopper=>'86BFFD29-8FAD-4200-A22F-E0D80979ADBF'
             });
@@ -136,7 +136,7 @@ sub run {
     ## test for Handel::Exception::Order when no Handel::Cart matches the search criteria
     {
         try {
-            my $order = $subclass->new({
+            my $order = $subclass->create({
                 id=>'96BFFD29-8FAD-4200-A22F-E0D80979ADBF',
                 shopper=>'96BFFD29-8FAD-4200-A22F-E0D80979ADBF'
             });
@@ -155,11 +155,11 @@ sub run {
     ## test for Handel::Exception::Order when Handel::Cart is empty
     {
         try {
-            my $cart = Handel::Cart->new({
+            my $cart = Handel::Cart->create({
                 id => '00000000-0000-0000-0000-00000000000'.$dbsuffix,
                 shopper => '00000000-0000-0000-0000-00000000000'.$dbsuffix
             });
-            my $order = $subclass->new({
+            my $order = $subclass->create({
                 id=>'16BFFD29-8FAD-4200-A22F-E0D80979ADBF',
                 shopper=>'16BFFD29-8FAD-4200-A22F-E0D80979ADBF'
             });
@@ -178,10 +178,10 @@ sub run {
     ## test for Handel::Exception::Order when Handel::Cart subclass is empty
     {
         try {
-            my $cart = Handel::Subclassing::Cart->load({
+            my $cart = Handel::Subclassing::Cart->search({
                 id => '00000000-0000-0000-0000-00000000000'.$dbsuffix
             })->first;
-            my $order = $subclass->new({
+            my $order = $subclass->create({
                 id=>'63BFFD29-8FAD-4200-A22F-E0D80979ADBF',
                 shopper=>'63BFFD29-8FAD-4200-A22F-E0D80979ADBF'
             });
@@ -199,7 +199,7 @@ sub run {
 
     ## reconcile an order from a cart object
     {
-        my $cart = Handel::Cart->new({shopper=>'67BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
+        my $cart = Handel::Cart->create({shopper=>'67BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
         my $item = $cart->add({
             sku => 'SKU123',
             quantity => 1,
@@ -207,7 +207,7 @@ sub run {
         });
         is($cart->count, 1);
 
-        my $order = $subclass->new({shopper=>'67BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
+        my $order = $subclass->create({shopper=>'67BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
         is($order->count, 0);
         $order->reconcile($cart);
 
@@ -222,7 +222,7 @@ sub run {
 
     ## reconcile an order from a cart id
     {
-        my $cart = Handel::Cart->new({shopper=>'99BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
+        my $cart = Handel::Cart->create({shopper=>'99BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
         my $item = $cart->add({
             sku => 'SKU123',
             quantity => 1,
@@ -230,7 +230,7 @@ sub run {
         });
         is($cart->count, 1);
 
-        my $order = $subclass->new({shopper=>'99BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
+        my $order = $subclass->create({shopper=>'99BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
         is($order->count, 0);
         $order->reconcile($cart->id);
 
@@ -245,7 +245,7 @@ sub run {
 
     ## reconcile an order from a cart searc hash
     {
-        my $cart = Handel::Cart->new({shopper=>'88BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
+        my $cart = Handel::Cart->create({shopper=>'88BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
         my $item = $cart->add({
             sku => 'SKU123',
             quantity => 1,
@@ -253,7 +253,7 @@ sub run {
         });
         is($cart->count, 1);
 
-        my $order = $subclass->new({shopper=>'88BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
+        my $order = $subclass->create({shopper=>'88BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
         is($order->count, 0);
         $order->reconcile({id => $cart->id});
 

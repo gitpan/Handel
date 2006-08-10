@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: base_create_accessors.t 1279 2006-07-03 16:46:27Z claco $
+# $Id: base_create_accessors.t 1354 2006-08-06 00:11:31Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -56,8 +56,10 @@ executesql($db, $create);
         custom => 'foo'
     });
 
-    my $iterator = $base->storage->schema_instance->resultset('Carts')->search({id => 1});
-    $iterator->result_class('Handel::Base');
+    my $it = $base->storage->schema_instance->resultset('Carts')->search({id => 1});
+    $it->result_class('Handel::Storage::Result');
+
+    my $iterator = Handel::Iterator->create_iterator($it, 'Handel::Base');
     
     my $cart = $iterator->next;
     can_ok($cart, 'id');

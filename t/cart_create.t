@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_new.t 1131 2006-05-16 02:38:06Z claco $
+# $Id: cart_create.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -34,7 +34,7 @@ sub run {
 
     ## Setup SQLite DB for tests
     {
-        my $dbfile  = "t/cart_new_$dbsuffix.db";
+        my $dbfile  = "t/cart_create_$dbsuffix.db";
         my $db      = "dbi:SQLite:dbname=$dbfile";
         my $create  = 't/sql/cart_create_table.sql';
         my $data    = 't/sql/cart_fake_data.sql';
@@ -50,7 +50,7 @@ sub run {
     ## test for Handel::Exception::Argument where first param is not a hashref
     {
         try {
-            my $cart = $subclass->new(sku => 'SKU1234');
+            my $cart = $subclass->create(sku => 'SKU1234');
 
             fail;
         } catch Handel::Exception::Argument with {
@@ -64,7 +64,7 @@ sub run {
     ## test for Handel::Exception::Constraint during cart new for bogus shopper
     {
         try {
-            my $cart = $subclass->new({
+            my $cart = $subclass->create({
                 id      => '11111111-1111-1111-1111-111111111111',
                 shopper => 'crap'
             });
@@ -81,7 +81,7 @@ sub run {
     ## test for Handel::Exception::Constraint during cart new for empty shopper
     {
         try {
-            my $cart = $subclass->new({
+            my $cart = $subclass->create({
                 id      => '11111111-1111-1111-1111-111111111111'
             });
 
@@ -98,7 +98,7 @@ sub run {
     ## specified and cart type has been set to CART_TYPE_SAVED
     {
         try {
-            my $cart = $subclass->new({
+            my $cart = $subclass->create({
                 id      => '11111111-1111-1111-1111-111111111111',
                 shopper => '33333333-3333-3333-3333-333333333333',
                 type    => CART_TYPE_SAVED
@@ -121,7 +121,7 @@ sub run {
         );
 
         try {
-            my $cart = $subclass->new(\%data);
+            my $cart = $subclass->create(\%data);
 
             fail;
         } catch Handel::Exception::Constraint with {
@@ -135,7 +135,7 @@ sub run {
     ## test for raw db key violation
     {
         try {
-            my $cart = $subclass->new({
+            my $cart = $subclass->create({
                 id      => '11111111-1111-1111-1111-111111111111',
                 shopper => '11111111-1111-1111-1111-111111111111'
             });
@@ -151,7 +151,7 @@ sub run {
 
     ## add a new temp cart and test auto id creation
     {
-        my $cart = $subclass->new({
+        my $cart = $subclass->create({
             shopper => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($cart, 'Handel::Cart');
@@ -184,7 +184,7 @@ sub run {
 
     ## add a new temp cart and supply a manual id
     {
-        my $cart = $subclass->new({
+        my $cart = $subclass->create({
             id      => '77777777-7777-7777-7777-777777777777',
             shopper => '77777777-7777-7777-7777-777777777777'
         });
@@ -206,7 +206,7 @@ sub run {
 
     ## add a new saved cart and test auto id creation
     {
-        my $cart = $subclass->new({
+        my $cart = $subclass->create({
             shopper => '88888888-8888-8888-8888-888888888888',
             type    => CART_TYPE_SAVED,
             name    => 'My Cart',
@@ -229,7 +229,7 @@ sub run {
 
     ## add a new saved cart and supply a manual id
     {
-        my $cart = $subclass->new({
+        my $cart = $subclass->create({
             id      => '99999999-9999-9999-9999-999999999999',
             shopper => '99999999-9999-9999-9999-999999999999',
             type    => CART_TYPE_SAVED,

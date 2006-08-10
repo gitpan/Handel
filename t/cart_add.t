@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_add.t 1132 2006-05-16 02:41:34Z claco $
+# $Id: cart_add.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -82,7 +82,7 @@ sub run {
 
     ## add a new item by passing a hashref
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -119,7 +119,7 @@ sub run {
         is($cart->count, 3);
         is($cart->subtotal, 7.77);
 
-        my $reit = $subclass->load({
+        my $reit = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($reit, 'Handel::Iterator');
@@ -161,11 +161,11 @@ sub run {
             $data->{'custom'} = 'custom';
         };
 
-        my $newitem = $itemclass->new($data);
+        my $newitem = $itemclass->create($data);
         isa_ok($newitem, 'Handel::Cart::Item');
         isa_ok($newitem, $itemclass);
 
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -191,7 +191,7 @@ sub run {
         is($cart->count, 2);
         is($cart->subtotal, 11.10);
 
-        my $recartit = $subclass->load({
+        my $recartit = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($recartit, 'Handel::Iterator');

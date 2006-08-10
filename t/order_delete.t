@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_delete.t 1303 2006-07-08 19:35:05Z claco $
+# $Id: order_delete.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -66,7 +66,7 @@ sub run {
 
     ## Delete a single order item contents and validate counts
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -87,7 +87,7 @@ sub run {
         is($order->count, 0);
         is($order->subtotal, 5.55);
 
-        my $reit = $subclass->load({
+        my $reit = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($reit, 'Handel::Iterator');
@@ -111,7 +111,7 @@ sub run {
 
     ## Delete multiple order item contents with wildcard filter and validate counts
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -132,7 +132,7 @@ sub run {
         is($order->count, 0);
         is($order->subtotal, 5.55);
 
-        my $reit = $subclass->load({
+        my $reit = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($reit, 'Handel::Iterator');

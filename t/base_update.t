@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: base_update.t 1272 2006-07-02 00:55:04Z claco $
+# $Id: base_update.t 1354 2006-08-06 00:11:31Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -44,30 +44,36 @@ BEGIN {
         description => 'My Cart 1'
     });
 
-    my $iterator = $schema->resultset('Carts')->search({id => 1});
-    $iterator->result_class('Handel::Base');
-    
+    my $it = $schema->resultset('Carts')->search({id => 1});
+    $it->result_class('Handel::Storage::Result');
+
+    my $iterator = $storage->iterator_class->create_iterator($it, 'Handel::Base');
     my $cart = $iterator->next;
 
     is($cart->result->id, 1);
     is($cart->result->shopper, 1);
     is($cart->result->name, 'Cart1');
     is($cart->result->description, 'My Cart 1');
-    
+
     $cart->result->set_column('name', 'UpdatedName');
     is($cart->result->name, 'UpdatedName');
-    
+
     my $reit = $schema->resultset('Carts')->search({id => 1});
-    $reit->result_class('Handel::Base');
-    
-    my $recart = $reit->first;
+    $reit->result_class('Handel::Storage::Result');
+
+    my $reiter = $storage->iterator_class->create_iterator($reit, 'Handel::Base');
+
+    my $recart = $reiter->first;
     is($recart->result->name, 'Cart1');
-    
+
     $cart->update;
 
-    my $reit2 = $schema->resultset('Carts')->search({id => 1});
-    $reit2->result_class('Handel::Base');
-    
+    my $it2 = $schema->resultset('Carts')->search({id => 1});
+    $it2->result_class('Handel::Storage::Result');
+
+    my $reit2 = $storage->iterator_class->create_iterator($it2, 'Handel::Base');
+
+
     my $recart2 = $reit2->first;
     is($recart2->result->name, 'UpdatedName');
 };

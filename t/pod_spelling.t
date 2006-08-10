@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: pod_spelling.t 1338 2006-07-15 19:40:26Z claco $
+# $Id: pod_spelling.t 1360 2006-08-09 03:17:09Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -151,3 +151,9 @@ pre
 ccenddate
 ccissuenumber
 DateTime
+escence
+DBIC
+forwards
+UTF
+CPANPLUS
+Compat

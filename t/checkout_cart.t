@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_cart.t 1336 2006-07-15 03:54:43Z claco $
+# $Id: checkout_cart.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -111,7 +111,7 @@ sub run {
 
     {
         ## create and order from a cart id
-        my $cart = $subclass->new({
+        my $cart = $subclass->create({
             id=>'66BFFD29-8FAD-4200-A22F-E0D80979ADBF',
             shopper=>'66BFFD29-8FAD-4200-A22F-E0D80979ADBF',
             name=>'My First Cart'
@@ -145,7 +145,7 @@ sub run {
 
     {
         ## create and order from a cart id object as new option
-        my $cart = $subclass->new({
+        my $cart = $subclass->create({
             id=>'7B029717-08CC-414d-B3EA-680A5B8BC12C',
             shopper=>'7B029717-08CC-414d-B3EA-680A5B8BC12C',
             name=>'My First Cart'
@@ -178,7 +178,7 @@ sub run {
 
     {
         ## create and order from a Handel::Cart object
-        my $cart = $subclass->new({
+        my $cart = $subclass->create({
             id=>'989935CD-5131-4f50-9D6A-F2192468A817',
             shopper=>'989935CD-5131-4f50-9D6A-F2192468A817',
             name=>'My First Cart'
@@ -212,7 +212,7 @@ sub run {
 
     {
         ## create and order from a Handel::Cart object as new option
-        my $cart = $subclass->new({
+        my $cart = $subclass->create({
             id=>'A16A5F16-840D-42d2-B414-39E745326552',
             shopper=>'A16A5F16-840D-42d2-B414-39E745326552',
             name=>'My First Cart'
@@ -245,7 +245,7 @@ sub run {
 
     {
         ## create and order from a HASH filter
-        my $cart = $subclass->new({
+        my $cart = $subclass->create({
             id=>'D8FD6757-4D8C-4b60-A1AA-AD9D4270480B',
             shopper=>'D8FD6757-4D8C-4b60-A1AA-AD9D4270480B',
             name=>'My First Cart'
@@ -279,7 +279,7 @@ sub run {
 
     {
         ## create and order from a HASH filter as a new option
-        my $cart = $subclass->new({
+        my $cart = $subclass->create({
             id=>'255EE4F0-8CB0-42ed-8853-94AB47BDF14E',
             shopper=>'255EE4F0-8CB0-42ed-8853-94AB47BDF14E',
             name=>'My First Cart'

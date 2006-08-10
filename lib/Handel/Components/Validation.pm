@@ -30,7 +30,7 @@ Handel::Components::Validation - Column validation for schemas
     package MySchema::Table;
     use strict;
     use warnings;
-    use base /DBIx::Class/;
+    use base qw/DBIx::Class/;
     
     __PACKAGE__->load_components('+Handel::Component::Validation');
     __PACKAGE__->validation(

@@ -1,7 +1,7 @@
-[%# $Id: cart_items_filtered.tt2 1167 2006-05-31 01:50:19Z claco $ %]
+[%# $Id: cart_items_filtered.tt2 1355 2006-08-07 01:51:41Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
-    [% IF (cart = hcart.new({
+    [% IF (cart = hcart.create({
 		description	=> 'My New Shopping Cart',
 		id			=> 'FBC4A843-2667-48ED-AA9F-EF4B52537E72',
 		name    	=> 'New Cart',
@@ -33,7 +33,7 @@
 		<message>Error creating shopping cart</message>
 	[% END %]
 
-	[% IF (cart = hcart.load({
+	[% IF (cart = hcart.search({
 		type => hcart.CART_TYPE_TEMP,
 		id 	 => 'FBC4A843-2667-48ED-AA9F-EF4B52537E72'
 	}).first) %]

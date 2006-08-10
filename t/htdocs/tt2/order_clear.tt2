@@ -1,7 +1,7 @@
-[%# $Id: order_clear.tt2 1338 2006-07-15 19:40:26Z claco $ %]
+[%# $Id: order_clear.tt2 1355 2006-08-07 01:51:41Z claco $ %]
 [% USE horder  = Handel.Order %]
 <body>
-    [% IF (order = horder.new({
+    [% IF (order = horder.create({
 		id			=> 'B0462540-0564-4E27-B9FD-C3985A227C49',
         shopper 	=> 'E24FF465-F485-477B-8565-FDF30BB4DE13',
 		type		=> horder.ORDER_TYPE_TEMP,
@@ -100,7 +100,7 @@
 		<message>Error creating order</message>
 	[% END %]
 
-	[% IF (order = horder.load({
+	[% IF (order = horder.search({
 		type => horder.ORDER_TYPE_TEMP,
 		id	 => 'B0462540-0564-4E27-B9FD-C3985A227C49'
 	}).first) %]
@@ -146,7 +146,7 @@
 			<total>[% order.total %]</total>
 			<tax>[% order.tax %]</tax>
 			<updated>[% order.updated %]</updated>
-			[% order.clear %]
+			[% CALL order.clear %]
 			<count>[% order.count %]</count>
 		</order>
 	[% ELSE %]

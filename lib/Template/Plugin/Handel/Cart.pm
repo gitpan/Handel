@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1334 2006-07-14 03:22:20Z claco $
+# $Id: Cart.pm 1355 2006-08-07 01:51:41Z claco $
 package Template::Plugin::Handel::Cart;
 use strict;
 use warnings;
@@ -30,9 +30,9 @@ use base qw/Handel::Cart/;
 
 __PACKAGE__->init_storage;
 
-sub load {
+sub search {
     my ($self, $filter) = @_;
-    my $iterator = $self->SUPER::load($filter);
+    my $iterator = $self->SUPER::search($filter);
 
     return $iterator;
 };
@@ -60,7 +60,7 @@ Template::Plugin::Handel::Cart - Template Toolkit plugin for shopping cart
 =head1 SYNOPSIS
 
     [% USE Handel.Cart %]
-    [% IF (cart = Handel.Cart.load({id => 'A2CCD312-73B5-4EE4-B77E-3D027349A055'}).first) %]
+    [% IF (cart = Handel.Cart.search({id => 'A2CCD312-73B5-4EE4-B77E-3D027349A055'}).first) %]
         [% cart.name %]
         [% FOREACH item IN cart.items.all %]
             [% item.sku %]
@@ -77,7 +77,7 @@ the need to use Template::Plugin::Handel::Constants separately when working
 with carts.
 
     [% USE hc = Handel.Cart %]
-    [% cart = hc.new(...) %]
+    [% cart = hc.create(...) %]
     [% cart.type(hc.CART_TYPE_TEMP) %]
 
 =head1 SEE ALSO

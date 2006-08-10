@@ -32,9 +32,9 @@ gabb@#catalyst for the list space.
 
 I can be found most nights on IRC in the following channels:
 
-    #handel@irc.perl.org 
-    #dbix-class@irc.perl.org 
-    #catalyst@irc.perl.org 
+    claco@#handel@irc.perl.org 
+    claco@#dbix-class@irc.perl.org 
+    claco@#catalyst@irc.perl.org 
 
 =head1 GOALS
 

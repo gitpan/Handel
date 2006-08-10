@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_load.t 1336 2006-07-15 03:54:43Z claco $
+# $Id: compat_order_load.t 1357 2006-08-08 01:55:08Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -11,14 +11,19 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 318;
+        plan tests => 251;
     };
 
     use_ok('Handel::Order');
     use_ok('Handel::Subclassing::Order');
     use_ok('Handel::Subclassing::OrderOnly');
-    use_ok('Handel::Constants', qw(:order));
+    use_ok('Handel::Constants', qw(:order :returnas));
     use_ok('Handel::Exception', ':try');
+
+    local $SIG{__WARN__} = sub {
+        like(shift, qr/deprecated/);
+    };
+    use_ok('Handel::Compat');
 };
 
 
@@ -33,7 +38,7 @@ sub run {
 
     ## Setup SQLite DB for tests
     {
-        my $dbfile  = "t/order_load_$dbsuffix.db";
+        my $dbfile  = "t/compat_order_load_$dbsuffix.db";
         my $db      = "dbi:SQLite:dbname=$dbfile";
         my $create  = 't/sql/order_create_table.sql';
         my $data    = 't/sql/order_fake_data.sql';
@@ -43,6 +48,10 @@ sub run {
         executesql($db, $data);
 
         $ENV{'HandelDBIDSN'} = $db;
+
+        no strict 'refs';
+        push @{"$subclass\:\:ISA"}, 'Handel::Compat' unless $subclass->isa('Handel::Compat');
+        push @{"itemclass\:\:ISA"}, 'Handel::Compat' unless $itemclass->isa('Handel::Compat');
     };
 
 
@@ -62,13 +71,9 @@ sub run {
 
     ## load a single cart returning a Handel::Cart object
     {
-        my $it = $subclass->load({
+        my $order = $subclass->load({
             id => '11111111-1111-1111-1111-111111111111'
         });
-        isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
-
-        my $order = $it->first;
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->id, '11111111-1111-1111-1111-111111111111');
@@ -99,7 +104,7 @@ sub run {
     };
 
 
-    ## load all carts into an array without a filter
+    ## load all carts into an array without a filter on RETURNAS_AUTO
     {
         my @orders = $subclass->load();
         is(scalar @orders, 3);
@@ -139,9 +144,9 @@ sub run {
     };
 
 
-    ## load all orders into an array without a filter
+    ## load all orders into an array without a filter on RETURNAS_LIST
     {
-        my @orders = $subclass->load();
+        my @orders = $subclass->load(undef, RETURNAS_LIST);
         is(scalar @orders, 3);
 
         my $order1 = $orders[0];
@@ -203,48 +208,6 @@ sub run {
     {
         my @orders = $subclass->load({
             id => '%-%'
-        });
-        is(scalar @orders, 3);
-
-        my $order1 = $orders[0];
-        isa_ok($order1, 'Handel::Order');
-        isa_ok($order1, $subclass);
-        is($order1->id, '11111111-1111-1111-1111-111111111111');
-        is($order1->shopper, '11111111-1111-1111-1111-111111111111');
-        is($order1->type, ORDER_TYPE_TEMP);
-        is($order1->count, 2);
-        if ($subclass ne 'Handel::Order') {
-            is($order1->custom, 'custom');
-        };
-
-        my $order2 = $orders[1];
-        isa_ok($order2, 'Handel::Order');
-        isa_ok($order2, $subclass);
-        is($order2->id, '22222222-2222-2222-2222-222222222222');
-        is($order2->shopper, '11111111-1111-1111-1111-111111111111');
-        is($order2->type, ORDER_TYPE_SAVED);
-        is($order2->count, 1);
-        if ($subclass ne 'Handel::Order') {
-            is($order2->custom, 'custom');
-        };
-
-        my $order3 = $orders[2];
-        isa_ok($order3, 'Handel::Order');
-        isa_ok($order3, $subclass);
-        is($order3->id, '33333333-3333-3333-3333-333333333333');
-        is($order3->shopper, '33333333-3333-3333-3333-333333333333');
-        is($order3->type, ORDER_TYPE_SAVED);
-        is($order3->count, 2);
-        if ($subclass ne 'Handel::Order') {
-            is($order3->custom, 'custom');
-        };
-    };
-
-
-    ## load all orders into an array with SQL::Abstract wildcard filter
-    {
-        my @orders = $subclass->load({
-            id => {like => '%-%'}
         });
         is(scalar @orders, 3);
 

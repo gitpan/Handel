@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_item_new.t 1131 2006-05-16 02:38:06Z claco $
+# $Id: cart_item_create.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -31,7 +31,7 @@ sub run {
 
     ## Setup SQLite DB for tests
     {
-        my $dbfile  = "t/cart_item_new_$dbsuffix.db";
+        my $dbfile  = "t/cart_item_create_$dbsuffix.db";
         my $db      = "dbi:SQLite:dbname=$dbfile";
         my $create  = 't/sql/cart_create_table.sql';
         my $data    = 't/sql/cart_fake_data.sql';
@@ -47,7 +47,7 @@ sub run {
     ## test for Handel::Exception::Argument where first param is not a hashref
     {
         try {
-            my $item = $subclass->new(sku => 'FOO');
+            my $item = $subclass->create(sku => 'FOO');
 
             fail;
         } catch Handel::Exception::Argument with {
@@ -71,7 +71,7 @@ sub run {
             $data->{'custom'} = 'custom';
         };
 
-        my $item = $subclass->new($data);
+        my $item = $subclass->create($data);
         isa_ok($item, 'Handel::Cart::Item');
         isa_ok($item, $subclass);
         ok(constraint_uuid($item->id));

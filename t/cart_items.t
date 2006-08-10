@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_items.t 1336 2006-07-15 03:54:43Z claco $
+# $Id: cart_items.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -48,7 +48,7 @@ sub run {
 
     ## load multiple item Handel::Cart object and get items array
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -130,7 +130,7 @@ sub run {
 
     ## load multiple item Handel::Cart object and get items array
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -185,7 +185,7 @@ sub run {
 
     ## load multiple item Handel::Cart object and get items Iterator
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -213,7 +213,7 @@ sub run {
 
     ## load multiple item Handel::Cart object and get filter single item
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -255,7 +255,7 @@ sub run {
 
     ## load multiple item Handel::Cart object and get filter single item to Iterator
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -283,7 +283,7 @@ sub run {
     ## load multiple item Handel::Cart object and get wildcard filter to Iterator
     ## using SQL::Abstract wildcard syntax
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -312,7 +312,7 @@ sub run {
     ## load multiple item Handel::Cart object and get wildcard filter to Iterator
     ## using old style wildcard syntax
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -340,7 +340,7 @@ sub run {
 
     ## load multiple item Handel::Cart object and get filter bogus item to Iterator
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');

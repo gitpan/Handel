@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_new.t 1339 2006-07-15 21:49:41Z claco $
+# $Id: order_create.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -61,7 +61,7 @@ sub run {
 
     ## Setup SQLite DB for tests
     {
-        my $dbfile       = "t/order_new_$dbsuffix.db";
+        my $dbfile       = "t/order_create_$dbsuffix.db";
         my $db           = "dbi:SQLite:dbname=$dbfile";
         my $createcart   = 't/sql/cart_create_table.sql';
         my $createorder  = 't/sql/order_create_table.sql';
@@ -77,7 +77,7 @@ sub run {
     ## test for Handel::Exception::Argument where first param is not a hashref
     {
         try {
-            my $order = $subclass->new(id => '1234');
+            my $order = $subclass->create(id => '1234');
 
             fail;
         } catch Handel::Exception::Argument with {
@@ -91,7 +91,7 @@ sub run {
     ## test for Handel::Exception::Argument where cart key scalar is not a uuid
     {
         try {
-            my $order = $subclass->new({cart => '1234'});
+            my $order = $subclass->create({cart => '1234'});
 
             fail;
         } catch Handel::Exception::Argument with {
@@ -106,7 +106,7 @@ sub run {
     {
         try {
             my $fake = bless {}, 'MyObject::Foo';
-            my $order = $subclass->new({cart => $fake});
+            my $order = $subclass->create({cart => $fake});
 
             fail;
         } catch Handel::Exception::Argument with {
@@ -120,7 +120,7 @@ sub run {
     ## test for Handel::Exception::Order when no Handel::Cart matches the search criteria
     {
         try {
-            my $order = $subclass->new({cart => {id => '1111'}});
+            my $order = $subclass->create({cart => {id => '1111'}});
 
             fail;
         } catch Handel::Exception::Order with {
@@ -134,11 +134,11 @@ sub run {
     ## test for Handel::Exception::Order when Handel::Cart is empty
     {
         try {
-            my $cart = Handel::Cart->new({
+            my $cart = Handel::Cart->create({
                 id      => '00000000-0000-0000-0000-00000000000' . $dbsuffix,
                 shopper => '00000000-0000-0000-0000-000000000000'
             });
-            my $order = $subclass->new({cart => $cart});
+            my $order = $subclass->create({cart => $cart});
 
             fail;
         } catch Handel::Exception::Order with {
@@ -153,10 +153,10 @@ sub run {
     ## test for Handel::Exception::Order when Handel::Cart subclass is empty
     {
         try {
-            my $cart = Handel::Subclassing::Cart->load({
+            my $cart = Handel::Subclassing::Cart->search({
                 id => '00000000-0000-0000-0000-00000000000' . $dbsuffix
             })->first;
-            my $order = $subclass->new({cart => $cart});
+            my $order = $subclass->create({cart => $cart});
 
             fail;
         } catch Handel::Exception::Order with {
@@ -170,7 +170,7 @@ sub run {
     ## test for Handel::Exception::Constraint during order new for bogus shopper
     {
         try {
-            my $order = $subclass->new({
+            my $order = $subclass->create({
                 id      => '11111111-1111-1111-1111-111111111111',
                 shopper => 'crap'
             });
@@ -186,14 +186,14 @@ sub run {
 
     ## test for raw db key violation
     {
-        my $order = $subclass->new({
+        my $order = $subclass->create({
             id      => '11111111-1111-1111-1111-11111111111' . $dbsuffix,
             shopper => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($order, 'Handel::Order');
 
         try {
-            my $cart = $subclass->new({
+            my $cart = $subclass->create({
                 id      => '11111111-1111-1111-1111-11111111111' . $dbsuffix,
                 shopper => '11111111-1111-1111-1111-111111111111'
             }, 1);
@@ -209,7 +209,7 @@ sub run {
 
     ## add a new temp order and test auto id creation
     {
-        my $order = $subclass->new({
+        my $order = $subclass->create({
             shopper => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($order, 'Handel::Order');
@@ -226,7 +226,7 @@ sub run {
 
     ## add a new temp order and supply a manual id
     {
-        my $order = $subclass->new({
+        my $order = $subclass->create({
             id      => '77777777-7777-7777-7777-777777777777',
             shopper => '77777777-7777-7777-7777-777777777777'
         });
@@ -307,7 +307,7 @@ sub run {
         if ($subclass ne 'Handel::Order') {
             $data->{'custom'} = 'custom';
         };
-        my $order = $subclass->new($data);
+        my $order = $subclass->create($data);
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         ok(constraint_uuid($order->id));
@@ -418,7 +418,7 @@ sub run {
 
     {
         ## create and order from a Handel::Cart object and test currency
-        my $cart = Handel::Cart->new({
+        my $cart = Handel::Cart->create({
             id=>'66BFFD29-8FAD-4200-A22F-E0D80979ADB'.$dbsuffix,
             shopper=>'66BFFD29-8FAD-4200-A22F-E0D80979ADBF',
             name=>'My First Cart'
@@ -431,7 +431,7 @@ sub run {
             description => 'My First Item',
         });
 
-        my $order = $subclass->new({
+        my $order = $subclass->create({
             cart => $cart,
             shopper=>'66BFFD29-8FAD-4200-A22F-E0D80979ADBF'
         });
@@ -494,7 +494,7 @@ sub run {
 
     {
         ## create and order from a Handel::Cart subclass object and test currency
-        my $cart = Handel::Subclassing::Cart->new({
+        my $cart = Handel::Subclassing::Cart->create({
             id=>'76BFFD29-8FAD-4200-A22F-E0D80979ADB'.$dbsuffix,
             shopper=>'76BFFD29-8FAD-4200-A22F-E0D80979ADBF',
             name=>'My First Cart',
@@ -508,7 +508,7 @@ sub run {
             description => 'My First Item'
         });
 
-        my $order = $subclass->new({
+        my $order = $subclass->create({
             cart => $cart,
             shopper=>'76BFFD29-8FAD-4200-A22F-E0D80979ADBF'
         });
@@ -569,7 +569,7 @@ sub run {
 
     {
         ## create and order from a search hash
-        my $cart = Handel::Cart->new({
+        my $cart = Handel::Cart->create({
             id=>'F00F8DE0-A39C-41e4-A906-D43DF55D93D'.$dbsuffix,
             shopper=>'F00F8DE0-A39C-41e4-A906-D43DF55D93D8',
             name=>'My Other Second Cart'
@@ -582,7 +582,7 @@ sub run {
             description => 'My Second Item'
         });
 
-        my $order = $subclass->new({
+        my $order = $subclass->create({
             cart => {id => 'F00F8DE0-A39C-41e4-A906-D43DF55D93D'.$dbsuffix},
             shopper=>'F00F8DE0-A39C-41e4-A906-D43DF55D93D8'
         });
@@ -605,7 +605,7 @@ sub run {
 
     {
         ## create and order from a cart id
-        my $cart = Handel::Cart->new({
+        my $cart = Handel::Cart->create({
             id=>'99BE4783-2A16-4172-A5A8-415A7D984BC'.$dbsuffix,
             shopper=>'99BE4783-2A16-4172-A5A8-415A7D984BCA',
             name=>'My Other Third Cart'
@@ -618,7 +618,7 @@ sub run {
             description => 'My Third Item'
         });
 
-        my $order = $subclass->new({
+        my $order = $subclass->create({
             cart => '99BE4783-2A16-4172-A5A8-415A7D984BC'.$dbsuffix,
             shopper=>'99BE4783-2A16-4172-A5A8-415A7D984BCA'
         });
@@ -641,7 +641,7 @@ sub run {
 
     ## check that when multiple carts are found that we only load the first one
     {
-        my $order = $subclass->new({
+        my $order = $subclass->create({
             cart => {name => '%Other%'},
             shopper=>'99BE4783-2A16-4172-A5A8-415A7D984BCA'
         });
@@ -664,7 +664,7 @@ sub run {
 
     ## check defaults for created/updated
     {
-        my $order = $subclass->new({
+        my $order = $subclass->create({
             shopper=>'99BE4783-2A16-4172-A5A8-415A7D984BCA'
         });
         isa_ok($order, 'Handel::Order');
@@ -681,9 +681,9 @@ sub run {
 
         ## add a new order and test process::OK (in mock series)
         {
-            my $order = $subclass->new({
+            my $order = $subclass->create({
                 shopper => '11111111-1111-1111-1111-111111111111'
-            }, 1);
+            }, {process => 1});
             isa_ok($order, 'Handel::Order');
             isa_ok($order, $subclass);
             ok(constraint_uuid($order->id));
@@ -695,9 +695,9 @@ sub run {
 
         ## add a new order and test process::ERROR (in mock series)
         {
-            my $order = $subclass->new({
+            my $order = $subclass->create({
                 shopper => '11111111-1111-1111-1111-111111111111'
-            }, 1);
+            }, {process => 1});
             is($order, undef);
         };
     };

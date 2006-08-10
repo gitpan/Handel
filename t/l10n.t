@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: l10n.t 1313 2006-07-09 22:18:12Z claco $
+# $Id: l10n.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More tests => 11;
@@ -87,7 +87,7 @@ BEGIN {
     require Handel::Cart;
 
     try {
-        my $cart = Handel::Cart->new(name => 'nothashref');
+        my $cart = Handel::Cart->create(name => 'nothashref');
 
         fail;
     } catch Handel::Exception with {

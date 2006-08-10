@@ -1,7 +1,7 @@
-[%# $Id: cart_items_as_array.tt2 1167 2006-05-31 01:50:19Z claco $ %]
+[%# $Id: cart_items_as_array.tt2 1355 2006-08-07 01:51:41Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
-    [% IF (cart = hcart.new({
+    [% IF (cart = hcart.create({
 		description	=> 'My New Shopping Cart',
 		id			=> 'E516A609-1905-4C7B-AC82-C33D50DE7AB7',
 		name    	=> 'New Cart',
@@ -24,7 +24,7 @@
 		}) %]
 	[% END %]
 
-	[% IF (cart = hcart.load({
+	[% IF (cart = hcart.search({
 		type => hcart.CART_TYPE_TEMP,
 		id 	 => 'E516A609-1905-4C7B-AC82-C33D50DE7AB7'
 	}).first) %]

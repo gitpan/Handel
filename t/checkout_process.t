@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_process.t 1169 2006-05-31 01:54:57Z claco $
+# $Id: checkout_process.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -103,7 +103,7 @@ sub run {
 
     ## Run a successful test pipeline
     {
-        my $order = Handel::Order->new({
+        my $order = Handel::Order->create({
             shopper => '00000000-0000-0000-0000-000000000000'
         });
             $order->add({
@@ -138,7 +138,7 @@ sub run {
 
     ## Run a failing test pipeline
     {
-        my $order = Handel::Order->new({
+        my $order = Handel::Order->create({
             shopper => '00000000-0000-0000-0000-000000000000',
             billtofirstname => 'BillToFirstName',
             billtolastname  => 'BillToLastName'
@@ -181,7 +181,7 @@ sub run {
 
     ## Check stash writes and lifetime
     {
-        my $order = Handel::Order->new({
+        my $order = Handel::Order->create({
             shopper => '00000000-0000-0000-0000-000000000000'
         });
             $order->add({

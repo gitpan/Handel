@@ -1,4 +1,4 @@
-# $Id: L10N.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: L10N.pm 1359 2006-08-08 18:54:45Z claco $
 package Handel::L10N;
 use strict;
 use warnings;
@@ -51,6 +51,9 @@ You can also export C<translate> into the callers namespace:
     warn translate('My message');
 
 If you have the time and can do a language, the help would be much appreciated.
+If you're going to email a translation module, please Gzip it first. It's not
+uncommon for an email server along the way to trash UTF-8 characters in the
+.pm attachment text.
 
 =head1 FUNCTIONS
 

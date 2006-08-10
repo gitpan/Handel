@@ -1,18 +1,19 @@
-# $Id: Base.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Base.pm 1354 2006-08-06 00:11:31Z claco $
 package Handel::Base;
 use strict;
 use warnings;
-use Handel::Exception qw/:try/;
-use Handel::L10N qw/translate/;
-use Scalar::Util qw/blessed/;
-use Class::ISA;
-use Class::Inspector;
 
 BEGIN {
     use base qw/Class::Accessor::Grouped/;
     __PACKAGE__->mk_group_accessors('simple', qw/autoupdate result/);
     __PACKAGE__->mk_group_accessors('inherited', qw/accessor_map/);
     __PACKAGE__->mk_group_accessors('component_class', qw/storage_class/);
+
+    use Handel::Exception qw/:try/;
+    use Handel::L10N qw/translate/;
+    use Scalar::Util qw/blessed weaken refaddr/;
+    use Class::ISA;
+    use Class::Inspector;
 };
 
 __PACKAGE__->storage_class('Handel::Storage');
@@ -54,20 +55,18 @@ sub set_column {
     $self->update if $self->autoupdate;
 };
 
-sub inflate_result {
-    my $self = shift;
-    my $result = $_[0]->result_class->inflate_result(@_);
-
-    return $self->create_result($result);
-};
-
-sub create_result {
+sub create_instance {
     my ($self, $result) = @_;
-    my $class = ref $self || $self;
-    
+    my $class = blessed $self || $self;
+
+    return unless $result;
+
+    my $storage = $result->storage;
+
     return bless {
-        result => $result,
-        autoupdate => $result->result_source->schema->{'__handel_storage'}->autoupdate
+        result     => $result,
+        autoupdate => $storage->autoupdate,
+        storage    => $storage
     }, $class;
 };
 
@@ -90,7 +89,7 @@ sub storage {
 
 sub has_storage {
     my $self = shift;
-    my $class = ref $self || $self;
+    my $class = blessed $self || $self;
 
     no strict 'refs';
 
@@ -254,7 +253,7 @@ be used instead of the column name.
 Each accessor will call C<get_column>/C<set_column>, passing the real database
 column name.
 
-=head2 create_result
+=head2 create_instance
 
 =over
 
@@ -265,8 +264,8 @@ column name.
 Creates a new instance of the current class, stores the resultset result object
 inside, and does any configuration on the new object before returning it.
 
-    my $result = $schema->resultset('Carts')->create({name => 'My Cart'});
-    my $cart = Handel::Cart->create_result($result);
+    my $result = $storage->create({name => 'My Cart'});
+    my $cart = Handel::Cart->create_instance($result);
 
 This is used internally by C<inflate_result> and C<storage>. There's probably
 no good reason to use this yourself.

@@ -9,6 +9,10 @@ way while maintaining the public API. It is also responsible for adding generic 
 default values, column constraints, validation profiles, currency column inflation, and even just
 adding/removing columns to whatever schema is being used.
 
+The default storage class in Handel is based upon using DBIx::Class schemas as your storage medium.
+The functionality described in this document may or may not be available if you are using a custom storage
+class that uses something other than DBIx::Class to store data.
+
 =head1 WORKFLOW
 
 When creating a new instance of Handel::Storage, there are two basic stages to its  life cycle. First, the
@@ -17,13 +21,13 @@ stage, any of the configuration methods like C<add_columns> or C<default_values>
 configuration settings stored internally. All of this takes place before a schema instance is initialized for use.
 
 When the first request is made to retrieve a schema instance from storage, the schema class is first cloned
-so any changes Handel makes to it won't effect other applications that may be using the specified schema
+so any changes Handel makes to it won't effect other applications that may be using the same schema
 class. The schema is then customized with any added/removed columns, currency columns, constraints and
 default values. Once customization is complete, the schema is connected to the specified database, and
 returned for use by the rest of storage to alter data.
 
 As a general rule, each top level class in Handel has its own storage instance, and each storage instance has
-its own schema instance. When a subclass of a top level interface  class is created, it inherits a B<a copy>
+its own schema instance. When a subclass of a top level interface class is created, it inherits a B<a copy>
 of its parents storage. Any changes made to the subclasses storage effects its storage only, leaving the
 parents storage instance and schema in tact. See L<Handel::Manual::Customization> for more details on how
 to use subclassing to custom Handel.
@@ -94,10 +98,11 @@ from the schema source.
 and from the specified currency class.
 
 =item * Next, if any item class was specified, the previous 2 steps will be performed on its schema source
-I<in this> schema. The schema associated with the item classes own storage will be untouched.
+I<in this> schema. The schema associated with the item classes own storage will be untouched. In escence,
+the item classes storage instance is cloned, and merged into the current schema.
 
-=item * The schemas database handle will have its C<HandleError> attribute set to use the local
-C<process_errors> method, used for turning database errors into Handel exceptions.
+=item * The schemas exception_action is set to use the local C<process_errors> method, used for turning
+database errors into Handel exceptions.
 
 =item * Next, if a validation profile has been specified,
 L<Handel::Components::Validation|Handel::Components::Validation> will be loaded into the source class
@@ -111,9 +116,63 @@ and configured with the specified constraints.
 L<Handel::Components::DefaultValues|Handel::Components::DefaultValues> will be loaded into the
 source class and configured with the specified default values.
 
-=item * Next, a 17th, even closer blade...
+=item * Next, a seventeenth, even closer blade...
 
 =back
+
+=head2 Abstract Storage Results
+
+The storage layer provides a set of basic methods that return generic result objects. These objects are then
+consumed by the interface layer as a means to abstract the particulars of each storage type from the API
+itself.
+
+    my $storage = Handel::Storage::Cart->new;
+    my $result  = $storage->create({name => 'My Cart'});
+    
+    print ref $result; # Handel::Storage::Result
+
+For the most part, each result simply proxies methods to its private storage result, in this case, the
+DBIx::Class resultset result returned from the schema.
+
+    print $result->id;
+    
+    # is really just
+    print $result->storage_result->id;
+    
+    # storage_result is a real live DBIx::Class resultset result
+    print ref $storage->storage_result; # Handel::Schema::Cart
+
+The result objects also provide a few convenience methods that forward to the storage object that created
+them:
+
+    $result->add({sku => 'ABC-123'});
+    $result->items;
+    
+    # is really
+    $storage->add_item($result, {sku => 'ABC-123'});
+    $storage->search_items;
+
+Whenever possible, storage is asked to perform work on behalf of the result. This allows one to write a
+custom storage layer without having to also write a custom storage result, although you can do that too if
+you if it is necessary.
+
+Once created, the storage results are then consumed by the interface layer which doesn't care where they
+came from or how they are stored.
+
+    my $cart = Handel::Cart->create_instance(
+        $storage->create({name => 'My Cart'})
+    );
+    
+    print ref $cart; # Handel::Cart
+    print ref $cart->result # Handel::Storage::Result
+    
+    print $cart->id;
+    
+    # is really this
+    print $cart->get_column('id');
+    
+    # which is really just this
+    print $cart->result->id;
 
 =head1 COMPONENTS
 
@@ -237,7 +296,7 @@ Validation is run after default values are applied, and any constraints are run.
 
 =head1 SEE ALSO
 
-L<Handel::Storage>
+L<Handel::Storage>, L<Handel::Storage::Result>,
 L<Handel::Components::DefaultValues>, L<Handel::Components::Constraints>,
 L<Handel::Components::Validation>
 

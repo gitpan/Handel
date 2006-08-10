@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_clear.t 1300 2006-07-08 01:12:16Z claco $
+# $Id: cart_clear.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -51,7 +51,7 @@ sub run {
         my $total_items = $subclass->storage->schema_instance->resultset('Items')->count;
         ok($total_items);
 
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -66,7 +66,7 @@ sub run {
         $cart->clear;
         is($cart->count, 0);
 
-        my $reit = $subclass->load({
+        my $reit = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($reit, 'Handel::Iterator');

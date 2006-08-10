@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_restore_merge_filter.t 1131 2006-05-16 02:38:06Z claco $
+# $Id: cart_restore_merge_filter.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -50,7 +50,7 @@ sub run {
     ## just for sanity sake, we're checking all cart and item values
     {
         # load the temp cart
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -161,7 +161,7 @@ sub run {
 
 
         # load the saved cart again
-        my $sit2 = $subclass->load({
+        my $sit2 = $subclass->search({
             id => '33333333-3333-3333-3333-333333333333'
         });
         isa_ok($sit2, 'Handel::Iterator');

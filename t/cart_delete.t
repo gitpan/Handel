@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_delete.t 1300 2006-07-08 01:12:16Z claco $
+# $Id: cart_delete.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -66,7 +66,7 @@ sub run {
 
     ## Delete a single cart item contents and validate counts
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -83,7 +83,7 @@ sub run {
         is($cart->count, 0);
         is($cart->subtotal, 0);
 
-        my $reit = $subclass->load({
+        my $reit = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($reit, 'Handel::Iterator');
@@ -105,7 +105,7 @@ sub run {
     ## Delete multiple cart item contents with wildcard filter and validate
     ## counts using the old style wildcards
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '33333333-3333-3333-3333-333333333333'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -122,7 +122,7 @@ sub run {
         is($cart->count, 0);
         is($cart->subtotal, 0);
 
-        my $reit = $subclass->load({
+        my $reit = $subclass->search({
             id => '33333333-3333-3333-3333-333333333333'
         });
         isa_ok($reit, 'Handel::Iterator');

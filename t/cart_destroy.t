@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_destroy.t 1336 2006-07-15 03:54:43Z claco $
+# $Id: cart_destroy.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -69,7 +69,7 @@ sub run {
 
     ## Destroy a single cart via instance
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -85,7 +85,7 @@ sub run {
 
         $cart->destroy;
 
-        my $reit = $subclass->load({
+        my $reit = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($reit, 'Handel::Iterator');
@@ -107,7 +107,7 @@ sub run {
 
     ## Destroy multiple carts with wildcard filter
     {
-        my $carts = $subclass->load({description => {like => 'Saved%'}});
+        my $carts = $subclass->search({description => {like => 'Saved%'}});
         isa_ok($carts, 'Handel::Iterator');
         is($carts, 1);
 
@@ -118,7 +118,7 @@ sub run {
             description => {like => 'Saved%'}
         });
 
-        $carts = $subclass->load({description => {like => 'Saved%'}});
+        $carts = $subclass->search({description => {like => 'Saved%'}});
         isa_ok($carts, 'Handel::Iterator');
         is($carts, 0);
 

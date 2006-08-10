@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_load.t 1336 2006-07-15 03:54:43Z claco $
+# $Id: cart_search.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -49,7 +49,7 @@ sub run {
     ## test for Handel::Exception::Argument where first param is not a hashref
     {
         try {
-            my $cart = $subclass->load(id => '1234');
+            my $cart = $subclass->search(id => '1234');
 
             fail;
         } catch Handel::Exception::Argument with {
@@ -62,7 +62,7 @@ sub run {
 
     ## load a single cart returning a Handel::Cart object
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -86,16 +86,16 @@ sub run {
 
     ## load a single cart returning a Handel::Iterator object
     {
-        my $iterator = $subclass->load({
+        my $iterator = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
-        }, 1);
+        });
         isa_ok($iterator, 'Handel::Iterator');
     };
 
 
     ## load all carts for the shopper returning a Handel::Iterator object
     {
-        my $iterator = $subclass->load({
+        my $iterator = $subclass->search({
             shopper => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($iterator, 'Handel::Iterator');
@@ -104,7 +104,7 @@ sub run {
 
     ## load all carts into an array without a filter
     {
-        my @carts = $subclass->load();
+        my @carts = $subclass->search();
         is(scalar @carts, 3);
 
         my $cart1 = $carts[0];
@@ -153,7 +153,7 @@ sub run {
 
     ## load all carts into an array without a filter
     {
-        my @carts = $subclass->load();
+        my @carts = $subclass->search();
         is(scalar @carts, 3);
 
         my $cart1 = $carts[0];
@@ -202,7 +202,7 @@ sub run {
 
     ## load all carts into an array with a filter
     {
-        my @carts = $subclass->load({
+        my @carts = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222',
             name => 'Cart 2'
         });
@@ -227,7 +227,7 @@ sub run {
     ## load all carts into an array with a wildcard filter using SQL::Abstract
     ## wildcard syntax
     {
-        my @carts = $subclass->load({
+        my @carts = $subclass->search({
             name => {like => 'Cart %'}
         });
         is(scalar @carts, 3);
@@ -279,7 +279,7 @@ sub run {
     ## load all carts into an array with a wildcard filter using old
     ## wildcard syntax
     {
-        my @carts = $subclass->load({
+        my @carts = $subclass->search({
             name => 'Cart %'
         });
         is(scalar @carts, 3);
@@ -330,7 +330,7 @@ sub run {
 
     ## load returns 0
     {
-        my $cart = $subclass->load({
+        my $cart = $subclass->search({
             id => 'notfound'
         });
         is($cart, 0);

@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 1338 2006-07-15 19:40:26Z claco $
+# $Id: Makefile.PL 1360 2006-08-09 03:17:09Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -65,6 +65,7 @@ my @clean = qw(
     t/subclassing.db
     t/storage*.db
     t/base*.db
+    t/compat*.db
     t/TEST
     t/SMOKE
     t/logs
@@ -105,6 +106,5 @@ WriteMakefile(
     dist => {
         PREOP => 'pod2text lib/Handel.pm > $(DISTVNAME)/README',
     },
-    clean => { FILES => join ' ', @clean },
-    test  => { TESTS => join ' ', (glob("t/*.t t/*/*.t"))}
+    clean => { FILES => join ' ', @clean }
 );

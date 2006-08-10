@@ -1,10 +1,14 @@
-# $Id: Compat.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Compat.pm 1360 2006-08-09 03:17:09Z claco $
 package Handel::Compat;
 use strict;
 use warnings;
 use Carp qw/cluck/;
+use NEXT;
 
 BEGIN {
+    use Handel::Constants qw/:returnas/;
+    use Handel::L10N qw/translate/;
+
     cluck 'Handel::Compat is deprecated and will go away one a future release.';
 };
 
@@ -74,6 +78,96 @@ sub uuid {
     my $class = shift || __PACKAGE__;
 
     $class->storage->new_uuid;
+};
+
+sub load {
+    my ($self, $filter, $wantiterator) = @_;
+
+    throw Handel::Exception::Argument( -details =>
+        translate('Param 1 is not a HASH reference') . '.') unless(
+            ref($filter) eq 'HASH' or !$filter);
+
+    $wantiterator ||= RETURNAS_AUTO;
+
+    ## only return array if wantarray and not explicitly asking for an iterator
+    ## or we've explicitly asked for a list/array
+    if ((wantarray && $wantiterator != RETURNAS_ITERATOR) || $wantiterator == RETURNAS_LIST) {
+        my @carts = $self->search($filter);
+        return @carts;
+    ## return an iterator if explicitly asked for
+    } elsif ($wantiterator == RETURNAS_ITERATOR) {
+        my $iterator = $self->search($filter);
+
+        return $iterator;
+    ## full out auto
+    } else {
+        my $iterator = $self->search($filter);
+
+        if ($iterator->count == 1 && $wantiterator != RETURNAS_ITERATOR && $wantiterator != RETURNAS_LIST) {
+            return $iterator->next;
+        } else {
+            return $iterator;
+        };
+    };
+};
+
+sub items {
+    my ($self, $filter, $wantiterator) = @_;
+
+    throw Handel::Exception::Argument( -details =>
+        translate('Param 1 is not a HASH reference') . '.') unless(
+            ref($filter) eq 'HASH' or !$filter);
+
+    $wantiterator ||= RETURNAS_AUTO;
+    $filter       ||= {};
+
+    ## If the filter as a wildcard, push it through a fresh search_like since it
+    ## doesn't appear to be available within a loaded object.
+    if ((wantarray && $wantiterator != RETURNAS_ITERATOR) || $wantiterator == RETURNAS_LIST) {
+        my @items = $self->NEXT::items($filter);
+
+        return @items;
+    } elsif ($wantiterator == RETURNAS_ITERATOR) {
+        my $iterator = $self->NEXT::items($filter);
+
+        return $iterator;
+    } else {
+        my $iterator = $self->NEXT::items($filter);
+
+        if ($iterator->count == 1 && $wantiterator != RETURNAS_ITERATOR && $wantiterator != RETURNAS_LIST) {
+            return $iterator->next;
+        } else {
+            return $iterator;
+        };
+    };
+};
+
+sub new {
+    my ($self, $data, $process) = @_;
+
+    if ($process) {
+        return $self->create($data, {process => $process});
+    } else {
+        return $self->create($data);
+    };
+};
+
+sub subtotal {
+    my $self = shift;
+
+    if ($self->isa('Handel::Order')) {
+        return $self->subtotal(@_);
+    } else {
+        my $storage  = $self->result->storage;
+        my $items    = $self->items(undef, 1);
+        my $subtotal = 0.00;
+
+        while (my $item = $items->next) {
+            $subtotal += ($item->total);
+        };
+
+        return $storage->currency_class->new($subtotal);
+    };
 };
 
 1;
@@ -162,6 +256,52 @@ When upgrading, convert this like so:
     #__PACKAGE__->item_class('MyCustomCart');
     __PACKAGE__->storage->item_class('MyCustomCart');
 
+=head2 items
+
+=over
+
+=item Arguments: \%filter, $wantiterator
+
+=back
+
+You can retrieve all or some of the items contained in the via the C<items>
+method. In a scalar context, items returns an iterator object which can be used
+to cycle through items one at a time. In list context, it will return an array
+containing all items.
+
+    my $iterator = $cart->items;
+    while (my $item = $iterator->next) {
+        print $item->sku;
+    };
+    
+    my @items = $cart->items;
+    ...
+    dosomething(\@items);
+
+When filtering the items in the in scalar context, a
+item object will be returned if there is only one result. If
+there are multiple results, a Handel::Iterator object will be returned
+instead. You can force C<items> to always return a Handel::Iterator object
+even if only one item exists by setting the $wantiterator parameter to
+C<RETURNAS_ITERATOR>.
+
+    my $item = $cart->items({sku => 'SKU1234'}, RETURNAS_ITERATOR);
+    if ($item->isa('Handel::Cart::Item)) {
+        print $item->sku;
+    } else {
+        while ($item->next) {
+            print $_->sku;
+        };
+    };
+
+In list context, filtered items return an array of items just as when items is
+called without a filter specified.
+
+    my @items - $cart->items((sku -> 'SKU1%'});
+
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
+thrown if parameter one isn't a hashref or undef.
+
 =head2 iterator_class
 
 =over
@@ -175,6 +315,48 @@ first/next. When upgrading, convert this like so:
 
     #__PACKAGE__->iterator_class('MyIterator');
     __PACKAGE__->storage->iterator_class('MyIterator');
+
+=head2 load
+
+=over
+
+=item Arguments: \%filter, $wantiterator
+
+=back
+
+Returns cart matching the supplied filter.
+
+    my $cart = Handel::Cart->load({
+        id => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E'
+    });
+
+You can also omit \%filter to load all available carts.
+
+    my @carts = Handel::Cart->load();
+
+In scalar context C<load> returns a Handel::Cart object if there is a single
+result, or a Handel::Iterator object if there are multiple results. You can
+force C<load> to always return an iterator even if only one cart exists by
+setting the C<$wantiterator> parameter to C<RETURNAS_ITERATOR>.
+
+    my $iterator = Handel::Cart->load(undef, RETURNAS_ITERATOR);
+    while (my $item = $iterator->next) {
+        print $item->sku;
+    };
+
+See L<Handel::Contstants|Handel::Contstants> for the available
+C<RETURNAS> options.
+
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
+thrown if the first parameter is not a hashref.
+
+=head2 new
+
+See L<Handel::Cart/create> and L<Handel::Order/create>.
+
+=head2 subtotal
+
+See L<Handel::Cart/subtotal> and L<Handel::Order/create>
 
 =head2 table
 

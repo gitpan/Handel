@@ -1,10 +1,13 @@
-# $Id: Cart.pm 1328 2006-07-12 22:54:56Z claco $
+# $Id: Cart.pm 1350 2006-07-30 22:37:37Z claco $
 package Handel::Storage::Cart;
 use strict;
 use warnings;
-use Handel::Constants qw/:cart/;
-use Handel::Constraints qw/:all/;
-use base qw/Handel::Storage/;
+
+BEGIN {
+    use base qw/Handel::Storage/;
+    use Handel::Constants qw/CART_TYPE_TEMP/;
+    use Handel::Constraints qw/:all/;
+};
 
 __PACKAGE__->setup({
     schema_class   => 'Handel::Cart::Schema',
@@ -17,7 +20,7 @@ __PACKAGE__->setup({
         name       => {'Check Name'    => \&constraint_cart_name}
     },
     default_values => {
-        id         => __PACKAGE__->can('new_uuid'),
+        id         => sub {__PACKAGE__->new_uuid(shift)},
         type       => CART_TYPE_TEMP
     }
 });

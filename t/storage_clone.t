@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_clone.t 1259 2006-06-29 01:24:53Z claco $
+# $Id: storage_clone.t 1342 2006-07-22 22:15:27Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -135,21 +135,12 @@ BEGIN {
             fail;
         };
     };
-    
-    ## throw exception as with existing schema_instance
 
-    
-    {
-        try {
-            my $schema = $storage->schema_instance;
-            $storage->clone;
-            
-            fail('no exception thrown');
-        } catch Handel::Exception::Storage with {
-            pass;
-        } otherwise {
-            diag shift;
-            fail;
-        };
-    };
+
+    ## clone storage with an existing schema
+    my $schema = $storage->schema_instance;
+    my $clone2 = $storage->clone;
+    $storage->_schema_instance(undef);
+
+    is_deeply($clone2, $storage);
 };

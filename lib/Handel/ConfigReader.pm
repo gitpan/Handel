@@ -1,4 +1,4 @@
-# $Id: ConfigReader.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: ConfigReader.pm 1341 2006-07-20 17:55:56Z claco $
 package Handel::ConfigReader;
 use strict;
 use warnings;
@@ -109,7 +109,7 @@ Handel::ConfigReader - Read in Handel configuration settings from ENV/ModPerl
 
     use Handel::ConfigReader;
     
-    my $cfg = Handel::ConfigReader-new();
+    my $cfg = Handel::ConfigReader->instance();
     my $setting = $cfg->get('HandelMaxQuantity');
     my $other = $cfg->{'OtherSetting'};
 
@@ -121,7 +121,7 @@ directives.
 
 Each configuration object is also a tied hash. The two usages are the same:
 
-    my $cfg = Handel::ConfigReader->new();
+    my $cfg = Handel::ConfigReader->instance();
     
     my $setting = $cfg->get('Setting');
     my $setting = $cfg->{'Setting'};
@@ -139,24 +139,35 @@ Returns a new Handel::ConfigReader instance.
 
 =head2 instance
 
-Returns the singleton Handel::ConfigReader instance.
+Returns the same Handel::ConfigReader instance for each call.
 
     my $cfg = Handel::ConfigReader->instance();
 
 =head1 METHODS
 
-=head2 get($key [, $default])
+=head2 get
+
+=over
+
+=item Arguments: $key [, $default]
+
+=back
 
 Returns the configured value for the key specified. You can use this as an
 instance method or as a simpleton:
 
-    my $setting = Handel::ConfigReader->get('HandelMaxQuantity');
-
-    my $cfg = Handel::ConfigReader->new();
+    my $cfg = Handel::ConfigReader->instance();
+    my $setting = $cfg->get('HandelMaxQuantity');
+    
+    my $cfg = Handel::ConfigReader->instance();
     my $setting = $cfg->get('HandelMaxQuantity');
 
 You can also pass a default value as the second parameter. If no value is loaded
 for the key specified, the default value will be returned instead.
+
+    my $cfg = Handel::ConfigReader->instance();
+    my $setting = $cfg->get('DoesNotExist', 'foo');
+    print $setting; # foo
 
 =head1 CONFIGURATION
 
@@ -169,34 +180,34 @@ C<PerlSetVar> when running under C<mod_perl>.
     ...
     $ENV{HandelMaxQuantity} = 32;
 
-If defined, this sets the maximum quantity allowed for each C<Handel::Cart::Item>
-in the shopping cart. By default, when the user request more than
-C<HandelMaxQuantity>, C<quantity> is reset to C<HandelMaxQuantity>. If you
-would rather raise an C<Handel::Exception::Constraint> instead, see
+If defined, this sets the maximum quantity allowed for each
+C<Handel::Cart::Item> in the shopping cart. By default, when the user request
+more than C<HandelMaxQuantity>, C<quantity> is reset to C<HandelMaxQuantity>.
+If you would rather raise an C<Handel::Exception::Constraint> instead, see
 C<HandelMaxQuantityAction> below.
 
 =head2 HandelMaxQuantityAction (Adjust|Exception)
 
-This option defines what action should be taken when a cart items quantity is being set
-to something above C<HandelMaxQuantity>. When set to C<Adjust> the quantity will simply
-be reset to C<HandelMaxQuantity> and no exception will be raised. This is the default
-action.
+This option defines what action should be taken when a cart items quantity is
+being set to something above C<HandelMaxQuantity>. When set to C<Adjust> the
+quantity will simply be reset to C<HandelMaxQuantity> and no exception will be
+raised. This is the default action.
 
-When set to <Exception> and the quantity requested is greater than C<HandelMaxQuantity>,
-a C<Handel::Exception::Constraint> exception is thrown.
+When set to <Exception> and the quantity requested is greater than
+C<HandelMaxQuantity>, a C<Handel::Exception::Constraint> exception is thrown.
 
 =head2 HandelCurrencyCode
 
 This sets the default currency code used when no code is passed into C<format>.
-See L<Locale::Currency::Format> for all available currency codes. The default code
-is USD.
+See L<Locale::Currency::Format> for all available currency codes. The default
+code is USD.
 
 =head2 HandelCurrencyFormat
 
 This sets the default options used to format the price. See
 L<Locale::Currency::Format> for all available currency codes. The default format
-used is C<FMT_STANDARD>. Just like in C<Locale::Currency::Format>, you can combine
-options using C<|>.
+used is C<FMT_STANDARD>. Just like in C<Locale::Currency::Format>, you can
+combine options using C<|>.
 
 =head2 HandelDBIDriver
 
@@ -243,8 +254,8 @@ You can also pass a comma or space separate list of namespaces.
 
     PerlSetVar HandelPluginPaths 'MyApp::Plugins, OtherApp::Plugins'
 
-Any plugin found in the search path that isn't a subclass of Handel::Checkout::Plugin
-will be ignored.
+Any plugin found in the search path that isn't a subclass of
+Handel::Checkout::Plugin will be ignored.
 
 =head2 HandelAddPluginPaths
 
@@ -257,13 +268,14 @@ In the example above, when a checkout process is loaded, it will load
 all plugins in the Handel::Checkout::Plugin::*, MyApp::Plugins::*, and
 OtherApp::Plugins namespaces.
 
-Any plugin found in the search path that isn't a subclass of Handel::Checkout::Plugin
-will be ignored.
+Any plugin found in the search path that isn't a subclass of
+Handel::Checkout::Plugin will be ignored.
 
 =head2 HandelIgnorePlugins
 
-This is a comma/space separated list [or an anonymous array, or a regex outside of httpd.conf] of plugins to ignore when loading
-all available plugins in the given namespaces.
+This is a comma/space separated list [or an anonymous array, or a regex outside
+of httpd.conf] of plugins to ignore when loading all available plugins in the
+given namespaces.
 
     PerlSetVar HandelIgnorePlugins 'Handel::Checkout::Plugin::Initialize'
 
@@ -278,16 +290,18 @@ If the Handel::Checkout::Plugin namespace has the following modules:
     Handel::Checkout::Plugin::FaxDelivery
     Handel::Checkout::Plugin::EmailDelivery
 
-all of the modules above will be loaded <b>except</b> Handel::Checkout::Plugin::Initialize.
-All plugins in any other configured namespaces will be loaded.
+all of the modules above will be loaded <b>except</b>
+Handel::Checkout::Plugin::Initialize. All plugins in any other configured
+namespaces will be loaded.
 
-If both HandelLoadPlugins and HandelIgnorePlugins are specified, only the plugins in
-HandelLoadPlugins will be loaded, unless they are also in HandelIgnorePlugins in which case
-they will be ignored.
+If both HandelLoadPlugins and HandelIgnorePlugins are specified, only the
+plugins in HandelLoadPlugins will be loaded, unless they are also in
+HandelIgnorePlugins in which case they will be ignored.
 
 =head2 HandelLoadPlugins
 
-This is a comma or space separated list [or an anonymous array, or a regex outside of httpd.conf] of plugins to be loaded from the available namespaces.
+This is a comma or space separated list [or an anonymous array, or a regex
+outside of httpd.conf] of plugins to be loaded from the available namespaces.
 
     PerlSetVar HandelLoadPlugins 'Handel::Checkout::Plugin::ValidateAddress'
 
@@ -304,12 +318,12 @@ If the following plugins are available in all configured namespaces:
     MyApp::Plugin::VerifiedByVisa
     MyApp::Plugin::WarehouseUpdate
 
-only Handel::Checkout::Plugin::ValidateAddress will be loaded. All other plugins in all
-configured namespaces will be ignored.
+only Handel::Checkout::Plugin::ValidateAddress will be loaded. All other
+plugins in all configured namespaces will be ignored.
 
-If both HandelLoadPlugins and HandelIgnorePlugins are specified, only the plugins in
-HandelLoadPlugins will be loaded, unless they are also in HandelIgnorePlugins in which case
-they will be ignored.
+If both HandelLoadPlugins and HandelIgnorePlugins are specified, only the
+plugins in HandelLoadPlugins will be loaded, unless they are also in
+HandelIgnorePlugins in which case they will be ignored.
 
 =head1 AUTHOR
 

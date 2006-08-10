@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_iterator.t 1131 2006-05-16 02:38:06Z claco $
+# $Id: cart_iterator.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -48,7 +48,7 @@ sub run {
 
     ## load all carts and iterator all cart and all items
     {
-        my $carts = $subclass->load(undef, 1);
+        my $carts = $subclass->search;
         isa_ok($carts, 'Handel::Iterator');
         is($carts->count, 3);
 

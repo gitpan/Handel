@@ -4,6 +4,28 @@ Handel::Manual::QuickStart - A quick start guide to getting Handel up and runnin
 
 =head1 DESCRIPTION
 
+This guide is meant for those who want to get a shopping cart up and running as quickly as possible using
+Handel. In this guide we will cover the installation of Handel and its configuration under:
+
+=over
+
+=item Catalyst
+
+=item Apache+ModPerl+Apache::Template
+
+=item Apache+ModPerl+AxKit
+
+=back
+
+=head1 INSTALLATION
+
+=head2 CPAN
+
+    $ cpan -i Handel
+
+=head2 CPANPLUS
+
+    $ cpanplus -i Handel
 
 
 =head1 AUTHOR

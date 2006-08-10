@@ -1,7 +1,7 @@
-[%# $Id: cart_update.tt2 1167 2006-05-31 01:50:19Z claco $ %]
+[%# $Id: cart_update.tt2 1355 2006-08-07 01:51:41Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
-    [% UNLESS (cart = hcart.new({
+    [% UNLESS (cart = hcart.create({
 		description	=> 'My New Shopping Cart',
 		id			=> '535FD0DD-A88E-42B0-B503-7FFB4384B4D6',
 		name    	=> 'New Cart',
@@ -11,7 +11,7 @@
 		<message>Error creating shopping cart</message>
 	[% END %]
 
-	[% IF (cart = hcart.load({
+	[% IF (cart = hcart.search({
 		type => hcart.CART_TYPE_SAVED,
 		id	 => '535FD0DD-A88E-42B0-B503-7FFB4384B4D6'
 	}).first) %]

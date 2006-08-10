@@ -1,7 +1,7 @@
-[%# $Id: cart_restore_append.tt2 1167 2006-05-31 01:50:19Z claco $ %]
+[%# $Id: cart_restore_append.tt2 1355 2006-08-07 01:51:41Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
-    [% IF (cart = hcart.new({
+    [% IF (cart = hcart.create({
 		description	=> 'My First Shopping Cart',
 		id			=> '76DFA8B1-644A-44C5-B545-7D0BAE09313D',
 		name    	=> 'New Cart 1',
@@ -25,7 +25,7 @@
 	[% ELSE %]
 		<message>Error adding cart</message>
 	[% END %]
-    [% IF (cart = hcart.new({
+    [% IF (cart = hcart.create({
 		description	=> 'My Second Shopping Cart',
 		id			=> 'CB2787E4-FC6B-48C8-A76D-F64AA9EC48CF',
 		name    	=> 'New Cart 2',
@@ -50,7 +50,7 @@
 		<message>Error adding cart</message>
 	[% END %]
 
-	[% IF (cart = hcart.load({
+	[% IF (cart = hcart.search({
 		id 	 => '76DFA8B1-644A-44C5-B545-7D0BAE09313D'
 	}).first) %]
 		<cart>

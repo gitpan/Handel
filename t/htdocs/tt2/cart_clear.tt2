@@ -1,7 +1,7 @@
-[%# $Id: cart_clear.tt2 1167 2006-05-31 01:50:19Z claco $ %]
+[%# $Id: cart_clear.tt2 1355 2006-08-07 01:51:41Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
-    [% IF (cart = hcart.new({
+    [% IF (cart = hcart.create({
 		description	=> 'My New Shopping Cart',
 		id			=> 'B0462540-0564-4E27-B9FD-C3985A227C49',
 		name    	=> 'New Cart',
@@ -30,7 +30,7 @@
 		<message>Error creating shopping cart</message>
 	[% END %]
 
-	[% IF (cart = hcart.load({
+	[% IF (cart = hcart.search({
 		type => hcart.CART_TYPE_TEMP,
 		id	 => 'B0462540-0564-4E27-B9FD-C3985A227C49'
 	}).first) %]
@@ -42,7 +42,7 @@
 			<shopper>[% cart.shopper %]</shopper>
 			<subtotal>[% cart.subtotal %]</subtotal>
 			<type>[% cart.type %]</type>
-			[% cart.clear %]
+			[% CALL cart.clear %]
 			<count>[% cart.count %]</count>
 			<subtotal>[% cart.subtotal %]</subtotal>
 		</cart>

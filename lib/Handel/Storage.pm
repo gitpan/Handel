@@ -1,31 +1,34 @@
-# $Id: Storage.pm 1327 2006-07-12 22:54:29Z claco $
+# $Id: Storage.pm 1354 2006-08-06 00:11:31Z claco $
 package Handel::Storage;
 use strict;
 use warnings;
-use Handel::Exception qw/:try/;
-use Handel::L10N qw/translate/;
-use DBIx::Class::UUIDColumns;
-use Scalar::Util qw/blessed weaken/;
-use Clone;
-use Class::Inspector;
 
 BEGIN {
     use base qw/Class::Accessor::Grouped/;
-
     __PACKAGE__->mk_group_accessors('inherited', qw/
         autoupdate table_name connection_info item_relationship schema_source
         _schema_instance _columns_to_add _columns_to_remove currency_columns
+        uuid_maker
     /);
     __PACKAGE__->mk_group_accessors('component_class', qw/
-        cart_class item_class schema_class iterator_class constraints_class
+        item_class schema_class iterator_class constraints_class
         validation_class default_values_class currency_class validation_module
+        cart_class checkout_class result_class
     /);
     __PACKAGE__->mk_group_accessors('component_data', qw/
         constraints default_values validation_profile
     /);
+
+    use Handel::Exception qw/:try/;
+    use Handel::L10N qw/translate/;
+    use DBIx::Class::UUIDColumns;
+    use Scalar::Util qw/blessed weaken/;
+    use Clone;
+    use Class::Inspector;
 };
 
 __PACKAGE__->autoupdate(1);
+__PACKAGE__->result_class('Handel::Storage::Result');
 __PACKAGE__->item_relationship('items');
 __PACKAGE__->iterator_class('Handel::Iterator');
 __PACKAGE__->currency_class('Handel::Currency');
@@ -33,6 +36,7 @@ __PACKAGE__->constraints_class('Handel::Components::Constraints');
 __PACKAGE__->validation_class('Handel::Components::Validation');
 __PACKAGE__->validation_module('FormValidator::Simple');
 __PACKAGE__->default_values_class('Handel::Components::DefaultValues');
+__PACKAGE__->uuid_maker(DBIx::Class::UUIDColumns->uuid_maker);
 
 sub new {
     my $class = shift;
@@ -63,6 +67,7 @@ sub setup {
     foreach (qw/
         autoupdate
         cart_class
+        checkout_class
         connection_info
         constraints
         constraints_class
@@ -73,6 +78,7 @@ sub setup {
         item_class
         item_relationship
         iterator_class
+        result_class
         schema_class
         schema_source
         table_name
@@ -98,6 +104,7 @@ sub _clear_options {
             _columns_to_remove
             autoupdate
             cart_class
+            checkout_class
             connection_info
             constraints
             constraints_class
@@ -108,6 +115,7 @@ sub _clear_options {
             item_class
             item_relationship
             iterator_class
+            result_class
             schema_class
             schema_source
             table_name
@@ -127,11 +135,94 @@ sub clone {
         -details => translate('Not a class method') . '.')
             unless blessed($self);
 
-    throw Handel::Exception::Storage(
-        -details => translate('Can not clone storage object with an existing schema instance') . '.')
-            if $self->_schema_instance;
+    # a hack indeed. clone barfs on some DBI inards, so lets move out the
+    # schema instance while we clone and put it back
+    if ($self->_schema_instance) {
+        my $schema = $self->_schema_instance;
+        $self->_schema_instance(undef);
 
-    return Clone::clone($self);
+        my $clone = Clone::clone($self);
+
+        $self->_schema_instance($schema);
+
+        return $clone;
+    } else {
+        return Clone::clone($self);
+    };
+};
+
+sub create {
+    my $self = shift;
+    my $schema = $self->schema_instance;
+    my $source = $self->schema_source;
+    my $result_class  = $self->result_class;
+
+    return $result_class->create_instance(
+        $schema->resultset($source)->create(@_), $self
+    );
+};
+
+sub delete {
+    my ($self, $filter) = (shift, shift);
+    my $schema = $self->schema_instance;
+    my $source = $self->schema_source;
+
+    $filter = $self->_migrate_wildcards($filter) if $filter;
+
+    return $schema->resultset($source)->search($filter, @_)->delete_all;
+};
+
+sub search {
+    my ($self, $filter) = (shift, shift);
+    my $schema = $self->schema_instance;
+    my $source = $self->schema_source;
+
+    $filter = $self->_migrate_wildcards($filter) if $filter;
+
+    my $iterator = $schema->resultset($source)->search($filter, @_);
+    $iterator->result_class($self->result_class);
+
+    return wantarray ? $iterator->all : $iterator;
+};
+
+sub add_item {
+    my ($self, $result) = (shift, shift);
+    my $storage_result = $result->storage_result;
+    my $result_class = $self->result_class;
+    my $item = $storage_result->create_related($self->item_relationship, @_);
+    my $item_storage = $item->result_source->{'__handel_storage'};
+
+    return $result_class->create_instance(
+        $item, $item_storage
+    );
+};
+
+sub count_items {
+    my ($self, $result) = (shift, shift);
+    my $storage_result = $result->storage_result;
+
+    return $storage_result->count_related($self->item_relationship, @_);
+};
+
+sub delete_items {
+    my ($self, $result, $filter) = (shift, shift, shift);
+    my $storage_result = $result->storage_result;
+
+    $filter = $self->_migrate_wildcards($filter) if $filter;
+
+    return $storage_result->delete_related($self->item_relationship, $filter, @_);
+};
+
+sub search_items {
+    my ($self, $result, $filter) = (shift, shift, shift);
+    my $storage_result = $result->storage_result;
+
+    $filter = $self->_migrate_wildcards($filter) if $filter;
+
+    my $iterator = $storage_result->search_related($self->item_relationship, $filter, @_);
+    $iterator->result_class($self->result_class);
+
+    return wantarray ? $iterator->all : $iterator;
 };
 
 sub add_columns {
@@ -333,8 +424,8 @@ sub _configure_schema_instance {
     my $item_source_class;
     my $source = $schema_instance->source($schema_source);
 
-    # make this schema aware of this storage to make inflate_result happier
-    $schema_instance->{'__handel_storage'} = $self;
+    # make this source aware of this storage to make inflate_result happier
+    $source->{'__handel_storage'} = $self;
     weaken $self;
 
     # change the table name
@@ -379,10 +470,19 @@ sub _configure_schema_instance {
             );
         };
 
-        # twiddle item source columns
+
         my $item_source = $self->schema_instance->source($item_class->storage->schema_source);
         $item_source->name($item_class->storage->table_name) if $item_class->storage->table_name;
+
+        # make this source aware of this storage to make inflate_result happier
+        my $item_storage = $item_class->storage->clone;
+        $item_storage->_schema_instance($schema_instance);
+        $item_source->{'__handel_storage'} = $item_storage;
+        weaken $item_storage;
+
         
+
+        # twiddle item source columns
         if ($self->item_class->storage->_columns_to_add) {
             # I'm still not sure why you have to do both after the result_source_instance
             # fix in compose_namespace.
@@ -408,7 +508,8 @@ sub _configure_schema_instance {
         };
     };
 
-    $schema_instance->storage->dbh->{HandleError} = $self->can('process_error');
+
+    $schema_instance->exception_action($self->can('process_error'));
 
 
     # warning: there be dragons in here
@@ -482,7 +583,7 @@ sub _configure_schema_instance {
 };
 
 sub new_uuid {
-    my $uuid = DBIx::Class::UUIDColumns->uuid_maker->as_string;
+    my $uuid = shift->uuid_maker->as_string;
 
     $uuid =~ s/^{//;
     $uuid =~ s/}$//;
@@ -493,12 +594,16 @@ sub new_uuid {
 sub process_error {
     my ($message) = @_;
 
+    if (blessed $message) {
+        die $message;
+    };
+
     if ($message =~ /column\s+(.*)\s+is not unique/) {
         my $details = translate("[_1] value already exists", $1);
 
         throw Handel::Exception::Constraint(-text => $details);
     } else {
-        throw Handel::Exception::Constraint(-text => $message);
+        throw Handel::Exception::Storage(-text => $message);
     };
 };
 
@@ -519,30 +624,32 @@ sub _migrate_wildcards {
     return $filter;
 };
 
-#sub copyable_columns {
-#    my ($self) = @_;
-#    my @copyable;
-#    my %primaries = map {$_ => 1} $self->storage->primary_columns;
-#    my %foreigns;
-#
-#    if ($self->storage->has_relationship($self->item_relationship)) {
-#        my @cond = %{$self->storage->relationship_info($self->item_relationship)->{attr}};
-#
-#        foreach (@cond) {
-#            if ($_ =~ /^foreign\.(.*)/) {
-#                $foreigns{$1}++;
-#            };
-#        };
-#    };
-#
-#    foreach ($self->storage->columns) {
-#        if (!exists $primaries{$_} && !exists $foreigns{$_}) {
-#            push @copyable, $_;
-#        };
-#    };
-#
-#    return @copyable;
-#};
+sub copyable_item_columns {
+    my $self = shift;
+    my $source = $self->schema_instance->source($self->schema_source);
+    my $item_source = $self->schema_instance->source($self->item_class->storage->schema_source);
+    my @copyable;
+    my %primaries = map {$_ => 1} $item_source->primary_columns;
+    my %foreigns;
+
+    if ($source->has_relationship($self->item_relationship)) {
+        my @cond = %{$source->relationship_info($self->item_relationship)->{cond}};
+
+        foreach (@cond) {
+            if ($_ =~ /^foreign\.(.*)/) {
+                $foreigns{$1}++;
+            };
+        };
+    };
+
+    foreach ($item_source->columns) {
+        if (!exists $primaries{$_} && !exists $foreigns{$_}) {
+            push @copyable, $_;
+        };
+    };
+
+    return @copyable;
+};
 
 sub get_component_class {
     my ($self, $field) = @_;
@@ -658,6 +765,7 @@ their method counterparts:
     add_columns
     autoupdate
     cart_class
+    checkout_class
     connection_info
     constraints
     constraints_class
@@ -669,6 +777,7 @@ their method counterparts:
     item_relationship
     iterator_class
     remove_columns
+    result_class
     schema_class
     schema_instance
     schema_source
@@ -737,6 +846,30 @@ initialized.
 
 Be careful to always use the column name, not its accessor alias if it has one.
 
+=head2 add_item
+
+=over
+
+=item Arguments: $result, \%data
+
+=back
+
+Adds a new item to the specified result, returning a storage result object.
+
+    my $storage = Handel::Storage::Cart->new;
+    my $result = $storage->create({
+        shopper => '11111111-1111-1111-1111-111111111111'
+    });
+    
+    my $item = $storage->add_item($result, {
+        sku => 'ABC123'
+    });
+    
+    print $item->sku;
+
+A L<Handel::Storage::Exception|Handel::Storage::Exception> will be thrown if the
+specified result has no item relationship.
+
 =head2 autoupdate
 
 =over
@@ -768,6 +901,24 @@ Gets/sets the cart class to be used when creating orders from carts.
 A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
 thrown if the specified class can not be loaded.
 
+=head2 checkout_class
+
+=over
+
+=item Arguments: $checkout_class
+
+=back
+
+Gets/sets the checkout class to be used to process the order through the
+C<CHECKOUT_PHASE_INITIALIZE> phase when creating a new order and the process
+options is set. The default checkout class is
+L<Handel::Checkout|Handel::Checkout>.
+
+    $storage->checkout_class('CustomCheckout');
+
+A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
+thrown if the specified class can not be loaded.
+
 =head2 clone
 
 Returns a clone of the current storage instance.
@@ -781,10 +932,6 @@ Returns a clone of the current storage instance.
 
 This is used mostly between sub/super classes to inherit a copy of the storage
 settings without having to specify options from scratch.
-
-A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
-thrown call as a class method, or if a schema_instance has already been
-initialized.
 
 =head2 column_accessors
 
@@ -871,6 +1018,59 @@ constraint class used should be subclass of Handel::Components::Constraints.
 A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
 thrown if the specified class can not be loaded.
 
+=head2 copyable_item_columns
+
+Returns a list of columns in the current item class that can be copied freely.
+This list is usually all columns in the item class except for the primary
+key columns and the foreign key columns that participate in the specified item
+relationship.
+
+=head2 count_items
+
+=over
+
+=item Arguments: $result
+
+=back
+
+Returns the number of items associated with the specified result.
+
+    my $storage = Handel::Storage::Cart->new;
+    my $result = $storage->create({
+        shopper => '11111111-1111-1111-1111-111111111111'
+    });
+    
+    $result->add_item({
+        sku => 'ABC123'
+    });
+    
+    print $storage->count_items($result);
+
+A L<Handel::Storage::Exception|Handel::Storage::Exception> will be thrown if the
+specified result has no item relationship.
+
+=head2 create
+
+=over
+
+=item Arguments: \%data
+
+=back
+
+Creates a new result in the current source in the current schema.
+
+    my $result = $storage->create({
+        col1 => 'foo',
+        col2 => 'bar'
+    });
+
+This is just a convenience method that does the same thing as:
+
+    my $result = $storage->schema_instance->resultset($storage->schema_source)->create({
+        col1 => 'foo',
+        col2 => 'bar'
+    });
+
 =head2 currency_class
 
 =over
@@ -941,6 +1141,52 @@ and the value is either a reference to a subroutine to get the value from, or
 an actual default value itself.
 
 Be careful to always use the column name, not its accessor alias if it has one.
+
+=head2 delete
+
+=over
+
+=item Arguments: \%filter
+
+=back
+
+Deletes results matching the filter in the current source in the current schema.
+
+    $storage->delete({
+        id => '11111111-1111-1111-1111-111111111111'
+    });
+
+This is just a convenience method that does the same thing as:
+
+    $storage->schema_instance->resultset($storage->schema_source)->search({
+        id => '11111111-1111-1111-1111-111111111111'
+    })->delete_all;
+
+=head2 delete_items
+
+=over
+
+=item Arguments: $result, \%filter
+
+=back
+
+Deletes items matching the filter from the specified result.
+
+    my $storage = Handel::Storage::Cart->new;
+    my $result = $storage->create({
+        shopper => '11111111-1111-1111-1111-111111111111'
+    });
+    
+    $result->add_item({
+        sku => 'ABC123'
+    });
+    
+    $storage->delete_items($result, {
+        sku => 'ABC%'
+    });
+
+A L<Handel::Storage::Exception|Handel::Storage::Exception> will be thrown if the
+specified result has no item relationship.
 
 =head2 item_class
 
@@ -1071,6 +1317,23 @@ initialized.
 
 Be careful to always use the column name, not its accessor alias if it has one.
 
+=head2 result_class
+
+=over
+
+=item Arguments: $result_class
+
+=back
+
+Gets/sets the result class to be used when returning results from create/search
+storage operations. The default result class is
+L<Handel::Storage::Result|Handel::Storage::Result>.
+
+    $storage->result_class('CustomStorageResult');
+
+A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
+thrown if the specified class can not be loaded.
+
 =head2 schema_class
 
 =over
@@ -1128,6 +1391,54 @@ schemas.
 By default, Handel::Storage looks for the "Carts" source when working with
 Handel::Cart, the "Orders" source when working with Handel::Order and the 
 "Items" source when working with Cart/Order items.
+
+=head2 search
+
+=over
+
+=item Arguments: \%filter
+
+=back
+
+Returns results in list context, or an iterator in scalar context from the
+current source in the current schema matching the search filter.
+
+    my $iterator = $storage->search({
+        col1 => 'foo'
+    });
+
+    my @results = $storage->search({
+        col1 => 'foo'
+    });
+
+This is just a convenience method that does the same thing as:
+
+    my $resultset = $storage->schema_instance->resultset($storage->schema_source)->search({
+        col1 => 'foo'
+    });
+
+=head2 search_items
+
+=over
+
+=item Arguments: $result, \%filter
+
+=back
+
+Returns items matching the filter associated with the specified result.
+
+    my $storage = Handel::Storage::Cart->new;
+    my $result = $storage->search({
+        id => '11111111-1111-1111-1111-111111111111'
+    });
+    
+    my $iterator = $storage->search_items($result);
+
+Returns results in list context, or an iterator in scalar context from the
+current source in the current schema matching the search filter.
+
+A L<Handel::Storage::Exception|Handel::Storage::Exception> will be thrown if the
+specified result has no item relationship.
 
 =head2 setup
 
@@ -1254,7 +1565,8 @@ using data validation in Handel.
 
 =head1 SEE ALSO
 
-L<Handel::Manual::Storage>, L<Handel::Storage::Cart>, L<Handel::Storage::Order>
+L<Handel::Storage::Result>, L<Handel::Manual::Storage>,
+L<Handel::Storage::Cart>, L<Handel::Storage::Order>
 
 =head1 AUTHOR
 

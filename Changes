@@ -1,5 +1,33 @@
 Revision history for Perl module Handel
 
+0.99_05 Wed Aug 09 21::02::29 2006
+    - Changed create_result in Base to create_instance
+    - Added create/search/uuid_maker/copyable_item_columns to Storage
+    - Storage->clone now clones even with an active schema instance
+    - Schema configuration in Storage now uses a clone of the item_classes
+        storage instead of the original, and redirects result->storage
+    - Cart/Order/Items now use storage create/search
+    - Cart/Order add() now use copyable_item_columns when passed objects
+    - Cart/Order add() now look for source columns and methods to fill
+        destination column values
+    - Various pod fixes
+    - Added more tests for create_instance/clone changes
+    - Cart/Order/Item new/load/destroy now take \%options, specifically $options{storage}
+    - Order->new $process argument moved into \%options
+    - Order->copy_cart_items now just uses add
+    - Added checkout_class to Storage
+    - Storage now uses exception_action rather than dbh->{HandleError}
+    - Storage process_error now creates a Storage Exception for unknown errors
+    - Moved storage settings in Cart/Order Item into Storage::Cart/Order::Item
+    - Applied Catalyst Helper test patch from Todd W.
+    - Added Storage::Result, which is now returned by storage actions
+    - Handel::Currency convert now returns a new currency object
+    - Cart/Order/Item now use generic result objects
+    - Cart/Order clear now returns result of action like delete does
+    - Renamed Cart/Order/Item new() to create()
+    - Renamed Cart/Order/Item load() to search()
+    - Added load/new/items to Compat.t w/subclass tests
+
 0.99_04 Sat Jul 15 16:21:25 2006
     - Schema configuration now finally uses load_components without the
         Class::C3 recalc slowdown

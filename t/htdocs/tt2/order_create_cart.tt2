@@ -1,7 +1,7 @@
-[%# $Id: order_create_cart.tt2 1338 2006-07-15 19:40:26Z claco $ %]
+[%# $Id: order_create_cart.tt2 1355 2006-08-07 01:51:41Z claco $ %]
 [% USE horder  = Handel.Order %]
 <body>
-    [% IF (order = horder.new({
+    [% IF (order = horder.create({
 		id					=> '7B1A38C8-36CA-4403-B3D4-C7D327131F3C',
 		shopper 			=> 'D7B1057E-6998-4813-9F97-702C405DFB9C',
 		type				=> horder.ORDER_TYPE_TEMP,

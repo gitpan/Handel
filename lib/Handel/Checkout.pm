@@ -1,18 +1,15 @@
-# $Id: Checkout.pm 1339 2006-07-15 21:49:41Z claco $
+# $Id: Checkout.pm 1355 2006-08-07 01:51:41Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
 
 BEGIN {
     use Handel;
-    use Handel::Cart;
-    use Handel::Checkout::Stash;
     use Handel::Constants qw/:all/;
     use Handel::Constraints qw/constraint_checkout_phase constraint_uuid/;
     use Handel::Exception qw/:try/;
     use Handel::Checkout::Message;
     use Handel::L10N qw/translate/;
-    use Handel::Order;
     use Module::Pluggable 2.95 instantiate => 'new', sub_name => '_plugins';
     use Class::Inspector;
     use Scalar::Util qw/blessed/;
@@ -150,7 +147,7 @@ sub cart {
 
     if ($cart) {
         if (ref $cart eq 'HASH' || (blessed($cart) && $cart->isa('Handel::Cart')) || constraint_uuid($cart)) {
-            $self->order($self->order_class->new({cart => $cart}));
+            $self->order($self->order_class->create({cart => $cart}));
         } else {
             throw Handel::Exception::Argument( -details =>
                 translate('Param 1 is not a HASH reference, Handel::Cart object, or cart id') . '.');
@@ -169,11 +166,11 @@ sub order {
 
     if ($order) {
         if (ref $order eq 'HASH') {
-            $self->{'order'} = $self->order_class->load($order)->first;
+            $self->{'order'} = $self->order_class->search($order)->first;
         } elsif ( blessed($order) && $order->isa('Handel::Order')) {
             $self->{'order'} = $order;
         } elsif (constraint_uuid($order)) {
-            $self->{'order'} = $self->order_class->load({id => $order})->first;
+            $self->{'order'} = $self->order_class->search({id => $order})->first;
         } else {
             throw Handel::Exception::Argument( -details =>
                 translate('Param 1 is not a HASH reference, Handel::Order object, or order id') . '.');

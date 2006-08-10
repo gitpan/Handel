@@ -1,30 +1,82 @@
-# $Id: Iterator.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Iterator.pm 1354 2006-08-06 00:11:31Z claco $
 package Handel::Iterator;
 use strict;
 use warnings;
+use overload
+        '0+'     => \&count,
+        'bool'   => sub { 1; },
+        fallback => 1;
 
 BEGIN {
-    use base qw/DBIx::Class::ResultSet/;
+    use base qw/DBIx::Class::ResultSet Class::Accessor::Grouped/;
+    __PACKAGE__->mk_group_accessors('simple', qw/iterator/);
 };
 
 sub all {
-    return shift->next::method(@_);
+    my $self = shift;
+
+    if ($self->iterator) {
+        my @all = map {
+            $self->result_class->create_instance($_)
+        } $self->iterator->all;
+
+        return @all;
+    } else {
+        return $self->next::method(@_);
+    };
 };
 
 sub first {
-    return shift->next::method(@_);
+    my $self = shift;
+
+    if ($self->iterator) {
+        my $result = $self->iterator->first;
+
+        return $self->result_class->create_instance($result);
+    } else {
+        return $self->next::method(@_);    
+    };
 };
 
 sub count {
-    return shift->next::method(@_);
+    my $self = shift;
+
+    if ($self->iterator) {
+        return $self->iterator->count;
+    } else {
+        return $self->next::method(@_);
+    };
 };
 
 sub next {
-    return shift->next::method(@_);
+    my $self = shift;
+
+    if ($self->iterator) {
+        my $result = $self->iterator->next;
+
+        return $self->result_class->create_instance($result);
+    } else {
+        return $self->next::method(@_);    
+    };
 };
 
 sub reset {
-    return shift->next::method(@_);
+    my $self = shift;
+
+    if ($self->iterator) {
+        return $self->iterator->reset;
+    } else {
+        return $self->next::method(@_);
+    };
+};
+
+sub create_iterator {
+    my ($self, $iterator, $result_class) = @_;
+
+    return bless {
+        iterator     => $iterator,
+        result_class => $result_class
+    }, ref $self || $self;
 };
 
 1;
@@ -66,6 +118,23 @@ Returns all results from the resultset as a list.
     });
     
     my @carts = $it->all;
+
+=head2 create_iterator
+
+=over
+
+=item Arguments: $iterator, $result_class
+
+=back
+
+Returns a new iterator object that iterates through the supplied iterator and
+calls C<create_instance> on each C<result_class> for each result.
+
+    my $results_it = $storage->search;
+    my $carts_it = $storage->iterator_class->create_iterator($results_it, 'Handel::Cart');
+
+This is used by the interface classes to wrap results returned by the storage
+layer.
 
 =head2 first
 

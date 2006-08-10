@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_add.t 1166 2006-05-28 02:35:11Z claco $
+# $Id: order_add.t 1355 2006-08-07 01:51:41Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -86,7 +86,7 @@ sub run {
 
     ## add a new item by passing a hashref
     {
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -123,7 +123,7 @@ sub run {
         is($order->count, 3);
         is($order->subtotal, 5.55);
 
-        my $reit = $subclass->load({
+        my $reit = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($reit, 'Handel::Iterator');
@@ -166,12 +166,12 @@ sub run {
         if ($itemclass ne 'Handel::Order::Item') {
             $data->{'custom'} = 'custom';
         };
-        my $newitem = $itemclass->new($data);
+        my $newitem = $itemclass->create($data);
 
         isa_ok($newitem, 'Handel::Order::Item');
         isa_ok($newitem, $itemclass);
 
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -197,7 +197,7 @@ sub run {
         is($order->count, 2);
         is($order->subtotal, 5.55);
 
-        my $reit = $subclass->load({
+        my $reit = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($reit, 'Handel::Iterator');
@@ -229,7 +229,7 @@ sub run {
 
     ## add a new item by passing a Handel::Cart::Item
     {
-        my $newitem = Handel::Cart::Item->new({
+        my $newitem = Handel::Cart::Item->create({
             sku         => 'SKU9999',
             quantity    => 2,
             price       => 1.11,
@@ -238,7 +238,7 @@ sub run {
         });
         isa_ok($newitem, 'Handel::Cart::Item');
 
-        my $it = $subclass->load({
+        my $it = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -264,7 +264,7 @@ sub run {
         is($order->count, 3);
         is($order->subtotal, 5.55);
 
-        my $reit = $subclass->load({
+        my $reit = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($reit, 'Handel::Iterator');
