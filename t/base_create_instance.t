@@ -1,10 +1,11 @@
 #!perl -wT
-# $Id: base_create_instance.t 1354 2006-08-06 00:11:31Z claco $
+# $Id: base_create_instance.t 1386 2006-08-26 01:46:16Z claco $
 use strict;
 use warnings;
-use Test::More;
 use lib 't/lib';
-use Handel::TestHelper qw(executesql);
+use Test::More;
+use Handel::Test;
+use Test::More;
 use Scalar::Util qw/refaddr/;
 
 BEGIN {
@@ -12,29 +13,21 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 18;
+        plan tests => 19;
     };
 
-    use_ok('Handel::Storage');
+    use_ok('Handel::Storage::DBIC');
     use_ok('Handel::Base');
     use_ok('Handel::Exception', ':try');
 };
 
 
 {
-    ## Setup SQLite DB for tests
-    my $dbfile  = "t/base_create_instance.db";
-    my $db      = "dbi:SQLite:dbname=$dbfile";
-    my $create  = 't/sql/cart_create_table.sql';
-
-    unlink $dbfile;
-    executesql($db, $create);
-
-    my $storage = Handel::Storage->new({
+    my $storage = Handel::Storage::DBIC->new({
         schema_class       => 'Handel::Cart::Schema',
         schema_source      => 'Carts',
         item_class         => 'Handel::Cart::Item',
-        connection_info    => [$db]
+        connection_info    => [Handel::Test->init_schema(no_populate => 1)->dsn]
     });
 
     my $schema = $storage->schema_instance;
@@ -46,11 +39,17 @@ BEGIN {
         description => 'My Cart 1'
     });
 
-    my $iterator = $schema->resultset('Carts')->search({id => '11111111-1111-1111-1111-111111111111'});
-    $iterator->result_class('Handel::Storage::Result');
-    isa_ok($iterator, 'Handel::Iterator');
+    my $it = $schema->resultset('Carts')->search({id => '11111111-1111-1111-1111-111111111111'});
+    isa_ok($it, 'DBIx::Class::ResultSet');
 
-    my $cart = Handel::Base->create_instance($iterator->next);
+    my $iterator = Handel::Iterator::DBIC->new({
+        data => $it,
+        storage => $storage,
+        result_class => 'Handel::Storage::Result'
+    });
+    isa_ok($iterator, 'Handel::Iterator::DBIC');
+
+    my $cart = Handel::Base->create_instance($iterator->next, $storage);
 
     isa_ok($cart, 'Handel::Base');
     isa_ok($cart->result, 'Handel::Storage::Result');

@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: pod_spelling.t 1360 2006-08-09 03:17:09Z claco $
+# $Id: pod_spelling.t 1386 2006-08-26 01:46:16Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -157,3 +157,5 @@ forwards
 UTF
 CPANPLUS
 Compat
+resultsets
+xml

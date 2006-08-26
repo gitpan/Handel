@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1355 2006-08-07 01:51:41Z claco $
+# $Id: Checkout.pm 1368 2006-08-16 03:14:40Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
@@ -16,6 +16,7 @@ BEGIN {
 
     use base qw/Class::Accessor::Grouped/;
     __PACKAGE__->mk_group_accessors('component_class', qw/order_class stash_class/);
+    __PACKAGE__->mk_group_accessors('simple', qw/stash/);
 };
 
 __PACKAGE__->order_class('Handel::Order');
@@ -28,9 +29,22 @@ sub new {
         plugins => [],
         handlers => {},
         phases => [],
-        messages => [],
-        stash => $opts->{'stash'} || $class->stash_class->new
+        messages => []
     }, ref $class || $class;
+
+    my $stash = $opts->{'stash'};
+
+    if (blessed $stash) {
+        $self->stash($stash);
+    } elsif (ref $stash eq 'HASH') {
+        $self->stash(
+            $self->stash_class->new($stash)
+        );
+    } else {
+        $self->stash(
+            $self->stash_class->new
+        );
+    };
 
     $self->_set_search_path($opts);
 
@@ -264,12 +278,6 @@ sub process {
     return CHECKOUT_STATUS_OK;
 };
 
-sub stash {
-    my $self = shift;
-
-    return $self->{'stash'};
-};
-
 sub _setup {
     my $self = shift;
 
@@ -496,18 +504,26 @@ An array reference or a comma (or space) separated list containing the
 various phases to be executed.
 
     my $checkout = Handel::Checkout->new({
-        phases => [CHECKOUT_PHASE_VALIDATION,
-                   CHECKOUT_PHASE_AUTHORIZATION]
+        phases => [CHECKOUT_PHASE_VALIDATE,
+                   CHECKOUT_PHASE_AUTHORIZE]
     });
     
     my $checkout = Handel::Checkout->new({
-        phases => 'CHECKOUT_PHASE_VALIDATION, CHECKOUT_PHASE_AUTHORIZATION'
+        phases => 'CHECKOUT_PHASE_VALIDATE, CHECKOUT_PHASE_AUTHORIZE'
     });
 
 =item stash
 
-A Handel::Checkout::Stash object or subclass. If nothing is
+A Handel::Checkout::Stash object, subclass or a hash reference. If nothing is
 specified, C<stash_class> will be used instead.
+
+    my $checkout = Handel::Checkout->new({
+        stash => { key => 'value' }
+    });
+    
+    my $checkout = Handel::Checkout->new({
+        stash => $stash
+    });
 
 =back
 
@@ -629,9 +645,9 @@ You can also pass in an already existing Handel::Cart object or subclass. It
 will then be loaded into a new order object and associated with the current
 checkout process.
 
-    my $cart = Handel::Cart->load({
+    my $cart = Handel::Cart->search({
         id => '12345678-9098-7654-3212-345678909876'
-    });
+    })->first;
     
     $checkout->cart($cart);
 
@@ -738,9 +754,9 @@ orders. If multiple order are found, only the first one will be used.
 You can also pass in an already existing Handel::Order object or subclass. It
 will then be associated with the current checkout process.
 
-    my $order = Handel::Order->load({
+    my $order = Handel::Order->search({
         id => '12345678-9098-7654-3212-345678909876'
-    });
+    })->first;
     
     $checkout->order($order);
 
@@ -766,10 +782,10 @@ an array reference or a comma (or space) separated string:
 
     $checkout->phases([
         CHECKOUT_PHASE_INITIALIZE,
-        CHECKOUT_PHASE_VALIDATION
+        CHECKOUT_PHASE_VALIDATE
     ]);
     
-    $checkout->phases('CHECKOUT_PHASE_INITIALIZE, CHECKOUT_PHASE_VALIDATION']);
+    $checkout->phases('CHECKOUT_PHASE_INITIALIZE, CHECKOUT_PHASE_VALIDATE']);
 
 No attempt is made to sanitize the array for duplicates or the order of the
 phases. This means you can do evil things like run a phase twice, or run the
@@ -919,7 +935,7 @@ autoupdates during process, Always access orders and order items from their
 checkout parent once they've been assigned to
 the checkout process, and not any available reference:
 
-    my $order = Handel::Order->new({billtofirstname => 'Chris'});
+    my $order = Handel::Order->create({billtofirstname => 'Chris'});
     my $checkout = Handel::Checkout->new({order => $order});
 
     # some plugin alters billtofirstname to 'Christopher'

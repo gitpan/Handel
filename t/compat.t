@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: compat.t 1318 2006-07-10 23:42:32Z claco $
+# $Id: compat.t 1385 2006-08-25 02:42:03Z claco $
 use strict;
 use warnings;
 use Test::More tests => 16;
@@ -15,6 +15,8 @@ BEGIN {
     use_ok('Handel::Base');
     push @Handel::Compat::ISA, 'Handel::Base';
 };
+
+Handel::Base->storage_class('Handel::Storage::DBIC');
 
 my $filter   = {foo => 'bar'};
 my $wildcard = {foo => 'bar%'};

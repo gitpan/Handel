@@ -17,17 +17,17 @@ The 1.x version of Handel is a major refactor from earlier versions. This refact
 To facilitate the latter goal, the various cart/order/item classes are built using three distinct layers
 (from the bottom up): the Schema layer, the Storage layer, and the Interface (public API) layer.
 
-    +-----------------+
-    |  Handel::Cart   |
-    +-----------------+
-             |
-    +--------V--------+
-    | Handel::Storage |
-    +-----------------+
-             |
-    +--------V--------+
-    | Handel::Schema  |
-    +-----------------+
+    +-----------------------+
+    |      Handel::Cart     |
+    +-----------------------+
+                |
+    +-----------V-----------+
+    | Handel::Storage::DBIC |
+    +-----------------------+
+                |
+    +-----------V-----------+
+    |    Handel::Schema     |
+    +-----------------------+
 
 The Schema layer is nothing more than a L<DBIx::Class::Schema|DBIx::Class::Schema>. It contains all of
 the table and column definitions for the various carts/orders/items and does the raw database reading/writing.
@@ -46,9 +46,17 @@ remember details about the schema specified and configure B<a copy> of it for fu
     package Handel::Cart;
     use strict;
     use warnings;
-    use Handel::Constants qw/:cart/;
     use base qw/Handel::Base/;
-    __PACKAGE__->storage({
+    __PACKAGE__->storage_class('Handel::Storage::Cart');
+    ...
+    1;
+    
+    package Handel::Storage::Cart;
+    use strict
+    use warnings;
+    use base qw/Handel::Storage::DBIC/;
+    
+    __PACKAGE__->setup({
         schema_class   => 'Handel::Cart::Schema',
         schema_source  => 'Carts',
         item_class     => 'Handel::Cart::Item',
@@ -71,7 +79,7 @@ appropriate schema result. This is roughly:
 
     package Handel::Cart;
     ...
-    sub new {
+    sub create {
         my $class = shift;
         return bless{ result => $class-storage->create(shift) }, $class;
     };
@@ -80,7 +88,9 @@ appropriate schema result. This is roughly:
     ...
     sub create {
         my $self = shift;
-        return $self->schema_instance->resultset($self->schema_source)->create(shift);
+        my $dbresult = $self->schema_instance->resultset($self->schema_source)->create(shift);
+    
+        return $self->result_class->create_instance($dbresult);
     };
 
 From that point on, the schema is connected to the database and remains alive for the life of the Interface
@@ -89,7 +99,7 @@ can even have its own unique storage layer as long as it provides the same colum
 
 =head1 SEE ALSO
 
-L<Handel::Manual::Schema>, L<Handel::Manual::Storage>, L<Handel::Manual::Schema>
+L<Handel::Manual::Schema>, L<Handel::Manual::Storage>, L<Handel::Manual::Storage::DBIC>
 
 =head1 AUTHOR
 

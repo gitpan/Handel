@@ -1,4 +1,4 @@
-# $Id: Currency.pm 1354 2006-08-06 00:11:31Z claco $
+# $Id: Currency.pm 1365 2006-08-10 14:47:20Z claco $
 package Handel::Currency;
 use strict;
 use warnings;
@@ -135,7 +135,7 @@ It can be used separately to format any number into a more friendly format:
 A new Handel::Currency object is automatically returned within the shopping
 cart when calling C<subtotal>, C<total>, and C<price> as an lvalue:
 
-    my $cart = Handel::Cart->load({id => '11111111-1111-1111-1111-111111111111'});
+    my $cart = Handel::Cart->search({id => '11111111-1111-1111-1111-111111111111'});
     
     print $cart->subtotal;              # 12.9
     print $cart->subtotal->format();    # 12.90 USD

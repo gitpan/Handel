@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_iterator_class.t 1273 2006-07-02 00:55:55Z claco $
+# $Id: storage_iterator_class.t 1385 2006-08-25 02:42:03Z claco $
 use strict;
 use warnings;
 use Class::Inspector;
@@ -15,7 +15,7 @@ BEGIN {
     my $storage = Handel::Storage->new();
     isa_ok($storage, 'Handel::Storage');
 
-    is($storage->iterator_class, 'Handel::Iterator');
+    is($storage->iterator_class, 'Handel::Iterator::List');
 
     ## throw exception when setting a bogus iterator class
     {
@@ -30,7 +30,7 @@ BEGIN {
         };
     };
 
-    is($storage->iterator_class, 'Handel::Iterator');
+    is($storage->iterator_class, 'Handel::Iterator::List');
 
     ok(!Class::Inspector->loaded('Handel::Base'));
     $storage->iterator_class('Handel::Base');

@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: basic.t 1321 2006-07-11 00:43:58Z claco $
+# $Id: basic.t 1386 2006-08-26 01:46:16Z claco $
 use strict;
 use warnings;
-use Test::More tests => 49;
+use Test::More tests => 55;
 
 BEGIN {
     use_ok('Handel');
@@ -25,6 +25,9 @@ BEGIN {
     use_ok('Handel::Currency');
     use_ok('Handel::Exception');
     use_ok('Handel::Iterator');
+    use_ok('Handel::Iterator::DBIC');
+    use_ok('Handel::Iterator::List');
+    use_ok('Handel::Iterator::Results');
     use_ok('Handel::L10N');
     use_ok('Handel::L10N::en_us');
     use_ok('Handel::L10N::fr');
@@ -38,6 +41,7 @@ BEGIN {
     use_ok('Handel::Schema::Order');
     use_ok('Handel::Schema::Order::Item');
     use_ok('Handel::Storage');
+    use_ok('Handel::Storage::DBIC');
     use_ok('Handel::Storage::Cart');
     use_ok('Handel::Storage::Order');
 
@@ -73,8 +77,8 @@ BEGIN {
     };
 
     SKIP: {
-        eval 'use Catalyst 5.7';
-        skip 'Catalyst 5.7 not installed', 6 if $@;
+        eval 'use Catalyst 5.7001';
+        skip 'Catalyst 5.7001 not installed', 8 if $@;
 
         use_ok('Catalyst::Helper::Handel::Scaffold');
         use_ok('Catalyst::Helper::Controller::Handel::Cart');
@@ -82,5 +86,7 @@ BEGIN {
         use_ok('Catalyst::Helper::Controller::Handel::Order');
         use_ok('Catalyst::Helper::Model::Handel::Cart');
         use_ok('Catalyst::Helper::Model::Handel::Order');
+        use_ok('Catalyst::Model::Handel::Cart');
+        use_ok('Catalyst::Model::Handel::Order');
     };
 };

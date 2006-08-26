@@ -1,51 +1,47 @@
 #!perl -wT
-# $Id: storage_schema_instance.t 1304 2006-07-08 19:35:39Z claco $
+# $Id: storage_dbic_schema_instance.t 1381 2006-08-24 01:27:08Z claco $
 use strict;
 use warnings;
 use Test::More;
 use lib 't/lib';
-use Handel::TestHelper qw(executesql);
+use Handel::Test;
 
 BEGIN {
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 37;
+        plan tests => 41;
     };
 
-    use_ok('Handel::Storage');
+    use_ok('Handel::Storage::DBIC');
     use_ok('Handel::Exception', ':try');
 };
 
+my $dsn = Handel::Test->init_schema(no_populate => 1)->dsn;
+my $constraints = {
+    id   => {'check_id' => sub{}},
+    name => {'check_name' => sub{}}
+};
+
+my $storage = Handel::Storage::DBIC->new({
+    cart_class         => 'Handel::Cart',
+    schema_class       => 'Handel::Cart::Schema',
+    schema_source      => 'Carts',
+    default_values     => {id => 1, name => 'New Cart'},
+    validation_profile => {cart => [param1 => [ ['BLANK'], ['ASCII', 2, 12] ]]},
+    add_columns        => [qw/custom/],
+    remove_columns     => [qw/description/],
+    constraints        => $constraints,
+    currency_columns   => [qw/name/],
+    connection_info => [
+        $dsn
+    ]
+});
+
 
 {
-    ## Setup SQLite DB for tests
-    my $dbfile  = "t/storage_schema_instance.db";
-    my $db      = "dbi:SQLite:dbname=$dbfile";
-    my $create  = 't/sql/cart_create_table.sql';
-
-    unlink $dbfile;
-    executesql($db, $create);
-
     ## create a new storage and check schema_instance configuration
-    my $constraints = {
-        id   => {'check_id' => sub{}},
-        name => {'check_name' => sub{}}
-    };
-    my $storage = Handel::Storage->new({
-        cart_class         => 'Handel::Cart',
-        schema_class       => 'Handel::Cart::Schema',
-        schema_source      => 'Carts',
-        connection_info    => [$db],
-        default_values     => {id => 1, name => 'New Cart'},
-        validation_profile => {cart => [param1 => [ ['BLANK'], ['ASCII', 2, 12] ]]},
-        add_columns        => [qw/custom/],
-        remove_columns     => [qw/name/],
-        constraints        => $constraints,
-        currency_columns   => [qw/name/]
-    });
-
     isa_ok($storage, 'Handel::Storage');
 
     my $schema = $storage->schema_instance;
@@ -57,8 +53,8 @@ BEGIN {
     my $item_source = $schema->source('Items');
 
     ## make sure we're running clones unique classes
-    like($cart_class, qr/Handel::Storage::[A-F0-9]{32}::Carts/);
-    like($item_class, qr/Handel::Storage::[A-F0-9]{32}::Items/);
+    like($cart_class, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Carts/);
+    like($item_class, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/);
 
     ## make sure we loaded the validation profile Component and values
     ok($cart_class->isa('Handel::Components::Validation'));
@@ -78,14 +74,14 @@ BEGIN {
     ## make sure we added/removed columns
     my %columns = map {$_ => 1} $cart_source->columns;
     ok(exists $columns{'custom'}, 'column custom not added');
-    ok(!exists $columns{'name'}, 'column name not removed');
+    ok(!exists $columns{'description'}, 'column description not removed');
 
     ## make sure we set inflate/deflate
     ok($cart_class->column_info('name')->{'_inflate_info'}->{'inflate'});
     ok($cart_class->column_info('name')->{'_inflate_info'}->{'deflate'});
 
     ## pass in a schema_instance and recheck schema configuration
-    my $new_schema = Handel::Cart::Schema->connect($db);
+    my $new_schema = Handel::Cart::Schema->connect($dsn);
     isa_ok($new_schema, 'Handel::Cart::Schema');
 
     $storage->schema_instance($new_schema);
@@ -102,8 +98,8 @@ BEGIN {
     isnt($item_class, $new_item_class);
 
     ## make sure we're running clones unique classes
-    like($new_cart_class, qr/Handel::Storage::[A-F0-9]{32}::Carts/);
-    like($new_item_class, qr/Handel::Storage::[A-F0-9]{32}::Items/);
+    like($new_cart_class, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Carts/);
+    like($new_item_class, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/);
 
     ## make sure we loaded the validation profile Component and values
     ok($new_cart_class->isa('Handel::Components::Validation'));
@@ -123,20 +119,21 @@ BEGIN {
     ## make sure we added/removed columns
     my %new_columns = map {$_ => 1} $new_cart_source->columns;
     ok(exists $new_columns{'custom'}, 'column custom not added');
-    ok(!exists $new_columns{'name'}, 'column name not removed');
+    ok(!exists $new_columns{'description'}, 'column description not removed');
 
     ## throw exception if schema_class is empty
     {
         try {
-            my $storage = Handel::Storage->new({
+            my $storage = Handel::Storage::DBIC->new({
                 schema_source   => 'Carts',
-                connection_info => [$db]
+                connection_info => [$dsn]
             });
             $storage->schema_instance;
 
             fail('no exception thrown');
         } catch Handel::Exception::Storage with {
             pass;
+            like(shift, qr/no schema_class/i)
         } otherwise {
             fail;
         };
@@ -145,15 +142,37 @@ BEGIN {
     ## throw exception if schema_source is empty
     {
         try {
-            my $storage = Handel::Storage->new({
+            my $storage = Handel::Storage::DBIC->new({
                 schema_class    => 'Handel::Cart::Schema',
-                connection_info => [$db]
+                connection_info => [$dsn]
             });
             $storage->schema_instance;
 
             fail('no exception thrown');
         } catch Handel::Exception::Storage with {
             pass;
+            like(shift, qr/no schema_source/i)
+        } otherwise {
+            fail;
+        };
+    };
+
+    ## throw exception if item_relationship is missing
+    {
+        try {
+            my $storage = Handel::Storage::DBIC->new({
+                schema_class      => 'Handel::Cart::Schema',
+                schema_source     => 'Carts',
+                item_class        => 'Handel::Cart::Item',
+                item_relationship => 'foo',
+                connection_info   => [$dsn]
+            });
+            $storage->schema_instance;
+
+            fail('no exception thrown');
+        } catch Handel::Exception::Storage with {
+            pass;
+            like(shift, qr/no relationship named/i)
         } otherwise {
             fail;
         };

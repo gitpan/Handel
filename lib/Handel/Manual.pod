@@ -28,7 +28,11 @@ An overview of the default database schema.
 
 =head2 L<Handel::Manual::Storage|Handel::Manual::Storage>
 
-An introduction to the storage layer and how it uses schemas.
+An introduction to the storage layer and how it is used by the interface layer.
+
+=head2 L<Handel::Manual::Storage::DBIC|Handel::Manual::Storage::DBIC>
+
+An introduction to the DBIC-specific storage layer and how it uses schemas.
 
 =head1 AUTHOR
 

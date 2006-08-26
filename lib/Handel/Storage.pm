@@ -1,41 +1,46 @@
-# $Id: Storage.pm 1354 2006-08-06 00:11:31Z claco $
+# $Id: Storage.pm 1386 2006-08-26 01:46:16Z claco $
 package Handel::Storage;
 use strict;
 use warnings;
 
 BEGIN {
     use base qw/Class::Accessor::Grouped/;
+
     __PACKAGE__->mk_group_accessors('inherited', qw/
-        autoupdate table_name connection_info item_relationship schema_source
-        _schema_instance _columns_to_add _columns_to_remove currency_columns
+        _columns
+        _primary_columns
+        _currency_columns
+        autoupdate
         uuid_maker
     /);
     __PACKAGE__->mk_group_accessors('component_class', qw/
-        item_class schema_class iterator_class constraints_class
-        validation_class default_values_class currency_class validation_module
-        cart_class checkout_class result_class
+        cart_class
+        checkout_class
+        currency_class
+        item_class
+        iterator_class
+        result_class
+        validation_module
     /);
     __PACKAGE__->mk_group_accessors('component_data', qw/
-        constraints default_values validation_profile
+        constraints
+        default_values
+        validation_profile
     /);
 
     use Handel::Exception qw/:try/;
     use Handel::L10N qw/translate/;
     use DBIx::Class::UUIDColumns;
     use Scalar::Util qw/blessed weaken/;
-    use Clone;
-    use Class::Inspector;
+    use Clone ();
+    use Class::Inspector ();
 };
 
 __PACKAGE__->autoupdate(1);
-__PACKAGE__->result_class('Handel::Storage::Result');
-__PACKAGE__->item_relationship('items');
-__PACKAGE__->iterator_class('Handel::Iterator');
 __PACKAGE__->currency_class('Handel::Currency');
-__PACKAGE__->constraints_class('Handel::Components::Constraints');
-__PACKAGE__->validation_class('Handel::Components::Validation');
+__PACKAGE__->iterator_class('Handel::Iterator::List');
+__PACKAGE__->result_class('Handel::Storage::Result');
 __PACKAGE__->validation_module('FormValidator::Simple');
-__PACKAGE__->default_values_class('Handel::Components::DefaultValues');
 __PACKAGE__->uuid_maker(DBIx::Class::UUIDColumns->uuid_maker);
 
 sub new {
@@ -47,265 +52,29 @@ sub new {
     return $self;
 };
 
-sub setup {
-    my ($self, $options) = @_;
-
-    throw Handel::Exception::Storage(
-        -details => translate('Param 1 is not a HASH reference') . '.') unless
-            ref($options) eq 'HASH';
-
-    throw Handel::Exception::Storage(
-        -details => translate('A schema instance has already been initialized') . '.')
-            if $self->_schema_instance;
-
-    $self->_clear_options;
-
-    # do the oddball copys first
-    $self->add_columns(@{delete $options->{'add_columns'}}) if exists $options->{'add_columns'};
-    $self->remove_columns(@{delete $options->{'remove_columns'}}) if exists $options->{'remove_columns'};
-
-    foreach (qw/
-        autoupdate
-        cart_class
-        checkout_class
-        connection_info
-        constraints
-        constraints_class
-        currency_class
-        currency_columns
-        default_values_class
-        default_values
-        item_class
-        item_relationship
-        iterator_class
-        result_class
-        schema_class
-        schema_source
-        table_name
-        validation_class
-        validation_module
-        validation_profile
-    /) {
-        $self->$_(delete $options->{$_}) if exists $options->{$_};
-    };
-
-    # save the setup for last
-    $self->schema_instance(delete $options->{'schema_instance'}) if exists $options->{'schema_instance'};
-};
-
-sub _clear_options {
-    my $self = shift;
-    
-    if (blessed $self) {
-        %{$self} = ();
-    } else {
-        foreach (qw/
-            _columns_to_add
-            _columns_to_remove
-            autoupdate
-            cart_class
-            checkout_class
-            connection_info
-            constraints
-            constraints_class
-            currency_class
-            currency_columns
-            default_values_class
-            default_values
-            item_class
-            item_relationship
-            iterator_class
-            result_class
-            schema_class
-            schema_source
-            table_name
-            validation_class
-            validation_module
-            validation_profile
-        /) {
-            $self->$_(undef);
-        };
-    };
-};
-
-sub clone {
-    my $self = shift;
-
-    throw Handel::Exception::Storage(
-        -details => translate('Not a class method') . '.')
-            unless blessed($self);
-
-    # a hack indeed. clone barfs on some DBI inards, so lets move out the
-    # schema instance while we clone and put it back
-    if ($self->_schema_instance) {
-        my $schema = $self->_schema_instance;
-        $self->_schema_instance(undef);
-
-        my $clone = Clone::clone($self);
-
-        $self->_schema_instance($schema);
-
-        return $clone;
-    } else {
-        return Clone::clone($self);
-    };
-};
-
-sub create {
-    my $self = shift;
-    my $schema = $self->schema_instance;
-    my $source = $self->schema_source;
-    my $result_class  = $self->result_class;
-
-    return $result_class->create_instance(
-        $schema->resultset($source)->create(@_), $self
-    );
-};
-
-sub delete {
-    my ($self, $filter) = (shift, shift);
-    my $schema = $self->schema_instance;
-    my $source = $self->schema_source;
-
-    $filter = $self->_migrate_wildcards($filter) if $filter;
-
-    return $schema->resultset($source)->search($filter, @_)->delete_all;
-};
-
-sub search {
-    my ($self, $filter) = (shift, shift);
-    my $schema = $self->schema_instance;
-    my $source = $self->schema_source;
-
-    $filter = $self->_migrate_wildcards($filter) if $filter;
-
-    my $iterator = $schema->resultset($source)->search($filter, @_);
-    $iterator->result_class($self->result_class);
-
-    return wantarray ? $iterator->all : $iterator;
-};
-
-sub add_item {
-    my ($self, $result) = (shift, shift);
-    my $storage_result = $result->storage_result;
-    my $result_class = $self->result_class;
-    my $item = $storage_result->create_related($self->item_relationship, @_);
-    my $item_storage = $item->result_source->{'__handel_storage'};
-
-    return $result_class->create_instance(
-        $item, $item_storage
-    );
-};
-
-sub count_items {
-    my ($self, $result) = (shift, shift);
-    my $storage_result = $result->storage_result;
-
-    return $storage_result->count_related($self->item_relationship, @_);
-};
-
-sub delete_items {
-    my ($self, $result, $filter) = (shift, shift, shift);
-    my $storage_result = $result->storage_result;
-
-    $filter = $self->_migrate_wildcards($filter) if $filter;
-
-    return $storage_result->delete_related($self->item_relationship, $filter, @_);
-};
-
-sub search_items {
-    my ($self, $result, $filter) = (shift, shift, shift);
-    my $storage_result = $result->storage_result;
-
-    $filter = $self->_migrate_wildcards($filter) if $filter;
-
-    my $iterator = $storage_result->search_related($self->item_relationship, $filter, @_);
-    $iterator->result_class($self->result_class);
-
-    return wantarray ? $iterator->all : $iterator;
-};
-
 sub add_columns {
     my ($self, @columns) = @_;
 
-    if ($self->_schema_instance) {
-        # I'm still not sure why you have to do both after the result_source_instance
-        # fix in compose_namespace.
-        $self->_schema_instance->source($self->schema_source)->add_columns(@columns);
-        $self->_schema_instance->class($self->schema_source)->add_columns(@columns);
-    };
+    $self->_columns([]) unless $self->_columns;
 
-    $self->_columns_to_add
-        ? push @{$self->_columns_to_add}, @columns
-        : $self->_columns_to_add(\@columns);
-};
-
-sub column_accessors {
-    my $self = shift;
-    my $accessors = {};
-
-    if ($self->_schema_instance) {
-        my $source = $self->_schema_instance->source($self->schema_source);
-    
-        my @columns = $source->columns;
-        foreach my $column (@columns) {
-            my $accessor = $source->column_info($column)->{'accessor'} || $column;
-            $accessors->{$column} = $accessor;
-        };
-    } else {
-        my $source = $self->schema_class->source($self->schema_source);
-
-        my @columns = $source->columns;
-        foreach my $column (@columns) {
-            my $accessor = $source->column_info($column)->{'accessor'} || $column;
-            $accessors->{$column} = $accessor;
-        };
-
-        if ($self->_columns_to_add) {
-            # do the DBIC add_column dance step
-            my $adding = Clone::clone($self->_columns_to_add);
-
-            while (my $column = shift @{$adding}) {
-                my $column_info = ref $adding->[0] ? shift(@{$adding}) : {};
-                my $accessor = $column_info->{'accessor'} || $column;
-
-                $accessors->{$column} = $accessor;
-            };
-        };
-
-        if ($self->_columns_to_remove) {
-            foreach my $column (@{$self->_columns_to_remove}) {
-                delete $accessors->{$column};
-            };
-        };
-    };
-
-    return $accessors;
-};
-
-sub remove_columns {
-    my ($self, @columns) = @_;
-
-    if ($self->_schema_instance) {
-        # I'm still not sure why you have to do both after the result_source_instance
-        # fix in compose_namespace.
-        $self->_schema_instance->source($self->schema_source)->remove_columns(@columns);
-        $self->_schema_instance->class($self->schema_source)->remove_columns(@columns);
-    };
-
-    $self->_columns_to_remove
-        ? push @{$self->_columns_to_remove}, @columns
-        : $self->_columns_to_remove(\@columns);
+    push @{$self->_columns}, @columns;
 };
 
 sub add_constraint {
     my ($self, $column, $name, $constraint) = @_;
-
-    throw Handel::Exception::Storage(
-        -details => translate('Can not add constraints to an existing schema instance') . '.')
-            if $self->_schema_instance;
-
     my $constraints = $self->constraints || {};
+
+    throw Handel::Exception::Argument(
+        -details => translate('No column was specified') . '.')
+            unless $column;
+
+    throw Handel::Exception::Argument(
+        -details => translate('No constraint name was specified') . '.')
+            unless $name;
+
+    throw Handel::Exception::Argument(
+        -details => translate('No constraint was specified') . '.')
+            unless ref $constraint eq 'CODE';
 
     if (!exists $constraints->{$column}) {
         $constraints->{$column} = {};
@@ -316,16 +85,168 @@ sub add_constraint {
     $self->constraints($constraints);
 };
 
-sub remove_constraint {
-    my ($self, $column, $name) = @_;
+sub add_item {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+};
+
+sub clone {
+    my $self = shift;
 
     throw Handel::Exception::Storage(
-        -details => translate('Can not remove constraints to an existing schema instance') . '.')
-            if $self->_schema_instance;
+        -details => translate('Not a class method') . '.')
+            unless blessed($self);
 
+    return Clone::clone($self);
+};
+
+sub column_accessors {
+    my $self = shift;
+    my %accessors = map {$_ => $_} $self->columns;
+
+    return \%accessors;
+};
+
+sub columns {
+    my $self = shift;
+
+    return @{$self->_columns || []};
+};
+
+sub copyable_item_columns {
+    my $self = shift;
+    my $item_class = $self->item_class;
+    my @columns = $item_class->storage->columns;
+    my %primaries = map {$_ => $_} $item_class->storage->primary_columns;
+
+    my @remaining;
+    foreach my $column (@columns) {
+        if (!exists $primaries{$column}) {
+            push @remaining, $column;
+        };
+    };
+
+    return @remaining;
+};
+
+sub count_items {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+};
+
+sub create {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+};
+
+sub currency_columns {
+    my ($self, @columns) = @_;
+    my %columns = map {$_ => $_} $self->columns;
+
+    if (@columns) {
+        foreach my $column (@columns) {
+            throw Handel::Exception::Storage(
+                -details => translate('Column [_1] does not exist', $column) . '.')
+                    unless exists $columns{$column};
+        };
+
+        $self->_currency_columns(\@columns);
+    };
+
+    return @{$self->_currency_columns || []};
+};
+
+sub delete {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+};
+
+sub delete_items {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+};
+
+sub new_uuid {
+    my $uuid = shift->uuid_maker->as_string;
+
+    $uuid =~ s/^{//;
+    $uuid =~ s/}$//;
+
+    return $uuid;
+};
+
+sub primary_columns {
+    my ($self, @columns) = @_;
+    my %columns = map {$_ => $_} $self->columns;
+
+    if (@columns) {
+        foreach my $column (@columns) {
+            throw Handel::Exception::Storage(
+                -details => translate('Column [_1] does not exist', $column) . '.')
+                    unless exists $columns{$column};
+        };
+
+        $self->_primary_columns(\@columns);
+    };
+
+    return @{$self->_primary_columns || []};
+};
+
+sub remove_columns {
+    my ($self, @columns) = @_;
+    my %remove = map {$_ => $_} @columns;
+
+    if (@columns) {
+        if ($self->primary_columns) {
+            # remove primary
+            my @remaining_primary;
+            foreach my $column ($self->primary_columns) {
+                if (!exists $remove{$column}) {
+                    push @remaining_primary, $column;
+                };
+            };
+
+            # clear/push to keep same array ref
+            @{$self->_primary_columns} = ();
+            push @{$self->_primary_columns}, @remaining_primary;
+        };
+        if ($self->currency_columns) {
+            # remove currency
+            my @remaining_currency;
+            foreach my $column ($self->currency_columns) {
+                if (!exists $remove{$column}) {
+                    push @remaining_currency, $column;
+                };
+            };
+
+            # clear/push to keep same array ref
+            @{$self->_currency_columns} = ();
+            push @{$self->_currency_columns}, @remaining_currency;
+        };
+        if ($self->columns) {
+            # remove columns
+            my @remaining;
+            foreach my $column ($self->columns) {
+                if (!exists $remove{$column}) {
+                    push @remaining, $column;
+                };
+            };
+
+            # clear/push to keep same array ref
+            @{$self->_columns} = ();
+            push @{$self->_columns}, @remaining;
+        };
+    };
+};
+
+sub remove_constraint {
+    my ($self, $column, $name) = @_;
     my $constraints = $self->constraints;
 
     return unless $constraints;
+
+    throw Handel::Exception::Argument(
+        -details => translate('No column was specified') . '.')
+            unless defined $column;
+
+    throw Handel::Exception::Argument(
+        -details => translate('No constraint name was specified') . '.')
+            unless defined $name;
 
     if (exists $constraints->{$column} && exists $constraints->{$column}->{$name}) {
         delete $constraints->{$column}->{$name};
@@ -339,12 +260,11 @@ sub remove_constraint {
 
 sub remove_constraints {
     my ($self, $column) = @_;
-
-    throw Handel::Exception::Storage(
-        -details => translate('Can not remove constraints to an existing schema instance') . '.')
-            if $self->_schema_instance;
-
     my $constraints = $self->constraints;
+
+    throw Handel::Exception::Argument(
+        -details => translate('No column was specified') . '.')
+            unless defined $column;
 
     return unless $constraints;
 
@@ -355,300 +275,31 @@ sub remove_constraints {
     $self->constraints($constraints);
 };
 
-sub schema_instance {
-    my $self = shift;
-    my $schema_instance = $_[0];
-    my $package = ref $self || $self;
-
-    no strict 'refs';
-
-    throw Handel::Exception::Storage(
-        -details => translate('No schema_source is specified') . '.') unless
-            $self->schema_source;
-
-    # allow unsetting
-    if (scalar @_ && !$schema_instance) {
-        return $self->_schema_instance(@_);
-    };
-
-    if (blessed $schema_instance) {
-        {
-            no warnings 'redefine';
-            local *Class::C3::reinitialize = sub {};
-
-            my $namespace = "$package\:\:".uc($self->new_uuid);
-            $namespace =~ s/-//g;
-
-            my $clone_schema = $schema_instance->compose_namespace($namespace);
-
-            $self->_schema_instance($clone_schema);
-            $self->_configure_schema_instance;
-            $self->set_inherited('schema_class', blessed $clone_schema);
-        };
-        Class::C3->reinitialize;
-    };
-
-    if (!$self->_schema_instance) {
-        throw Handel::Exception::Storage(
-            -details => translate('No schema_class is specified') . '.') unless
-                $self->schema_class;
-
-        {
-            no warnings 'redefine';
-            local *Class::C3::reinitialize = sub {};
-
-            my $namespace = "$package\:\:".uc($self->new_uuid);
-            $namespace =~ s/-//g;
-
-            my $clone_schema = $self->schema_class->compose_namespace($namespace);
-            my $schema = $clone_schema->connect(@{$self->connection_info || []});
-
-            $self->_schema_instance($schema);
-            $self->_configure_schema_instance;
-            $self->set_inherited('schema_class', blessed $schema);
-        };
-        Class::C3->reinitialize;
-    };
-
-    return $self->_schema_instance;
+sub search {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
 };
 
-sub _configure_schema_instance {
-    my ($self) = @_;
-    my $schema_instance = $self->schema_instance;
-    my $schema_source = $self->schema_source;
-    my $iterator_class = $self->iterator_class;
-    my $item_class = $self->item_class;
-    my $item_relationship = $self->item_relationship;
-    my $source_class = $schema_instance->class($schema_source);
-    my $item_source_class;
-    my $source = $schema_instance->source($schema_source);
-
-    # make this source aware of this storage to make inflate_result happier
-    $source->{'__handel_storage'} = $self;
-    weaken $self;
-
-    # change the table name
-    $source->name($self->table_name) if $self->table_name;
-
-    # change the iterator class
-    $source->resultset_class($iterator_class);
-
-    # twiddle source columns
-    if ($self->_columns_to_add) {
-        # I'm still not sure why you have to do both after the result_source_instance
-        # fix in compose_namespace.
-        $source->add_columns(@{$self->_columns_to_add});
-        $source_class->add_columns(@{$self->_columns_to_add});
-    };
-    if ($self->_columns_to_remove) {
-        # I'm still not sure why you have to do both after the result_source_instance
-        # fix in compose_namespace.
-        $source->remove_columns(@{$self->_columns_to_remove});
-        $source_class->remove_columns(@{$self->_columns_to_remove});
-    };
-
-    # add currency inflate/deflators
-    if ($self->currency_columns) {
-        my $currency_class = $self->currency_class;
-        foreach my $column (@{$self->currency_columns}) {
-            $source_class->inflate_column($column, {
-                inflate => sub {$currency_class->new(shift);},
-                deflate => sub {shift->value;}
-            });
-        };
-    };
-
-    if ($item_class) {
-        $item_source_class = $schema_instance->class($item_class->storage->schema_source);
-
-        if ($source->has_relationship($item_relationship)) {
-            $source->related_source($item_relationship)->resultset_class($iterator_class);
-        } else {
-            throw Handel::Exception(-text =>
-                translate('The source [_1] has no relationship named [_2].', $schema_source, $item_relationship)
-            );
-        };
-
-
-        my $item_source = $self->schema_instance->source($item_class->storage->schema_source);
-        $item_source->name($item_class->storage->table_name) if $item_class->storage->table_name;
-
-        # make this source aware of this storage to make inflate_result happier
-        my $item_storage = $item_class->storage->clone;
-        $item_storage->_schema_instance($schema_instance);
-        $item_source->{'__handel_storage'} = $item_storage;
-        weaken $item_storage;
-
-        
-
-        # twiddle item source columns
-        if ($self->item_class->storage->_columns_to_add) {
-            # I'm still not sure why you have to do both after the result_source_instance
-            # fix in compose_namespace.
-            $item_source->add_columns(@{$item_class->storage->_columns_to_add});
-            $item_source_class->add_columns(@{$item_class->storage->_columns_to_add});
-        };
-        if ($self->item_class->storage->_columns_to_remove) {
-            # I'm still not sure why you have to do both after the result_source_instance
-            # fix in compose_namespace.
-            $item_source->remove_columns(@{$item_class->storage->_columns_to_remove});
-            $item_source_class->remove_columns(@{$item_class->storage->_columns_to_remove});
-        };
-
-        # add currency inflate/deflators
-        if ($self->item_class->storage->currency_columns) {
-            my $currency_class = $self->item_class->storage->currency_class;
-            foreach my $column (@{$self->item_class->storage->currency_columns}) {
-                $item_source_class->inflate_column($column, {
-                    inflate => sub {$currency_class->new(shift);},
-                    deflate => sub {shift->value;}
-                });
-            };
-        };
-    };
-
-
-    $schema_instance->exception_action($self->can('process_error'));
-
-
-    # warning: there be dragons in here
-    # load_components/C3 recalc is slow, esp after 6 calls to it
-    # this works, evil or not, it works.
-    # and it's only evil for schemas who don't load what we need
-
-    # load class and item class validation
-    if (my $profile = $self->validation_profile) {
-        {
-            no warnings 'redefine';
-            local *Class::C3::reinitialize = sub {};
-            $source_class->load_components('+'.$self->validation_class);
-        };
-        $source_class->validation_profile($profile);
-        $source_class->validation_module($self->validation_module);
-    };
-    if ($item_class && $item_class->storage->validation_profile) {
-        {
-            no warnings 'redefine';
-            local *Class::C3::reinitialize = sub {};
-            $item_source_class->load_components('+'.$item_class->storage->validation_class);
-        };
-        $item_source_class->validation_profile(
-            $item_class->storage->validation_profile
-        );
-        $item_source_class->validation_module(
-            $item_class->storage->validation_module
-        );
-    };
-
-    # load class and item class constraints
-    if (my $constraints = $self->constraints) {
-        {
-            no warnings 'redefine';
-            local *Class::C3::reinitialize = sub {};
-            $source_class->load_components('+'.$self->constraints_class);
-        };
-        $source_class->constraints($constraints);
-    };
-    if ($item_class && $item_class->storage->constraints) {
-        {
-            no warnings 'redefine';
-            local *Class::C3::reinitialize = sub {};
-            $item_source_class->load_components('+'.$item_class->storage->constraints_class);
-        };
-        $item_source_class->constraints(
-            $item_class->storage->constraints
-        );
-    };
-
-    # load class and item class default values
-    if (my $defaults = $self->default_values) {
-        {
-            no warnings 'redefine';
-            local *Class::C3::reinitialize = sub {};
-            $source_class->load_components('+'.$self->default_values_class);
-        };
-        $source_class->default_values($defaults);
-    };
-    if ($item_class && $item_class->storage->default_values) {
-        {
-            no warnings 'redefine';
-            local *Class::C3::reinitialize = sub {};
-            $item_source_class->load_components('+'.$item_class->storage->default_values_class);
-        };
-        $item_source_class->default_values(
-            $item_class->storage->default_values
-        );
-    };
+sub search_items {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
 };
 
-sub new_uuid {
-    my $uuid = shift->uuid_maker->as_string;
+sub setup {
+    my ($self, $options) = @_;
 
-    $uuid =~ s/^{//;
-    $uuid =~ s/}$//;
+    throw Handel::Exception::Argument(
+        -details => translate('Param 1 is not a HASH reference') . '.') unless
+            ref($options) eq 'HASH';
 
-    return $uuid;
-};
-
-sub process_error {
-    my ($message) = @_;
-
-    if (blessed $message) {
-        die $message;
-    };
-
-    if ($message =~ /column\s+(.*)\s+is not unique/) {
-        my $details = translate("[_1] value already exists", $1);
-
-        throw Handel::Exception::Constraint(-text => $details);
-    } else {
-        throw Handel::Exception::Storage(-text => $message);
-    };
-};
-
-sub _migrate_wildcards {
-    my ($self, $filter) = @_;
-
-    return undef unless $filter;
-
-    if (ref $filter eq 'HASH') {
-        foreach my $key (keys %{$filter}) {
-            my $value = $filter->{$key};
-            if (!ref $filter->{$key} && $value =~ /\%/) {
-                $filter->{$key} = {like => $value}
-            };
+    ## do these in order
+    foreach my $setting (qw/add_columns remove_columns primary_columns currency_columns/) {
+        if (exists $options->{$setting}) {
+            $self->$setting( @{delete $options->{$setting}} );
         };
     };
 
-    return $filter;
-};
-
-sub copyable_item_columns {
-    my $self = shift;
-    my $source = $self->schema_instance->source($self->schema_source);
-    my $item_source = $self->schema_instance->source($self->item_class->storage->schema_source);
-    my @copyable;
-    my %primaries = map {$_ => 1} $item_source->primary_columns;
-    my %foreigns;
-
-    if ($source->has_relationship($self->item_relationship)) {
-        my @cond = %{$source->relationship_info($self->item_relationship)->{cond}};
-
-        foreach (@cond) {
-            if ($_ =~ /^foreign\.(.*)/) {
-                $foreigns{$1}++;
-            };
-        };
+    foreach my $key (keys %{$options}) {
+        $self->$key($options->{$key});
     };
-
-    foreach ($item_source->columns) {
-        if (!exists $primaries{$_} && !exists $foreigns{$_}) {
-            push @copyable, $_;
-        };
-    };
-
-    return @copyable;
 };
 
 sub get_component_class {
@@ -670,10 +321,6 @@ sub set_component_class {
         };
     };
 
-    if ($field eq 'schema_class' && scalar @_ > 2) {
-        $self->_schema_instance(undef);
-    };
-
     $self->set_inherited($field, $value);
 };
 
@@ -686,13 +333,7 @@ sub get_component_data {
 sub set_component_data {
     my ($self, $field, $value) = @_;
 
-    if ($self->_schema_instance) {
-        throw Handel::Exception::Storage(
-            -details => translate('Can not assign [_1] to an existing schema instance', $field) . '.')
-                if $self->_schema_instance;
-    } else {
-        $self->set_inherited($field, $value);
-    };
+    $self->set_inherited($field, $value);
 };
 
 1;
@@ -704,32 +345,38 @@ Handel::Storage - Abstract storage layer for cart/order/item reads/writes
 
 =head1 SYNOPSIS
 
-    use MyCustomCart;
+    package MyStorage;
+    use strict;
+    use warnings;
+    use base qw/Handel::Storage/;
+
+    sub create {
+        my ($self, $data) = @_;
+
+        return $self->result_class->create_instance(
+            $ldap->magic($data), $self
+        );
+    };
+    
+    package MyCart;
     use strict;
     use warnings;
     use base qw/Handel::Base/;
     
+    __PACKAGE__->storage_class('MyStorage');
     __PACKAGE__->storage({
-        schema_source  => 'Carts',
-        item_class     => 'MyCustomItem',
-        constraints    => {
-            id         => {'Check Id'      => \&constraint_uuid},
-            shopper    => {'Check Shopper' => \&constraint_uuid},
-            type       => {'Check Type'    => \&constraint_cart_type},
-            name       => {'Check Name'    => \&constraint_cart_name}
-        },
-        default_values => {
-            id         => __PACKAGE__->storage_class->can('new_uuid'),
-            type       => CART_TYPE_TEMP
-        }
+        columns         => [qw/id foo bar baz/],
+        primary_columns => [qw/id/]
     });
     
     1;
 
 =head1 DESCRIPTION
 
-Handel::Storage is used as an intermediary between Handel::Cart/Handel::Order
-and the schema classes used for reading/writing to the database.
+Handel::Storage is a base class used to create custom storage classes used by
+cart/order/item classes. It provides some generic functionality as well as
+methods that must be implemented by custom storage subclasses like
+Handel::Storage::DBIC.
 
 =head1 CONSTRUCTOR
 
@@ -745,19 +392,16 @@ Creates a new instance of Handel::Storage, and passes the options to L</setup>
 on the new instance. The three examples below are the same:
 
     my $storage = Handel::Storage-new({
-        schema_source  => 'Carts',
-        cart_class     => 'CustomerCart'
+        item_class => 'Handel::Item'
     });
     
     my $storage = Handel::Storage-new;
     $storage->setup({
-        schema_source  => 'Carts',
-        cart_class     => 'CustomerCart'
+        item_class => 'Handel::Item'
     });
     
     my $storage = Handel::Storage->new;
-    $storage->schema_source('Carts');
-    $storage->cart_class('CustomCart');
+    $storage->item_class('Handel::Item')
 
 The following options are available to new/setup, and take the same data as
 their method counterparts:
@@ -766,23 +410,15 @@ their method counterparts:
     autoupdate
     cart_class
     checkout_class
-    connection_info
     constraints
-    constraints_class
     currency_class
     currency_columns
-    default_values_class
     default_values
     item_class
-    item_relationship
     iterator_class
+    primary_columns
     remove_columns
     result_class
-    schema_class
-    schema_instance
-    schema_source
-    table_name
-    validation_class
     validation_module
     validation_profile
 
@@ -796,31 +432,9 @@ their method counterparts:
 
 =back
 
-Adds a list of columns to the current schema_source in the current schema_class
-and maps the new columns to accessors in the current class. Be careful to always
-use the column names, not their accessor aliases.
+Adds a list of columns to the current storage object.
 
-    $storage->add_columns(qw/foo bar baz/);
-
-You can also add columns using the DBIx::Class \%column_info syntax:
-
-    $storage->add_columns(
-        foo => {data_type => 'varchar', size => 36},
-        bar => {data_type => int, accessor => 'get_bar'}
-    );
-
-Yes, you can even mix/match the two:
-
-    $storage->add_columns(
-        'foo',
-        bar => {accessor => 'get_bar', data_type => 'int'},
-        'baz'
-    );
-
-Before schema_instance is initialized, the columns to be added are stored
-internally, then added to the schema_instance when it is initialized. If a
-schema_instance already exists, the columns are added directly to the
-schema_source in the schema_instance itself.
+    $storage->add_columns('quix');
 
 =head2 add_constraint
 
@@ -830,21 +444,15 @@ schema_source in the schema_instance itself.
 
 =back
 
-Adds a named constraint for the given column to the current schema_source in the
-current schema_class. During insert/update operations, the constraint subs will
-be called upon to validation the specified columns data I<after> and default
-values are set on empty columns. You can any number of constraints for each
-column as long as they all have different names. The constraints may or may not
-be called in the order in which they are added.
+Adds a named constraint for the given column to the current storage object.
+You can have any number of constraints for each column as long as they all have
+different names. The constraints may or may not be called in the order in which
+they are added.
 
     $storage->add_constraint('id', 'Check Id Format' => \&constraint_uuid);
 
-Constraints can only be added before schema_instance is initialized.
-A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
-thrown if you try to add a constraint and schema_instance is already
-initialized.
-
-Be careful to always use the column name, not its accessor alias if it has one.
+B<It is up to each custom storage class to decide if and how to implement column
+constraints.>
 
 =head2 add_item
 
@@ -867,8 +475,7 @@ Adds a new item to the specified result, returning a storage result object.
     
     print $item->sku;
 
-A L<Handel::Storage::Exception|Handel::Storage::Exception> will be thrown if the
-specified result has no item relationship.
+B<This method must be implemented in custom subclasses.>
 
 =head2 autoupdate
 
@@ -878,13 +485,16 @@ specified result has no item relationship.
 
 =back
 
-Gets/sets the autoupdate flag for the current schema_source. When set to 1, an
-update request will be made to the database for every field change. When set to
-0, no updated data will be sent to the database until C<update> is called.
+Gets/sets the autoupdate flag for the current storage object. When set to 1, an
+update request will be made to storage for every column change. When set to
+0, no updated data will be sent to storage until C<update> is called.
 
     $storage->autoupdate(1);
 
 The default is 1.
+
+B<It is up to each custom storage class to decide if and how to implement
+autoupdates.>
 
 =head2 cart_class
 
@@ -923,12 +533,15 @@ thrown if the specified class can not be loaded.
 
 Returns a clone of the current storage instance.
 
-    $storage->schema_source('Foo');
-    my $clone = $storage->clone;
-    $clone->schema_source('Bar');
+    $storage->item_class('Item');
+    $storage->cart_class('Cart');
     
-    print $storage->schema_source; # Foo
-    print $clone->schema_source;   # Bar
+    my $clone = $storage->clone;
+    $clone->item_class('Bar');
+    
+    print $storage->item_class; # Item
+    print $clone->item_class;   # Item
+    print $clone->cart_class;   $ Cart
 
 This is used mostly between sub/super classes to inherit a copy of the storage
 settings without having to specify options from scratch.
@@ -938,46 +551,19 @@ settings without having to specify options from scratch.
 Returns a hashref containing all of the columns and their accessor names for the
 current storage object.
 
-If a schema_instance already exists, the columns from schema_source in that
-schema_instance will be returned. If no schema_instance exists, the columns from
-schema_source in the current schema_class will be returned plus any columns to
-be added from add_columns minus and columns to be removed from remove_columns.
+    $storage->add_columns(qw/foo bar/);
+    print %{$self->column_accessors});
+    # foo foo bar bar
 
-=head2 connection_info
+The column accessors are used by cart/order/item classes to map public accessors
+to their columns.
 
-=over
+=head2 columns
 
-=item Arguments: \@info
+Returns a list of columns from the current storage object;
 
-=back
-
-Gets/sets the connection information used when connecting to the database.
-
-    $storage->connection_info(['dbi:mysql:foo', 'user', 'pass', {PrintError=>1}]);
-
-The info argument is an array ref that holds the following values:
-
-=over
-
-=item $dsn
-
-The DBI dsn to use to connect to.
-
-=item $username
-
-The username for the database you are connecting to.
-
-=item $password
-
-The password for the database you are connecting to.
-
-=item \%attr
-
-The attributes to be pass to DBI for this connection.
-
-=back
-
-See L<DBI> for more information about dsns and connection attributes.
+    $storage->add_columns(qw/foo bar baz/);
+    print $storage->columns;  # foo bar baz
 
 =head2 constraints
 
@@ -998,25 +584,8 @@ The constraints are stored in a hash where each key is the name of the column
 and each value is another hash reference containing the constraint name and the
 constraint subroutine reference.
 
-Be careful to always use the column name, not its accessor alias if it has one.
-
-=head2 constraints_class
-
-=over
-
-=item Arguments: $constraint_class
-
-=back
-
-Gets/sets the constraint class to be used when check column constraints. The
-default constraint class is 
-L<Handel::Components::Constraints|Handel::Components::Constraints>. The
-constraint class used should be subclass of Handel::Components::Constraints.
-
-    $storage->constraint_class('CustomCurrency');
-
-A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
-thrown if the specified class can not be loaded.
+B<It is up to each custom storage class to decide if and how to implement column
+constraints.>
 
 =head2 copyable_item_columns
 
@@ -1046,8 +615,7 @@ Returns the number of items associated with the specified result.
     
     print $storage->count_items($result);
 
-A L<Handel::Storage::Exception|Handel::Storage::Exception> will be thrown if the
-specified result has no item relationship.
+B<This method must be implemented in custom subclasses.>
 
 =head2 create
 
@@ -1057,19 +625,14 @@ specified result has no item relationship.
 
 =back
 
-Creates a new result in the current source in the current schema.
+Creates a new result in the current storage medium.
 
     my $result = $storage->create({
         col1 => 'foo',
         col2 => 'bar'
     });
 
-This is just a convenience method that does the same thing as:
-
-    my $result = $storage->schema_instance->resultset($storage->schema_source)->create({
-        col1 => 'foo',
-        col2 => 'bar'
-    });
+B<This method must be implemented in custom subclasses.>
 
 =head2 currency_class
 
@@ -1088,6 +651,9 @@ class used should be subclass of Handel::Currency.
 A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
 thrown if the specified class can not be loaded.
 
+B<It is up to each custom storage class to decide if and how to implement
+currency columns.>
+
 =head2 currency_columns
 
 =over
@@ -1100,24 +666,8 @@ Gets/sets the columns that should be inflated into currency objects.
 
     $storage->currency_columns(qw/total price tax/);
 
-=head2 default_values_class
-
-=over
-
-=item Arguments: $default_values_class
-
-=back
-
-Gets/sets the default values class to be used when setting default column
-values. The default class is 
-L<Handel::Components::DefaultValues|Handel::Components::DefaultValues>. The
-default values class used should be subclass of
-Handel::Components::DefaultValues.
-
-    $storage->default_value_class('SetDefaults');
-
-A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
-thrown if the specified class can not be loaded.
+B<It is up to each custom storage class to decide if and how to implement
+currency columns.>
 
 =head2 default_values
 
@@ -1128,8 +678,7 @@ thrown if the specified class can not be loaded.
 =back
 
 Gets/sets the hash containing the default values to be applied to empty columns
-during insert/update statements. Default values are applied to empty columns
-before and constraints or validation occurs.
+during create/update actions.
 
     $storage->default_values({
         id   => \&newid,
@@ -1140,7 +689,8 @@ The default values are stored in a hash where the key is the name of the column
 and the value is either a reference to a subroutine to get the value from, or
 an actual default value itself.
 
-Be careful to always use the column name, not its accessor alias if it has one.
+B<It is up to each custom storage class to decide if and how to implement
+default values.>
 
 =head2 delete
 
@@ -1150,17 +700,13 @@ Be careful to always use the column name, not its accessor alias if it has one.
 
 =back
 
-Deletes results matching the filter in the current source in the current schema.
+Deletes results matching the filter in the current storage medium.
 
     $storage->delete({
         id => '11111111-1111-1111-1111-111111111111'
     });
 
-This is just a convenience method that does the same thing as:
-
-    $storage->schema_instance->resultset($storage->schema_source)->search({
-        id => '11111111-1111-1111-1111-111111111111'
-    })->delete_all;
+B<This method must be implemented in custom subclasses.>
 
 =head2 delete_items
 
@@ -1185,8 +731,7 @@ Deletes items matching the filter from the specified result.
         sku => 'ABC%'
     });
 
-A L<Handel::Storage::Exception|Handel::Storage::Exception> will be thrown if the
-specified result has no item relationship.
+B<This method must be implemented in custom subclasses.>
 
 =head2 item_class
 
@@ -1201,27 +746,10 @@ Gets/sets the item class to be used when returning cart/order items.
     $storage->item_class('CustomCartItem');
 
 The class specified should be a subclass of Handel::Base, or at least provide
-its C<inflate_result> and C<result> methods.
+its C<create_instance> and C<result> methods.
 
 A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
 thrown if the specified class can not be loaded.
-
-=head2 item_relationship
-
-=over
-
-=item Arguments: $relationship_name
-
-=back
-
-Gets/sets the name of the schema relationship between carts and items.
-The default item relationship is 'items'.
-
-    # in your schema classes
-    MySchema::CustomCart->has_many(rel_items => 'MySchema::CustomItem', {'foreign.cart' => 'self.id'});
-    
-    # in your storage
-    $storage->item_relationship('rel_items');
 
 =head2 iterator_class
 
@@ -1231,15 +759,13 @@ The default item relationship is 'items'.
 
 =back
 
-Gets/sets the class used for iterative resultset operations. The default
-iterator is L<Handel::Iterator|Handel::Iterator>.
+Gets/sets the class used for iterative result operations. The default
+iterator is L<Handel::Iterator::List|Handel::Iterator::List>.
 
-    # in your storage
     $storage->iterator_class('MyIterator');
+    my $results = $storage->search;
     
-    # in your code
-    my $carts = Handel::Carts->load;
-    print ref $carts; # MyIterator
+    print ref $results # Handel::Iterator::List
 
 A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
 thrown if the specified class can not be loaded.
@@ -1253,10 +779,13 @@ Returns a new uuid/guid string in the form of
 See L<DBIx::Class::UUIDColumns|DBIx::Class::UUIDColumns> for more information on
 how uuids are generated.
 
-=head2 process_error
+=head2 primary_columns
 
-This method accepts errors from DBI using $dbh->{HandelError} and converts them
-into Handel::Exception objects before throwing the error.
+Returns a list of primary columns from the current storage object;
+
+    $storage->add_columns(qw/foo bar baz/);
+    $storage->primary_columns('foo');
+    print $storage->primary_columns;  # foo
 
 =head2 remove_columns
 
@@ -1266,16 +795,9 @@ into Handel::Exception objects before throwing the error.
 
 =back
 
-Removes a list of columns from the current schema_source in the current
-schema_class and removes the autogenerated accessors from the current class.
-Be careful to always use the column names, not their accessor aliases.
+Removes a list of columns from the current storage object.
 
     $storage->remove_columns(qw/description/);
-
-Before schema_instance is initialized, the columns to be removed are stored
-internally, then removed from the schema_instance when it is initialized. If a
-schema_instance already exists, the columns are removed directly from the
-schema_source in the schema_instance itself.
 
 =head2 remove_constraint
 
@@ -1285,17 +807,9 @@ schema_source in the schema_instance itself.
 
 =back
 
-Removes a named constraint for the given column from the current schema_source
-in the current schema_class' constraints data structure.
+Removes a named constraint for the given column from the current storage object.
 
     $storage->remove_constraint('id', 'Check Id Format' => \&constraint_uuid);
-
-Constraints can only be removed before schema_instance is initialized.
-A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
-thrown if you try to remove a constraint and schema_instance is already
-initialized.
-
-Be careful to always use the column name, not its accessor alias if it has one.
 
 =head2 remove_constraints
 
@@ -1305,17 +819,9 @@ Be careful to always use the column name, not its accessor alias if it has one.
 
 =back
 
-Removes all constraints for the given column from the current schema_source
-in the current schema_class' constraints data structure.
+Removes all constraints for the given column from the current storage object.
 
     $storage->remove_constraints('id');
-
-Constraints can only be removed before schema_instance is initialized.
-A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
-thrown if you try to remove a constraint and schema_instance is already
-initialized.
-
-Be careful to always use the column name, not its accessor alias if it has one.
 
 =head2 result_class
 
@@ -1333,64 +839,6 @@ L<Handel::Storage::Result|Handel::Storage::Result>.
 
 A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
 thrown if the specified class can not be loaded.
-
-=head2 schema_class
-
-=over
-
-=item Arguments: $schema_class
-
-=back
-
-Gets/sets the schema class to be used for database reading/writing.
-
-    $storage->schema_class('MySchema');
-
-A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
-thrown if the specified class can not be loaded.
-
-=head2 schema_instance
-
-=over
-
-=item Arguments: $schema_instance
-
-=back
-
-Gets/sets the schema instance to be used for database reading/writing. If no
-instance exists, a new one will be created from the specified schema class.
-
-    my $schema = MySchema->connect;
-    
-    $storage->schema_instance($schema);
-    
-When a new schema instance is created or assigned, it is cloned and the clone
-is altered and used, leaving the original schema untouched.
-
-See L<Handel::Manual::Schema|Handel::Manual::Schema> for more detailed
-information about how the schema instance is configured.
-
-=head2 schema_source
-
-=over
-
-=item Arguments: $source_name
-
-=back
-
-Gets/sets the result source name in the current schema class that will be used
-to read/write data in the schema.
-
-    $storage->schema_source('Foo');
-
-See L<DBIx::Class::ResultSource/source_name>
-for more information about setting the source name of schema classes.
-By default, this will be the short name of the schema class in DBIx::Class
-schemas.
-
-By default, Handel::Storage looks for the "Carts" source when working with
-Handel::Cart, the "Orders" source when working with Handel::Order and the 
-"Items" source when working with Cart/Order items.
 
 =head2 search
 
@@ -1411,11 +859,7 @@ current source in the current schema matching the search filter.
         col1 => 'foo'
     });
 
-This is just a convenience method that does the same thing as:
-
-    my $resultset = $storage->schema_instance->resultset($storage->schema_source)->search({
-        col1 => 'foo'
-    });
+B<This method must be implemented in custom subclasses.>
 
 =head2 search_items
 
@@ -1437,8 +881,7 @@ Returns items matching the filter associated with the specified result.
 Returns results in list context, or an iterator in scalar context from the
 current source in the current schema matching the search filter.
 
-A L<Handel::Storage::Exception|Handel::Storage::Exception> will be thrown if the
-specified result has no item relationship.
+B<This method must be implemented in custom subclasses.>
 
 =head2 setup
 
@@ -1457,64 +900,27 @@ exact same options that L</new> does.
     use base qw/Handel::Storage/;
     
     __PACKAGE__->setup({
-        schema_source => 'Foo'
+        item_class => 'Foo'
     });
     
     # or
     
     my $storage = Handel::Storage-new;
     $storage->setup({
-        schema_source  => 'Carts',
-        cart_class     => 'CustomerCart'
+        item_class => 'Items',
+        cart_class => 'CustomerCart'
     });
 
 This is the same as doing:
 
     my $storage = Handel::Storage-new({
-        schema_source  => 'Carts',
-        cart_class     => 'CustomerCart'
+        item_class => 'Items',
+        cart_class => 'CustomerCart'
     });
 
 If you call setup on a storage instance or class that has already been
-configured, its configuration will be reset, and it will be configured with the
-new options. No attempt will be made to merged the options between the two.
-
-If you pass in a schema_instance, it will be assigned last after all of the
-other options have been applied.
-
-=head2 table_name
-
-=over
-
-=item Arguments: $table_name
-
-=back
-
-Gets/sets the name of the table in the database to be used for this schema
-source.
-
-=head2 validation_class
-
-=over
-
-=item Arguments: $validation_class
-
-=back
-
-Gets/sets the validation class to be used when validating column values.
-The default class is 
-L<Handel::Components::Validation|Handel::Components::Validation>.
-The validation class used should be subclass of
-Handel::Components::Validation.
-
-    $storage->validation_class('ValidateData');
-
-A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
-thrown if the specified class can not be loaded.
-
-See L<Handel::Components::Validation|Handel::Components::Validation> and
-L<DBIx::Class::Validation|DBIx::Class::Validation> for more information on to
-use data validation.
+configured, its configuration will be updated with the new options. No attempt
+will be made to clear or reset the unspecified settings back to their defaults.
 
 =head2 validation_module
 
@@ -1525,8 +931,10 @@ use data validation.
 =back
 
 Gets/sets the module validation class should use to do its column data
-validation. The default module is FormValidator::Simple. You can use any module
-that is compatible with L<DBIx::Class::Validation|DBIx::Class::Validation>.
+validation. The default module is FormValidator::Simple. 
+
+B<It is up to each custom storage class to decide if and how to implement data
+validation.>
 
 =head2 validation_profile
 
@@ -1559,14 +967,13 @@ sure you pass in the profile as a hash reference instead:
                          address )]
     });
 
-See L<Handel::Components::Validation|Handel::Components::Validation> and
-L<DBIx::Class::Validation|DBIx::Class::Validation> for more information on
-using data validation in Handel.
+B<It is up to each custom storage class to decide if and how to implement data
+validation.>
 
 =head1 SEE ALSO
 
-L<Handel::Storage::Result>, L<Handel::Manual::Storage>,
-L<Handel::Storage::Cart>, L<Handel::Storage::Order>
+L<Handel::Storage::DBIC>, L<Handel::Storage::Result>,
+L<Handel::Manual::Storage>, L<Handel::Storage::Cart>, L<Handel::Storage::Order>
 
 =head1 AUTHOR
 

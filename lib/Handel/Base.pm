@@ -1,4 +1,4 @@
-# $Id: Base.pm 1354 2006-08-06 00:11:31Z claco $
+# $Id: Base.pm 1383 2006-08-24 23:18:23Z claco $
 package Handel::Base;
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ BEGIN {
     use base qw/Class::Accessor::Grouped/;
     __PACKAGE__->mk_group_accessors('simple', qw/autoupdate result/);
     __PACKAGE__->mk_group_accessors('inherited', qw/accessor_map/);
-    __PACKAGE__->mk_group_accessors('component_class', qw/storage_class/);
+    __PACKAGE__->mk_group_accessors('component_class', qw/storage_class result_iterator_class/);
 
     use Handel::Exception qw/:try/;
     use Handel::L10N qw/translate/;
@@ -17,6 +17,7 @@ BEGIN {
 };
 
 __PACKAGE__->storage_class('Handel::Storage');
+__PACKAGE__->result_iterator_class('Handel::Iterator::Results');
 
 sub import {
     my $self = shift;
@@ -141,11 +142,7 @@ sub _get_storage {
             $storage = ${"$super\:\:_storage"};
 
             if ($storage && blessed($storage) eq $self->storage_class) {
-                if ($storage->_schema_instance) {
-                    $storage = $self->storage_class->new;
-                } else {
-                    $storage = $storage->clone;
-                };
+                $storage = $storage->clone;
             } else {
                 $storage = $self->storage_class->new;
             };
@@ -282,7 +279,7 @@ Returns the value for the specified column from the current C<result>. If an
 accessor has been defined for the column in C<accessor_map>, that will be used
 against the result instead.
 
-    my $cart = Handel::Cart->new({name => 'My Cart'});
+    my $cart = Handel::Cart->create({name => 'My Cart'});
     print $cart->get_column('name');
 
 =head2 has_storage
@@ -335,14 +332,14 @@ Sets the value for the specified column on the current C<result>. If an
 accessor has been defined for the column in C<accessor_map>, that will be used
 against the result instead.
 
-    my $cart = Handel::Cart->new({name => 'My Cart'});
+    my $cart = Handel::Cart->create({name => 'My Cart'});
     $cart->set_column('name', 'New Cart');
 
 If C<autoupdate> is enable for the current object, C<set_column> will call
 C<update> automatically. If C<autoupdate> is disabled, be sure to call C<update>
 to save change to the database.
 
-    my $cart = Handel::Cart->new({name => 'My Cart'});
+    my $cart = Handel::Cart->create({name => 'My Cart'});
     $cart->set_column('name', 'New Cart');
     if (!$cart->autoupdate) {
         $cart->update;

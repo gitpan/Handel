@@ -1,5 +1,7 @@
 TODO list for Perl module Handel (in no particular order):
 
+    - Migrate tests from TestHelper to Handel::Test
+    - Manual pages for customize/storage how-2
     - Update create_accessors to take an accessor_map/ro/wo/rw
     - AxKit Tablibs need reworked for subclassing
     - TT plugins need reworked for subclassing

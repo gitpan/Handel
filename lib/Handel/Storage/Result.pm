@@ -35,14 +35,6 @@ sub items {
     return shift->search_items(@_);
 };
 
-sub inflate_result {
-    my $self = shift;
-    my $result = $_[0]->result_class->inflate_result(@_);
-    my $storage = $result->result_source->{'__handel_storage'};
-
-    return $self->create_instance($result, $storage);
-};
-
 sub create_instance {
     my ($self, $result, $storage) = @_;
     my $class = blessed $self || $self;
@@ -59,7 +51,7 @@ sub AUTOLOAD {
 
     $AUTOLOAD =~ s/^.*:://;
 
-    $self->storage_result->$AUTOLOAD(@_);
+    return $self->storage_result->$AUTOLOAD(@_);
 };
 
 1;

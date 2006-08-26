@@ -1,0 +1,39 @@
+# $Id: perl_critic.rc 1378 2006-08-21 18:48:39Z claco $
+# Remember to Id keyword our files
+[Miscellanea::RequireRcsKeywords]
+keywords = Id
+
+# Only in Handel.pm thank you
+[-Modules::RequireVersionVar]
+
+# Just the basics
+[Documentation::RequirePodSections]
+lib_sections = NAME | SYNOPSIS | DESCRIPTION | AUTHOR
+
+# I like my $obj->delete
+[-Subroutines::ProhibitBuiltinHomonyms]
+
+# Sometimes, refs just happen
+[TestingAndDebugging::ProhibitNoStrict]
+allow = refs
+
+# Uhm...no.
+[-RegularExpressions::RequireExtendedFormatting]
+[-RegularExpressions::RequireLineBoundaryMatching]
+[-CodeLayout::RequireTrailingCommas]
+
+# Not in this town
+[-ValuesAndExpressions::ProhibitConstantPragma]
+
+# I just don't see it matters
+[-ValuesAndExpressions::ProhibitEmptyQuotes]
+
+# I'll live
+[-Modules::ProhibitMultiplePackages]
+
+# We have a use for them
+[-ClassHierarchies::ProhibitAutoloading]
+
+# Using $@ is just too common
+[Variables::ProhibitPunctuationVars]
+allow = $@

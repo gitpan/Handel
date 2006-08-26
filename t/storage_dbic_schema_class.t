@@ -1,19 +1,19 @@
 #!perl -wT
-# $Id: storage_schema_class.t 1242 2006-06-27 02:22:20Z claco $
+# $Id: storage_dbic_schema_class.t 1385 2006-08-25 02:42:03Z claco $
 use strict;
 use warnings;
 use Class::Inspector;
 use Test::More tests => 9;
 
 BEGIN {
-    use_ok('Handel::Storage');
+    use_ok('Handel::Storage::DBIC');
     use_ok('Handel::Exception', ':try');
 };
 
 
 {
-    my $storage = Handel::Storage->new();
-    isa_ok($storage, 'Handel::Storage');
+    my $storage = Handel::Storage::DBIC->new();
+    isa_ok($storage, 'Handel::Storage::DBIC');
 
     is($storage->schema_class, undef);
 

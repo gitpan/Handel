@@ -1,4 +1,4 @@
-# $Id: Order.pm 1355 2006-08-07 01:51:41Z claco $
+# $Id: Order.pm 1368 2006-08-16 03:14:40Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -192,9 +192,10 @@ sub items {
             ref($filter) eq 'HASH' or !$filter);
 
     my $results = $result->search_items($filter);
-    my $iterator = $storage->iterator_class->create_iterator(
-        $results, $storage->item_class
-    );
+    my $iterator = $storage->item_class->result_iterator_class->new({
+        data         => $results,
+        result_class => $storage->item_class
+    });
 
     return wantarray ? $iterator->all : $iterator;
 };
@@ -211,7 +212,10 @@ sub search {
     my $storage = $opts->{'storage'} || $self->storage;
 
     my $results = $storage->search($filter);
-    my $iterator = $storage->iterator_class->create_iterator($results, $class);
+    my $iterator = $self->result_iterator_class->new({
+        data         => $results,
+        result_class => $class
+    });
 
     return wantarray ? $iterator->all : $iterator;
 };
@@ -594,9 +598,9 @@ contain the search criteria to load matching carts.
     $order->reconcile('11111111-1111-1111-1111-111111111111');
     $order->reconcile({name => 'My Cart'});
     
-    my $cart = Handel::Cart->load({
+    my $cart = Handel::Cart->search({
         id => '11111111-1111-1111-1111-111111111111'
-    });
+    })->first;
     $order->reconcile($cart);
 
 By default, new will use Handel::Cart to load the specified cart, unless you

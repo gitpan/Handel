@@ -1,41 +1,21 @@
 #!perl -wT
-# $Id: storage_clone.t 1342 2006-07-22 22:15:27Z claco $
+# $Id: storage_clone.t 1385 2006-08-25 02:42:03Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
+use Test::More tests => 29;
 
 BEGIN {
-    eval 'require DBD::SQLite';
-    if($@) {
-        plan skip_all => 'DBD::SQLite not installed';
-    } else {
-        plan tests => 37;
-    };
-
     use_ok('Handel::Storage');
     use_ok('Handel::Exception', ':try');
 };
 
 
 {
-    ## Setup SQLite DB for tests
-    my $dbfile  = "t/storage_clone.db";
-    my $db      = "dbi:SQLite:dbname=$dbfile";
-    my $create  = 't/sql/cart_create_table.sql';
-
-    unlink $dbfile;
-    executesql($db, $create);
-
-    ## create a new storage and check schema_instance configuration
+    ## create a new storage and check configuration
     my $sub = sub{};
     my $storage = Handel::Storage->new({
         cart_class         => 'Handel::Cart',
         item_class         => 'Handel::Cart::Item',
-        schema_class       => 'Handel::Cart::Schema',
-        schema_source      => 'Carts',
-        connection_info    => [$db],
         default_values     => {id => 1, name => 'New Cart'},
         validation_profile => {cart => [param1 => [ ['BLANK'], ['ASCII', 2, 12] ]]},
         add_columns        => [qw/one two/],
@@ -43,7 +23,7 @@ BEGIN {
         constraints        => {
             id   => {'check_id' => $sub},
             name => {'check_name' => $sub}},
-        currency_columns   => [qw/name/]
+        currency_columns   => [qw/one/]
     });
     isa_ok($storage, 'Handel::Storage');
 
@@ -61,33 +41,17 @@ BEGIN {
     is($clone->item_class, 'Handel::Base');
     is($storage->item_class, 'Handel::Cart::Item');
 
-    $clone->schema_class('Handel::Base');
-    is($clone->schema_class, 'Handel::Base');
-    is($storage->schema_class, 'Handel::Cart::Schema');
-
-    $clone->schema_source('Items');
-    is($clone->schema_source, 'Items');
-    is($storage->schema_source, 'Carts');
-
     $clone->iterator_class('Handel::Base');
     is($clone->iterator_class, 'Handel::Base');
-    is($storage->iterator_class, 'Handel::Iterator');
+    is($storage->iterator_class, 'Handel::Iterator::List');
 
     $clone->currency_class('Handel::Base');
     is($clone->currency_class, 'Handel::Base');
     is($storage->currency_class, 'Handel::Currency');
     
-    $clone->item_relationship('rel_items');
-    is($clone->item_relationship, 'rel_items');
-    is($storage->item_relationship, 'items');
-    
     $clone->autoupdate(3);
     is($clone->autoupdate, 3);
     is($storage->autoupdate, 1);
-
-    $clone->connection_info(['MyDSN', 'MyUser', 'MyPass']);
-    is_deeply($clone->connection_info, ['MyDSN', 'MyUser', 'MyPass']);
-    is_deeply($storage->connection_info, [$db]);
 
     $clone->default_values->{id} = 2;
     is_deeply($clone->default_values, {id => 2, name => 'New Cart'});
@@ -98,12 +62,12 @@ BEGIN {
     is_deeply($storage->validation_profile, {cart => [param1 => [ ['BLANK'], ['ASCII', 2, 12] ]]});
 
     $clone->add_columns('quix');
-    is_deeply($clone->_columns_to_add, [qw/one two quix/]);
-    is_deeply($storage->_columns_to_add, [qw/one two/]);
+    is_deeply($clone->_columns, [qw/one two quix/]);
+    is_deeply($storage->_columns, [qw/one two/]);
     
-    $clone->remove_columns('phil');
-    is_deeply($clone->_columns_to_remove, [qw/name phil/]);
-    is_deeply($storage->_columns_to_remove, [qw/name/]);
+    $clone->remove_columns('two');
+    is_deeply($clone->_columns, [qw/one quix/]);
+    is_deeply($storage->_columns, [qw/one two/]);
     
     my $foo = sub{};
     $clone->add_constraint('foo', 'check foo', $foo);
@@ -117,30 +81,24 @@ BEGIN {
             name => {'check_name' => $sub}
     });
 
-    push @{$clone->currency_columns}, 'dongle';
-    is_deeply($clone->currency_columns, [qw/name dongle/]);
-    is_deeply($storage->currency_columns, [qw/name/]);
+    push @{$clone->_currency_columns}, 'dongle';
+    is_deeply([sort $clone->currency_columns], [qw/dongle one/]);
+    is_deeply([$storage->currency_columns], [qw/one/]);
 
     undef $clone;
 
     ## throw exception as a class method
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $storage = Handel::Storage->clone;
 
             fail('no exception thrown');
         } catch Handel::Exception::Storage with {
             pass;
+            like(shift, qr/not a class/i);
         } otherwise {
             fail;
         };
     };
-
-
-    ## clone storage with an existing schema
-    my $schema = $storage->schema_instance;
-    my $clone2 = $storage->clone;
-    $storage->_schema_instance(undef);
-
-    is_deeply($clone2, $storage);
 };

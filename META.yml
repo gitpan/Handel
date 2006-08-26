@@ -2,12 +2,12 @@
 name: Handel
 abstract: Simple commerce framework with AxKit/TT/Catalyst support
 author: Christopher H. Laco <claco@chrislaco.com>
-version: 0.99_05
+version: 0.99_06
 version_from: lib/Handel.pm
 installdirs: site
 license: perl
 requires:
-  DBIx::Class: 0.07
+  DBIx::Class: 0.08
   DBIx::Class::UUIDColumns: 0
   DBIx::Class::Validation: 0
   Class::Accessor::Grouped: 0.02
@@ -22,7 +22,7 @@ requires:
   DateTime: 0
   DateTime::Format::MySQL: 0
 build_requires:
-  Test::More: 0.48
+  Test::More: 0.61
 recommends:
   AxKit: 1.61
   Catalyst: 5.7

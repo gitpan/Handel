@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id$
+# $Id: order_destroy.t 1384 2006-08-24 23:20:10Z claco $
 use strict;
 use warnings;
 use Test::More;

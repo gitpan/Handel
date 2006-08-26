@@ -1,4 +1,4 @@
-# $Id: Iterator.pm 1354 2006-08-06 00:11:31Z claco $
+# $Id: Iterator.pm 1372 2006-08-18 01:36:57Z claco $
 package Handel::Iterator;
 use strict;
 use warnings;
@@ -8,75 +8,58 @@ use overload
         fallback => 1;
 
 BEGIN {
-    use base qw/DBIx::Class::ResultSet Class::Accessor::Grouped/;
-    __PACKAGE__->mk_group_accessors('simple', qw/iterator/);
+    use base qw/Class::Accessor::Grouped/;
+    __PACKAGE__->mk_group_accessors('inherited', qw/data result_class storage/);
+
+    use Handel::Exception qw/:try/;
+    use Handel::L10N qw/translate/;
+};
+
+sub new {
+    my ($class, $options) = @_;
+
+    return bless $options, ref $class || $class;
 };
 
 sub all {
-    my $self = shift;
-
-    if ($self->iterator) {
-        my @all = map {
-            $self->result_class->create_instance($_)
-        } $self->iterator->all;
-
-        return @all;
-    } else {
-        return $self->next::method(@_);
-    };
-};
-
-sub first {
-    my $self = shift;
-
-    if ($self->iterator) {
-        my $result = $self->iterator->first;
-
-        return $self->result_class->create_instance($result);
-    } else {
-        return $self->next::method(@_);    
-    };
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
 };
 
 sub count {
-    my $self = shift;
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+};
 
-    if ($self->iterator) {
-        return $self->iterator->count;
-    } else {
-        return $self->next::method(@_);
-    };
+sub first {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+};
+
+sub last {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
 };
 
 sub next {
-    my $self = shift;
-
-    if ($self->iterator) {
-        my $result = $self->iterator->next;
-
-        return $self->result_class->create_instance($result);
-    } else {
-        return $self->next::method(@_);    
-    };
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
 };
 
 sub reset {
-    my $self = shift;
-
-    if ($self->iterator) {
-        return $self->iterator->reset;
-    } else {
-        return $self->next::method(@_);
-    };
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
 };
 
-sub create_iterator {
-    my ($self, $iterator, $result_class) = @_;
+sub create_result {
+    my ($self, $result, $storage) = @_;
+    $storage ||= $self->storage;
 
-    return bless {
-        iterator     => $iterator,
-        result_class => $result_class
-    }, ref $self || $self;
+    throw Handel::Exception::Argument( -text => 
+        translate('Result not supplied')
+    ) unless $result;
+
+    throw Handel::Exception::Argument( -text => 
+        translate('Storage not supplied')
+    ) unless $storage;
+
+    return $self->result_class->create_instance(
+        $result, $storage
+    );
 };
 
 1;
@@ -84,111 +67,131 @@ __END__
 
 =head1 NAME
 
-Handel::Iterator - Iterator class used for collection looping
+Handel::Iterator - Iterator base class used for collection looping
 
 =head1 SYNOPSIS
 
-    use Handel::Cart;
-    
-    my $cart = Handel::Cart->new({
-        shopper => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E'
+    my $iterator = Handel::Iterator::Custom->new({
+        data         => [$object1, $object2, ...],
+        result_class => 'MyResult',
+        storage      => $storage
     });
     
-    my $iterator = $cart->items;
-    while (my $item = $iterator->next) {
-        print $item->sku;
-        print $item->price;
-        print $item->total;
+    while (my $result = $iterator->next) {
+        print $result->method;
     };
 
 =head1 DESCRIPTION
 
-Handel::Iterator is used internally by Handel::Cart/Order/Item to iterate
-through collections of objects and items. At this point, there should be no
-reason to use it directly.
+Handel::Iterator is a base class used to create custom iterators for
+DBIx::Class resultsets and lists of results.
+
+=head1 CONSTRUCTOR
+
+=head2 new
+
+=over
+
+=item Arguments: \%options
+
+=back
+
+Creates a new iterator object. The following options are available:
+
+    my $iterator = Handel::Iterator::Custom->new({
+        data         => [$object1, $object2, ...],
+        result_class => 'MyResult',
+        storage      => $storage
+    });
+
+    my $result = $iterator->first;
+    print ref $result; # MyResult
+
+=over
+
+=item data
+
+The data to be iterated through. The type of this data depends on the
+individual subclass.
+
+=item result_class
+
+The name of the class that each result should be inflated into.
+
+=item storage
+
+The storage object that was used to create the results.
+
+=back
 
 =head1 METHODS
 
 =head2 all
 
-Returns all results from the resultset as a list.
+Returns all results from current iterator.
 
-    my $it = Handel::Cart->load({
-        shopper => '11111111-1111-1111-1111-111111111111'
-    });
-    
-    my @carts = $it->all;
+    foreach my $result ($iterator->all) {
+        print $result->method;
+    };
 
-=head2 create_iterator
+=head2 count
+
+Returns the number of results in the current iterator.
+
+    my $count = $iterator->count;
+
+=head2 create_result
 
 =over
 
-=item Arguments: $iterator, $result_class
+=item Arguments: $result [, $storage]
 
 =back
 
-Returns a new iterator object that iterates through the supplied iterator and
-calls C<create_instance> on each C<result_class> for each result.
+Returns a new result class object based on the specified result and storage
+objects. If no storage object is specified, the storage object passed to C<new>
+will be used instead.
 
-    my $results_it = $storage->search;
-    my $carts_it = $storage->iterator_class->create_iterator($results_it, 'Handel::Cart');
-
-This is used by the interface classes to wrap results returned by the storage
-layer.
+This method is used by methods like C<first> and C<next> to to create storage
+result objects. There is probably no good reason to use this method directly.
 
 =head2 first
 
 Returns the first result or undef if there are no results.
 
-    my $it = Handel::Cart->load({
-        shopper => '11111111-1111-1111-1111-111111111111'
-    });
-    
-    my $carts = $it->first;
+    my $first = $iterator->first;
+
+=head2 last
+
+Returns the last result or undef if there are no results.
+
+    my $last = $iterator->last;
 
 =head2 next
 
 Returns the next result or undef if there are no results.
 
-    my $it = Handel::Cart->load({
-        shopper => '11111111-1111-1111-1111-111111111111'
-    });
-    
-    while ($cart = $it->next) {
-        print $cart->name;
+    while (my $result = $iterator->next) {
+        print $result->method;
     };
-
-=head2 count
-
-Returns the number of results.
-
-    my $it = Handel::Cart->load({
-        shopper => '11111111-1111-1111-1111-111111111111'
-    });
-    
-    my $cart_count = $it->count;
 
 =head2 reset
 
 Resets the current result position back to the first result.
 
-    my $it = Handel::Cart->load({
-        shopper => '11111111-1111-1111-1111-111111111111'
-    });
-    
-    while (my $cart = $it->next) {
-        print $cart->name;
+    while (my $result = $iterator->next) {
+        print $result->method;
     };
     
-    $it->reset;
+    $iterator->reset;
     
-    while (my $cart = $it->next) {
-        print $cart->name;
+    while (my $result = $iterator->next) {
+        print $result->method;
     };
 
 =head1 SEE ALSO
 
-L<Handel::Cart>, L<Handel::Order>
+L<Handel::Iterator::DBIC>, L<Handel::Iterator::List>
 
 =head1 AUTHOR
 

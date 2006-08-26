@@ -1,4 +1,4 @@
-# $Id: Order.pm 1355 2006-08-07 01:51:41Z claco $
+# $Id: Order.pm 1365 2006-08-10 14:47:20Z claco $
 package Template::Plugin::Handel::Order;
 use strict;
 use warnings;
@@ -60,7 +60,7 @@ Template::Plugin::Handel::Order - Template Toolkit plugin for orders
 =head1 SYNOPSIS
 
     [% USE Handel.Order %]
-    [% IF (order = Handel.Order.load({id => 'A2CCD312-73B5-4EE4-B77E-3D027349A055'}).first) %]
+    [% IF (order = Handel.Order.search({id => 'A2CCD312-73B5-4EE4-B77E-3D027349A055'}).first) %]
         [% order.number %]
         [% FOREACH item IN order.items.all %]
             [% item.sku %]

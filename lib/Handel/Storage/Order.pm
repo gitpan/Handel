@@ -1,10 +1,10 @@
-# $Id: Order.pm 1350 2006-07-30 22:37:37Z claco $
+# $Id: Order.pm 1371 2006-08-17 01:17:58Z claco $
 package Handel::Storage::Order;
 use strict;
 use warnings;
 
 BEGIN {
-    use base qw/Handel::Storage/;
+    use base qw/Handel::Storage::DBIC/;
     use Handel::Constants qw/ORDER_TYPE_TEMP/;
     use Handel::Constraints qw/:all/;
 };

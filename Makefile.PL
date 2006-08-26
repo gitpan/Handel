@@ -1,17 +1,17 @@
-# $Id: Makefile.PL 1360 2006-08-09 03:17:09Z claco $
+# $Id: Makefile.PL 1381 2006-08-24 01:27:08Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
 use warnings FATAL => 'all';
 
 require Test::More;
-if (Test::More->VERSION < 0.48) {
+if (Test::More->VERSION < 0.60) {
     print "\a\a\a\a\a";
     print "----------------------------------------------------------\n";
-    print "Test::More < 0.48 sometimes causes test failures with\n";
-    print "Class::DBI/IMA::DBI. Please consider updating Test::More\n";
-    print "to version 0.48 or greater if you experience test failures\n";
-    print "with 'attempt to free unreferenced scalar' errors.\n";
+    print "Test::More < 0.61 sometimes causes test failures with\n";
+    print "when comparing strigified DateTime objects.\n";
+    print "Please consider updating Test::More to version 0.61\n";
+    print "or greater if you experience test failures.\n";
     print "----------------------------------------------------------\n";
     sleep 5;
 };
@@ -77,6 +77,7 @@ my @clean = qw(
     t/conf/modperl_inc.pl
     t/conf/modperl_startup.pl
     t/htdocs/index.html
+    t/var
 );
 
 WriteMakefile(
@@ -85,7 +86,7 @@ WriteMakefile(
     AUTHOR       => 'Christopher H. Laco <claco@chrislaco.com>',
     ABSTRACT     => 'Simple ecommerce framework with AxKit support',
     PREREQ_PM    => {
-        'DBIx::Class'              => '0.07',
+        'DBIx::Class'              => '0.08',
         'DBIx::Class::UUIDColumns' => '0',
         'DBIx::Class::Validation'  => '0',
         'Class::Accessor::Grouped' => '0.02',

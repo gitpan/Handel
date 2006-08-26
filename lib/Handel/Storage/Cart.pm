@@ -1,10 +1,10 @@
-# $Id: Cart.pm 1350 2006-07-30 22:37:37Z claco $
+# $Id: Cart.pm 1371 2006-08-17 01:17:58Z claco $
 package Handel::Storage::Cart;
 use strict;
 use warnings;
 
 BEGIN {
-    use base qw/Handel::Storage/;
+    use base qw/Handel::Storage::DBIC/;
     use Handel::Constants qw/CART_TYPE_TEMP/;
     use Handel::Constraints qw/:all/;
 };

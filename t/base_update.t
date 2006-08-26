@@ -1,10 +1,11 @@
 #!perl -wT
-# $Id: base_update.t 1354 2006-08-06 00:11:31Z claco $
+# $Id: base_update.t 1386 2006-08-26 01:46:16Z claco $
 use strict;
 use warnings;
 use Test::More;
 use lib 't/lib';
-use Handel::TestHelper qw(executesql);
+use Test::More;
+use Handel::Test;
 
 BEGIN {
     eval 'require DBD::SQLite';
@@ -14,25 +15,17 @@ BEGIN {
         plan tests => 10;
     };
 
-    use_ok('Handel::Storage');
+    use_ok('Handel::Storage::DBIC');
     use_ok('Handel::Base');
     use_ok('Handel::Exception', ':try');
 };
 
 
 {
-    ## Setup SQLite DB for tests
-    my $dbfile  = "t/base_update.db";
-    my $db      = "dbi:SQLite:dbname=$dbfile";
-    my $create  = 't/sql/cart_create_table.sql';
-
-    unlink $dbfile;
-    executesql($db, $create);
-
-    my $storage = Handel::Storage->new({
+    my $storage = Handel::Storage::DBIC->new({
         schema_class       => 'Handel::Cart::Schema',
         schema_source      => 'Carts',
-        connection_info    => [$db]
+        connection_info    => [Handel::Test->init_schema(no_populate => 1)->dsn]
     });
 
     my $schema = $storage->schema_instance;
@@ -45,10 +38,14 @@ BEGIN {
     });
 
     my $it = $schema->resultset('Carts')->search({id => 1});
-    $it->result_class('Handel::Storage::Result');
 
-    my $iterator = $storage->iterator_class->create_iterator($it, 'Handel::Base');
-    my $cart = $iterator->next;
+    my $iterator = $storage->iterator_class->new({
+        data => $it,
+        storage => $storage,
+        result_class => 'Handel::Storage::Result'
+    });
+
+    my $cart = Handel::Base->create_instance($iterator->next, $storage);
 
     is($cart->result->id, 1);
     is($cart->result->shopper, 1);
@@ -59,21 +56,25 @@ BEGIN {
     is($cart->result->name, 'UpdatedName');
 
     my $reit = $schema->resultset('Carts')->search({id => 1});
-    $reit->result_class('Handel::Storage::Result');
+    my $reiter = $storage->iterator_class->new({
+        data => $reit,
+        storage => $storage,
+        result_class => 'Handel::Storage::Result'
+    });
 
-    my $reiter = $storage->iterator_class->create_iterator($reit, 'Handel::Base');
-
-    my $recart = $reiter->first;
+    my $recart = Handel::Base->create_instance($reiter->first, $storage);
     is($recart->result->name, 'Cart1');
 
     $cart->update;
 
     my $it2 = $schema->resultset('Carts')->search({id => 1});
-    $it2->result_class('Handel::Storage::Result');
+    my $reit2 = $storage->iterator_class->new({
+        data => $it2,
+        storage => $storage,
+        result_class => 'Handel::Storage::Result'
+    });
 
-    my $reit2 = $storage->iterator_class->create_iterator($it2, 'Handel::Base');
 
-
-    my $recart2 = $reit2->first;
+    my $recart2 = Handel::Base->create_instance($reit2->first, $storage);
     is($recart2->result->name, 'UpdatedName');
 };

@@ -1,4 +1,4 @@
-# $Id: Constants.pm 1356 2006-08-07 22:46:03Z claco $
+# $Id: Constants.pm 1365 2006-08-10 14:47:20Z claco $
 package Handel::Constants;
 use strict;
 use warnings;
@@ -126,7 +126,7 @@ Handel::Constants - Common constants used in Handel
 
     use Handel::Constants qw(:cart);
 
-    my $cart = Handel::Cart->new({
+    my $cart = Handel::Cart->create({
         shopper => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E'
     });
 

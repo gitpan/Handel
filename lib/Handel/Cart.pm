@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1360 2006-08-09 03:17:09Z claco $
+# $Id: Cart.pm 1368 2006-08-16 03:14:40Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
@@ -116,9 +116,10 @@ sub items {
             ref($filter) eq 'HASH' or !$filter);
 
     my $results = $result->search_items($filter);
-    my $iterator = $storage->iterator_class->create_iterator(
-        $results, $storage->item_class
-    );
+    my $iterator = $storage->item_class->result_iterator_class->new({
+        data         => $results,
+        result_class => $storage->item_class
+    });
 
     return wantarray ? $iterator->all : $iterator;
 };
@@ -135,7 +136,10 @@ sub search {
     my $storage = $opts->{'storage'} || $self->storage;
 
     my $results = $storage->search($filter);
-    my $iterator = $storage->iterator_class->create_iterator($results, $class);
+    my $iterator = $self->result_iterator_class->new({
+        data         => $results,
+        result_class => $class
+    });
 
     return wantarray ? $iterator->all : $iterator;
 };
@@ -302,10 +306,10 @@ data as a hash reference:
 
 or pass an existing cart item:
 
-    my $wishlist = Handel::Cart->load({
+    my $wishlist = Handel::Cart->search({
         shopper => '10020400-E260-11CF-AE68-00AA004A34D5',
         type    => CART_TYPE_SAVED
-    });
+    })->first;
     
     $cart->add(
         $wishlist->items({sku => 'ABC-123'})->first
@@ -459,10 +463,10 @@ criteria of the shopping cart(s) to restore:
 
 or you can pass in an existing C<Handel::Cart> object or subclass.
 
-    my $wishlist = Handel::Cart->load({
+    my $wishlist = Handel::Cart->search({
         id   => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E',
         type => CART_TYPE_SAVED
-    });
+    })->first;
     
     $cart->restore($wishlist);
 

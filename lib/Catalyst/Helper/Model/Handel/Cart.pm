@@ -1,8 +1,8 @@
-# $Id: Cart.pm 1353 2006-08-04 13:04:17Z claco $
+# $Id: Cart.pm 1386 2006-08-26 01:46:16Z claco $
 package Catalyst::Helper::Model::Handel::Cart;
 use strict;
 use warnings;
-use Catalyst 5.7;
+use Catalyst 5.7001;
 
 sub mk_compclass {
     my ($self, $helper, $dsn, $user, $pass) = @_;
@@ -11,25 +11,51 @@ sub mk_compclass {
     $helper->{'user'} = $user || '';
     $helper->{'pass'} = $pass || '';
 
-    $helper->render_file('model', $file);
+    return $helper->render_file('model', $file);
 };
 
 sub mk_comptest {
     my ($self, $helper) = @_;
     my $test = $helper->{'test'};
 
-    $helper->render_file('test', $test);
+    return $helper->render_file('test', $test);
 };
 
 1;
 __DATA__
+
+=begin pod_to_ignore
+
 __model__
 package [% class %];
 use strict;
 use warnings;
-use base qw/Handel::Cart/;
 
-__PACKAGE__->connection_info('[% dsn %]', '[% user %]', '[% pass %]');
+BEGIN {
+    use base qw/Catalyst::Model::Handel::Cart/;
+};
+
+__PACKAGE__->config(
+    connection_info => ['[% dsn %]', '[% user %]', '[% pass %]']
+);
+
+=head1 NAME
+
+[% class %] - Catalyst cart model component.
+
+=head1 SYNOPSIS
+
+See L<[% app %]>.
+
+=head1 DESCRIPTION
+
+Catalyst cart model component.
+
+=head1 AUTHOR
+
+[% author %]
+
+=cut
 
 1;
 __test__
@@ -37,8 +63,10 @@ use Test::More tests => 2;
 use strict;
 use warnings;
 
-use_ok('Catalyst::Test', '[% app %]');
-use_ok('[% class %]');
+BEGIN {
+    use_ok('Catalyst::Test', '[% app %]');
+    use_ok('[% class %]');
+};
 __END__
 
 =head1 NAME
@@ -48,7 +76,7 @@ Catalyst::Helper::Model::Handel::Cart - Helper for Handel::Cart Models
 =head1 SYNOPSIS
 
     script/create.pl model <newclass> Handel::Cart <dsn> [<username> <password>]
-    script/create.pl model Cart Handel::Cart dbi:mysql:dbname=handel.db myuser mysecret
+    script/create.pl model Cart Handel::Cart dbi:mysql:localhost myuser mysecret
 
 =head1 DESCRIPTION
 
@@ -66,7 +94,7 @@ Makes a Handel::Cart Model test for you.
 
 =head1 SEE ALSO
 
-L<Catalyst::Manual>, L<Catalyst::Helper>, L<Handel::Cart>
+L<Catalyst::Manual>, L<Catalyst::Helper>, L<Catalyst::Model::Handel::Cart>
 
 =head1 AUTHOR
 

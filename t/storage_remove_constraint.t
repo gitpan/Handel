@@ -1,74 +1,55 @@
 #!perl -wT
-# $Id: storage_remove_constraint.t 1247 2006-06-27 18:52:15Z claco $
+# $Id: storage_remove_constraint.t 1385 2006-08-25 02:42:03Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
+use Test::More tests => 9;
 
 BEGIN {
-    eval 'require DBD::SQLite';
-    if($@) {
-        plan skip_all => 'DBD::SQLite not installed';
-    } else {
-        plan tests => 11;
-    };
-
     use_ok('Handel::Storage');
     use_ok('Handel::Exception', ':try');
 };
 
+my $storage = Handel::Storage->new;
+isa_ok($storage, 'Handel::Storage');
 
-{
-    ## Setup SQLite DB for tests
-    my $dbfile  = "t/storage_remove_constraint.db";
-    my $db      = "dbi:SQLite:dbname=$dbfile";
-    my $create  = 't/sql/cart_create_table.sql';
+## start w/ nothing
+is($storage->constraints, undef);
 
-    unlink $dbfile;
-    executesql($db, $create);
+my $sub = {};
+$storage->constraints({
+    id => {
+        'Check Id' => $sub,
+        'Check It Again' => $sub
+    }
+});
 
-    ## create storage and add constraint
-    my $storage = Handel::Storage->new({
-        schema_class    => 'Handel::Cart::Schema',
-        schema_source   => 'Carts',
-        connection_info => [$db],
-    });
-    isa_ok($storage, 'Handel::Storage');
+## remove constraint from unconnected schema
+$storage->remove_constraint('id', 'Check Id');
+is_deeply($storage->constraints, {'id' => {'Check It Again' => $sub}});
 
-    my $constraint = sub{};
-    $storage->add_constraint('id', 'check id' => $constraint);
-    $storage->add_constraint('name', 'check name' => $constraint);
 
-    my $schema = $storage->schema_instance;
-    isa_ok($schema, 'Handel::Cart::Schema');
+## throw exception when no column is specified
+try {
+    local $ENV{'LANG'} = 'en';
+    $storage->remove_constraint;
 
-    my $cart_class = $schema->class('Carts');
-    is_deeply($storage->constraints, {'id' => {'check id' => $constraint}, 'name' => {'check name' => $constraint}});
-    is_deeply($cart_class->constraints, {'id' => {'check id' => $constraint}, 'name' => {'check name' => $constraint}});
+    fail('no exception thrown');
+} catch Handel::Exception::Argument with {
+    pass;
+    like(shift, qr/no column/i);
+} otherwise {
+    fail;
+};
 
-    ## throw exception when adding a constraint with an active schema instance
-    {
-        try {
-            $storage->add_constraint('name', 'second' => sub{});
+## throw exception when no name is specified
+try {
+    local $ENV{'LANG'} = 'en';
+    $storage->remove_constraint('col');
 
-            fail('no exception thrown');
-        } catch Handel::Exception::Storage with {
-            pass;
-        } otherwise {
-            fail;
-        };
-    };
-
-    $storage->_schema_instance(undef);
-    is_deeply($storage->constraints, {'id' => {'check id' => $constraint}, 'name' => {'check name' => $constraint}});
-
-    $storage->remove_constraint('name', 'check name');
-    is_deeply($storage->constraints, {'id' => {'check id' => $constraint}});
-
-    $schema = $storage->schema_instance;
-    isa_ok($schema, 'Handel::Cart::Schema');
-
-    $cart_class = $schema->class('Carts');
-    is_deeply($cart_class->constraints, {'id' => {'check id' => $constraint}});
+    fail('no exception thrown');
+} catch Handel::Exception::Argument with {
+    pass;
+    like(shift, qr/no constraint name/i);
+} otherwise {
+    fail;
 };

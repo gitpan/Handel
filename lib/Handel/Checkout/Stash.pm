@@ -1,11 +1,20 @@
-# $Id: Stash.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Stash.pm 1368 2006-08-16 03:14:40Z claco $
 package Handel::Checkout::Stash;
 use strict;
 use warnings;
 
+BEGIN {
+    use Handel::L10N qw/translate/;
+};
+
 sub new {
-    my $class = shift;
-    my $self = bless {}, ref $class || $class;
+    my ($class, $data) = @_;
+
+    throw Handel::Exception::Argument(
+        -details => translate('Param 1 is not a HASH reference') . '.') if
+            defined $data && ref($data) ne 'HASH';
+
+    my $self = bless $data || {}, ref $class || $class;
 
     return $self;
 };
@@ -64,7 +73,7 @@ tell Handel::Checkout to use the new stash instead:
     
     ---
     
-    use Handel::Check out;
+    use Handel::Checkout;
     
     my $co = Handel::Checkout->new({
         stash => MyApp::Stash->new
@@ -74,7 +83,14 @@ tell Handel::Checkout to use the new stash instead:
 
 =head2 new
 
-Creates a new instance of Handel::Checkout::Stash.
+=over
+
+=item Arguments: \%data
+
+=back
+
+Creates a new instance of Handel::Checkout::Stash. You can optionally pass a hash
+reference to new which will be blessed into the new stash instance.
 
 =head1 METHODS
 

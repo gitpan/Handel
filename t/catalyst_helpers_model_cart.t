@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_model_cart.t 1318 2006-07-10 23:42:32Z claco $
+# $Id: catalyst_helpers_model_cart.t 1386 2006-08-26 01:46:16Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -8,9 +8,13 @@ use File::Path;
 use File::Spec::Functions;
 
 BEGIN {
-    eval 'use Catalyst 5.7';
+    eval 'use Catalyst 5.7001';
     plan(skip_all =>
-        'Catalyst 5.7 not installed') if $@;
+        'Catalyst 5.7001 not installed') if $@;
+
+    eval 'use Catalyst::Devel 1.0';
+    plan(skip_all =>
+        'Catalyst::Devel 1.0 not installed') if $@;
 
     eval 'use Test::File 1.10';
     plan(skip_all =>
@@ -20,19 +24,19 @@ BEGIN {
     plan(skip_all =>
         'Test::File::Contents 0.02 not installed') if $@;
 
-    plan tests => 5;
+    plan tests => 6;
 
     use_ok('Catalyst::Helper');
 };
 
-my $helper = Catalyst::Helper->new({short => 1});
+my $helper = Catalyst::Helper->new;
 my $app = 'TestApp';
 
 
 ## create the test app
 {
     chdir('t');
-    rmtree('TestApp');
+    rmtree($app);
 
     $helper->mk_app($app);
     $FindBin::Bin = catdir(cwd, $app, 'lib');
@@ -41,10 +45,18 @@ my $app = 'TestApp';
 
 ## create the default model
 {
-    my $module = catfile($app, 'lib', $app, 'M', 'Cart.pm');
+    my $module = catfile($app, 'lib', $app, 'Model', 'Cart.pm');
     $helper->mk_component($app, 'model', 'Cart', 'Handel::Cart', 'testdsn', 'testuser', 'testpass');
     file_exists_ok($module);
     file_contents_like($module, qr/'testdsn'/);
     file_contents_like($module, qr/'testuser'/);
     file_contents_like($module, qr/'testpass'/);
+};
+
+
+## load it up
+{
+    my $lib = catfile(cwd, $app, 'lib');
+    eval "use lib '$lib';use $app\:\:Model\:\:Cart";
+    ok(!$@);
 };
