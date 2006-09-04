@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1368 2006-08-16 03:14:40Z claco $
+# $Id: Cart.pm 1390 2006-09-04 01:02:49Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
@@ -86,7 +86,7 @@ sub delete {
 sub destroy {
     my ($self, $filter, $opts) = @_;
 
-    if (ref $self) {
+    if (blessed $self && !defined $filter) {
         my $result = $self->result->delete;
         if ($result) {
             undef ($self);

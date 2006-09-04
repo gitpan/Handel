@@ -1,9 +1,12 @@
-# $Id: AssignOrderNumber.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: AssignOrderNumber.pm 1390 2006-09-04 01:02:49Z claco $
 package Handel::Checkout::Plugin::AssignOrderNumber;
 use strict;
 use warnings;
-use base qw/Handel::Checkout::Plugin/;
-use Handel::Constants qw/:checkout/;
+
+BEGIN {
+    use base qw/Handel::Checkout::Plugin/;
+    use Handel::Constants qw/:checkout/;
+};
 
 sub register {
     my ($self, $ctx) = @_;
@@ -15,7 +18,6 @@ sub handler {
     my ($self, $ctx) = @_;
 
     $ctx->order->number(time);
-    $ctx->order->updated(scalar localtime);
 
     return CHECKOUT_HANDLER_OK;
 };

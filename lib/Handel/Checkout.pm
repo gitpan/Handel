@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1368 2006-08-16 03:14:40Z claco $
+# $Id: Checkout.pm 1390 2006-09-04 01:02:49Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
@@ -92,7 +92,7 @@ sub add_handler {
                         translate("There is already a handler in phase ([_1]) for preference ([_2]) from the plugin ([_3])", $phase, $preference, $plugin) . '.')
                 };
             } else {
-                my @prefs = sort {$a <=> $b} keys %{$self->{'handlers'}->{'$phase'}};
+                my @prefs = sort {$a <=> $b} keys %{$self->{'handlers'}->{$phase}};
                 $preference = scalar @prefs ? $#prefs++ : 101;
             };
             $self->{'handlers'}->{$phase}->{$preference} = [$_, $ref];

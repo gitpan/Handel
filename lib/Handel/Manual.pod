@@ -10,6 +10,10 @@ Handel::Manual - User guide and reference for Handel
 
 A few words about the Handel Framework.
 
+=head2 L<Handel::Manual::Requirements|Handel::Manual::Requirements>
+
+What you need to install to use Handel.
+
 =head2 L<Handel::Manual::Intro|Handel::Manual::Intro>
 
 A quick introduction to the framework and its structure.

@@ -1,11 +1,11 @@
 TODO list for Perl module Handel (in no particular order):
 
+	- Handel::Order needs to set updated field automagically
     - Migrate tests from TestHelper to Handel::Test
     - Manual pages for customize/storage how-2
     - Update create_accessors to take an accessor_map/ro/wo/rw
     - AxKit Tablibs need reworked for subclassing
     - TT plugins need reworked for subclassing
-    - rework Catalyst Helpers for 5.7x
     - better deal with copying carts to orders, custom fields, etc
     - create sql from SQL::Translator schema scripts
     - add taglib test to check for bogus filter names

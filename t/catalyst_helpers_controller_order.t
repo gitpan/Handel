@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_controller_order.t 1318 2006-07-10 23:42:32Z claco $
+# $Id: catalyst_helpers_controller_order.t 1390 2006-09-04 01:02:49Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -8,9 +8,13 @@ use File::Path;
 use File::Spec::Functions;
 
 BEGIN {
-    eval 'use Catalyst 5.7';
+    eval 'use Catalyst 5.7001';
     plan(skip_all =>
-        'Catalyst 5.7 not installed') if $@;
+        'Catalyst 5.7001 not installed') if $@;
+
+    eval 'use Catalyst::Devel 1.0';
+    plan(skip_all =>
+        'Catalyst::Devel 1.0 not installed') if $@;
 
     eval 'use Test::File 1.10';
     plan(skip_all =>
@@ -25,119 +29,118 @@ BEGIN {
     use_ok('Catalyst::Helper');
 };
 
-my $helper = Catalyst::Helper->new({short => 1});
+my $helper = Catalyst::Helper->new;
 my $app = 'TestApp';
 
 
 ## create test app
 {
     chdir('t');
-    rmtree('TestApp');
+    rmtree($app);
     $helper->mk_app($app);
     $FindBin::Bin = catdir(cwd, $app, 'lib');
 };
 
 
-
-SKIP: {
-    skip 'Catalyst Helper rewrite pending Storage rewrite', 45;
-
-
-
 ## create the default order controller
 {
-    my $module = catfile($app, 'lib', $app, 'C', 'Orders.pm');
-    my $list   = catfile($app, 'root', 'orders', 'list.tt');
-    my $view   = catfile($app, 'root', 'orders', 'view.tt');
+    my $module   = catfile($app, 'lib', $app, 'Controller', 'Orders.pm');
+    my $list     = catfile($app, 'root', 'orders', 'default');
+    my $view     = catfile($app, 'root', 'orders', 'view');
+    my $messages = catfile($app, 'root', 'orders', 'messages.yml');
+    my $profiles = catfile($app, 'root', 'orders', 'profiles.yml');
 
     $helper->mk_component($app, 'controller', 'Orders', 'Handel::Order');
     file_exists_ok($module);
     file_exists_ok($list);
     file_exists_ok($view);
-    file_contents_like($module, qr/->model\('Orders'\)->load/);
-    file_contents_like($module, qr/= 'orders\/view.tt'/);
-    file_contents_like($module, qr/= 'orders\/list.tt'/);
-    file_contents_like($view,   qr/\[% base _ 'orders\/' %\]/);
-    file_contents_like($list,   qr/\[% base _ 'orders\/' %\]/);
-    file_contents_like($list,   qr/\[% base _ 'orders\/view\/'/);
+    file_exists_ok($messages);
+    file_exists_ok($profiles);
+    file_contents_like($module,   qr/->model\('Order'\)/);
+    file_contents_like($module,   qr/= 'orders\/view'/);
+    file_contents_like($module,   qr/= 'orders\/default'/);
+    file_contents_like($view,     qr/INCLUDE orders\/errors/);
+    file_contents_like($list,     qr/\[% c.uri_for\('\/orders\/view'/);
+    file_contents_like($messages, qr/^orders\/view:/);
+    file_contents_like($profiles, qr/^orders\/view:/);
+};
+
+
+## load it up
+{
+    my $lib = catfile(cwd, $app, 'lib');
+    eval "use lib '$lib';use $app\:\:Controller\:\:Orders";
+    ok(!$@);
 };
 
 
 ## create the default order controller with custom model name
 {
-    my $module = catfile($app, 'lib', $app, 'C', 'MyOrders.pm');
-    my $list   = catfile($app, 'root', 'myorders', 'list.tt');
-    my $view   = catfile($app, 'root', 'myorders', 'view.tt');
+    my $module = catfile($app, 'lib', $app, 'Controller', 'MyOrders.pm');
+    my $list   = catfile($app, 'root', 'myorders', 'default');
+    my $view   = catfile($app, 'root', 'myorders', 'view');
 
     $helper->mk_component($app, 'controller', 'MyOrders', 'Handel::Order', 'MyOrderModel');
     file_exists_ok($module);
     file_exists_ok($list);
     file_exists_ok($view);
-    file_contents_like($module, qr/->model\('MyOrderModel'\)->load/);
-    file_contents_like($module, qr/= 'myorders\/view.tt'/);
-    file_contents_like($module, qr/= 'myorders\/list.tt'/);
-    file_contents_like($view,   qr/\[% base _ 'myorders\/' %\]/);
-    file_contents_like($list,   qr/\[% base _ 'myorders\/' %\]/);
-    file_contents_like($list,   qr/\[% base _ 'myorders\/view\/'/);
+    file_contents_like($module, qr/->model\('MyOrderModel'\)/);
+    file_contents_like($module, qr/= 'myorders\/view'/);
+    file_contents_like($module, qr/= 'myorders\/default'/);
+    file_contents_like($view,   qr/INCLUDE myorders\/errors/);
+    file_contents_like($list,   qr/\[% c.uri_for\('\/myorders\/view'/);
 };
 
 
 ## create the default order controller with custom two part model name
 {
-    my $module = catfile($app, 'lib', $app, 'C', 'MyOtherOrders.pm');
-    my $list   = catfile($app, 'root', 'myotherorders', 'list.tt');
-    my $view   = catfile($app, 'root', 'myotherorders', 'view.tt');
+    my $module = catfile($app, 'lib', $app, 'Controller', 'MyOtherOrders.pm');
+    my $list   = catfile($app, 'root', 'myotherorders', 'default');
+    my $view   = catfile($app, 'root', 'myotherorders', 'view');
 
     $helper->mk_component($app, 'controller', 'MyOtherOrders', 'Handel::Order', 'My::OrderModel');
     file_exists_ok($module);
     file_exists_ok($list);
     file_exists_ok($view);
-    file_contents_like($module, qr/->model\('My::OrderModel'\)->load/);
-    file_contents_like($module, qr/= 'myotherorders\/view.tt'/);
-    file_contents_like($module, qr/= 'myotherorders\/list.tt'/);
-    file_contents_like($view,   qr/\[% base _ 'myotherorders\/' %\]/);
-    file_contents_like($list,   qr/\[% base _ 'myotherorders\/' %\]/);
-    file_contents_like($list,   qr/\[% base _ 'myotherorders\/view\/'/);
+    file_contents_like($module, qr/->model\('My::OrderModel'\)/);
+    file_contents_like($module, qr/= 'myotherorders\/view'/);
+    file_contents_like($module, qr/= 'myotherorders\/default'/);
+    file_contents_like($view,   qr/INCLUDE myotherorders\/errors/);
+    file_contents_like($list,   qr/\[% c.uri_for\('\/myotherorders\/view'/);
 };
 
 
 ## create the default order controller with fully qualified model name
 {
-    my $module = catfile($app, 'lib', $app, 'C', 'MyCustomOrder.pm');
-    my $list   = catfile($app, 'root', 'mycustomorder', 'list.tt');
-    my $view   = catfile($app, 'root', 'mycustomorder', 'view.tt');
+    my $module = catfile($app, 'lib', $app, 'Controller', 'MyCustomOrder.pm');
+    my $list   = catfile($app, 'root', 'mycustomorder', 'default');
+    my $view   = catfile($app, 'root', 'mycustomorder', 'view');
 
     $helper->mk_component($app, 'controller', 'MyCustomOrder', 'Handel::Order', 'TestApp::M::My::OrderModel');
     file_exists_ok($module);
     file_exists_ok($list);
     file_exists_ok($view);
-    file_contents_like($module, qr/->model\('My::OrderModel'\)->load/);
-    file_contents_like($module, qr/= 'mycustomorder\/view.tt'/);
-    file_contents_like($module, qr/= 'mycustomorder\/list.tt'/);
-    file_contents_like($view,   qr/\[% base _ 'mycustomorder\/' %\]/);
-    file_contents_like($list,   qr/\[% base _ 'mycustomorder\/' %\]/);
-    file_contents_like($list,   qr/\[% base _ 'mycustomorder\/view\/'/);
+    file_contents_like($module, qr/->model\('My::OrderModel'\)/);
+    file_contents_like($module, qr/= 'mycustomorder\/view'/);
+    file_contents_like($module, qr/= 'mycustomorder\/default'/);
+    file_contents_like($view,   qr/INCLUDE mycustomorder\/errors/);
+    file_contents_like($list,   qr/\[% c.uri_for\('\/mycustomorder\/view'/);
 };
 
 
 ## create the default order controller with fully qualified model name
 {
-    my $module = catfile($app, 'lib', $app, 'C', 'MyThirdOrder.pm');
-    my $list   = catfile($app, 'root', 'mythirdorder', 'list.tt');
-    my $view   = catfile($app, 'root', 'mythirdorder', 'view.tt');
+    my $module = catfile($app, 'lib', $app, 'Controller', 'MyThirdOrder.pm');
+    my $list   = catfile($app, 'root', 'mythirdorder', 'default');
+    my $view   = catfile($app, 'root', 'mythirdorder', 'view');
 
     $helper->mk_component($app, 'controller', 'MyThirdOrder', 'Handel::Order', 'TestApp::Model::My::OrderModel');
     file_exists_ok($module);
     file_exists_ok($list);
     file_exists_ok($view);
-    file_contents_like($module, qr/->model\('My::OrderModel'\)->load/);
-    file_contents_like($module, qr/= 'mythirdorder\/view.tt'/);
-    file_contents_like($module, qr/= 'mythirdorder\/list.tt'/);
-    file_contents_like($view,   qr/\[% base _ 'mythirdorder\/' %\]/);
-    file_contents_like($list,   qr/\[% base _ 'mythirdorder\/' %\]/);
-    file_contents_like($list,   qr/\[% base _ 'mythirdorder\/view\/'/);
-};
-
-
-
+    file_contents_like($module, qr/->model\('My::OrderModel'\)/);
+    file_contents_like($module, qr/= 'mythirdorder\/view'/);
+    file_contents_like($module, qr/= 'mythirdorder\/default'/);
+    file_contents_like($view,   qr/INCLUDE mythirdorder\/errors/);
+    file_contents_like($list,   qr/\[% c.uri_for\('\/mythirdorder\/view'/);
 };

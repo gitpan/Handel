@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 1381 2006-08-24 01:27:08Z claco $
+# $Id: Makefile.PL 1390 2006-09-04 01:02:49Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -16,16 +16,16 @@ if (Test::More->VERSION < 0.60) {
     sleep 5;
 };
 
-eval 'require Handel';
-if (!$@ && $Handel::VERSION <= '1.00') {
-    print "\a\a\a\a\a";
-    print "----------------------------------------------------------\n";
-    print "BREAKING API CHANGES!!!!\n\n";
-    print "Handel 1.0+ is not API compatable with Handel <= 0.32.\n";
-    print "Please read the documentation for further details.\n";
-    print "----------------------------------------------------------\n";
-    sleep 5;
-};
+#eval 'require Handel';
+#if (!$@ && $Handel::VERSION <= '1.00') {
+#    print "\a\a\a\a\a";
+#    print "----------------------------------------------------------\n";
+#    print "BREAKING API CHANGES!!!!\n\n";
+#    print "Handel 1.0+ is not API compatable with Handel <= 0.32.\n";
+#    print "Please read the documentation for further details.\n";
+#    print "----------------------------------------------------------\n";
+#    sleep 5;
+#};
 
 if ($ENV{TEST_HTTP}) {
     eval 'use Apache::Test 1.27';

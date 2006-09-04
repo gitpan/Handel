@@ -1,9 +1,12 @@
-# $Id: MarkOrderSaved.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: MarkOrderSaved.pm 1390 2006-09-04 01:02:49Z claco $
 package Handel::Checkout::Plugin::MarkOrderSaved;
 use strict;
 use warnings;
-use base qw/Handel::Checkout::Plugin/;
-use Handel::Constants qw/:checkout :order/;
+
+BEGIN {
+    use base qw/Handel::Checkout::Plugin/;
+    use Handel::Constants qw/:checkout :order/;
+};
 
 sub register {
     my ($self, $ctx) = @_;

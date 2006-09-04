@@ -66,6 +66,7 @@ lib/Handel/Manual/QuickStart.pod
 lib/Handel/Manual/Schema.pod
 lib/Handel/Manual/Storage.pod
 lib/Handel/Manual/Storage/DBIC.pod
+lib/Handel/Manual/Requirements.pod
 lib/Handel/Manual/Upgrading.pod
 lib/Handel/Order.pm
 lib/Handel/Order/Item.pm
@@ -478,11 +479,12 @@ t/order_items.t
 t/order_search.t
 t/order_create.t
 t/order_reconcile.t
-t/perl_critic.rc
-t/perl_critic.t
 t/pod_coverage.t
 t/pod_spelling.t
 t/pod_syntax.t
+t/style_perl_critic.rc
+t/style_perl_critic.t
+t/style_no_tabs.t
 t/strict.t
 t/SMOKE.PL
 t/storage_columns.t

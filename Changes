@@ -1,5 +1,21 @@
 Revision history for Perl module Handel
 
+0.99_07 Sun Sep 03 20:58:13 2006
+	WARNING: The auto generated Catalyst helper code requires FormValidator::Simple
+	changes/fixes that have yet to be commited or accepted until the author responds.
+	Contact me if you need a copy of the modified version.
+
+    - Moved perl_critic.t to style_perl_critic.t
+    - Added style_no_tabs.t
+    - Style tests now enabled via TEST_PRIVATE
+    - Reworked Catalyst Helpers for Controllers and their tests.
+    - Fixed issue where add_handler wasn't assigning unique pref ids when non
+        were specified in the plugins themselves.
+    - Moved requirements to Requirements.pod
+    - Cart destroy now works on a blessed object under Catalyst
+    - AssignOrderNumber checkout plugin no longer sets the updated field.
+        This will be rolled into the Order class in the next release.
+
 0.99_06 Fri Aug 25 20:53:26 2006
     - Simplified Storage->setup and removed clear/reset nonsense
     - Added Spanish lexion provided by Diego Kuperman

@@ -1,8 +1,32 @@
-# $Id: Cart.pm 1386 2006-08-26 01:46:16Z claco $
+# $Id: Cart.pm 1389 2006-08-31 02:21:14Z claco $
 package Catalyst::Helper::Model::Handel::Cart;
 use strict;
 use warnings;
-use Catalyst 5.7001;
+
+BEGIN {
+    use Catalyst 5.7001;
+};
+
+=head1 NAME
+
+Catalyst::Helper::Model::Handel::Cart - Helper for Handel::Cart Models
+
+=head1 SYNOPSIS
+
+    script/create.pl model <newclass> Handel::Cart <dsn> [<username> <password>]
+    script/create.pl model Cart Handel::Cart dbi:mysql:localhost myuser mysecret
+
+=head1 DESCRIPTION
+
+A Helper for creating models based on Handel::Cart objects.
+
+=head1 METHODS
+
+=head2 mk_compclass
+
+Makes a Handel::Cart Model class for you.
+
+=cut
 
 sub mk_compclass {
     my ($self, $helper, $dsn, $user, $pass) = @_;
@@ -14,12 +38,32 @@ sub mk_compclass {
     return $helper->render_file('model', $file);
 };
 
+
+=head2 mk_comptest
+
+Makes a Handel::Cart Model test for you.
+
+=cut
+
 sub mk_comptest {
     my ($self, $helper) = @_;
     my $test = $helper->{'test'};
 
     return $helper->render_file('test', $test);
 };
+
+=head1 SEE ALSO
+
+L<Catalyst::Manual>, L<Catalyst::Helper>, L<Catalyst::Model::Handel::Cart>
+
+=head1 AUTHOR
+
+    Christopher H. Laco
+    CPAN ID: CLACO
+    claco@chrislaco.com
+    http://today.icantfocus.com/blog/
+
+=cut
 
 1;
 __DATA__
@@ -68,37 +112,3 @@ BEGIN {
     use_ok('[% class %]');
 };
 __END__
-
-=head1 NAME
-
-Catalyst::Helper::Model::Handel::Cart - Helper for Handel::Cart Models
-
-=head1 SYNOPSIS
-
-    script/create.pl model <newclass> Handel::Cart <dsn> [<username> <password>]
-    script/create.pl model Cart Handel::Cart dbi:mysql:localhost myuser mysecret
-
-=head1 DESCRIPTION
-
-A Helper for creating models based on Handel::Cart objects.
-
-=head1 METHODS
-
-=head2 mk_compclass
-
-Makes a Handel::Cart Model class for you.
-
-=head2 mk_comptest
-
-Makes a Handel::Cart Model test for you.
-
-=head1 SEE ALSO
-
-L<Catalyst::Manual>, L<Catalyst::Helper>, L<Catalyst::Model::Handel::Cart>
-
-=head1 AUTHOR
-
-    Christopher H. Laco
-    CPAN ID: CLACO
-    claco@chrislaco.com
-    http://today.icantfocus.com/blog/
