@@ -1,4 +1,4 @@
-# $Id: Storage.pm 1386 2006-08-26 01:46:16Z claco $
+# $Id: Storage.pm 1394 2006-09-04 17:54:57Z claco $
 package Handel::Storage;
 use strict;
 use warnings;
@@ -300,6 +300,18 @@ sub setup {
     foreach my $key (keys %{$options}) {
         $self->$key($options->{$key});
     };
+};
+
+sub txn_begin {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+};
+
+sub txn_commit {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+};
+
+sub txn_rollback {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
 };
 
 sub get_component_class {
@@ -921,6 +933,24 @@ This is the same as doing:
 If you call setup on a storage instance or class that has already been
 configured, its configuration will be updated with the new options. No attempt
 will be made to clear or reset the unspecified settings back to their defaults.
+
+=head2 txn_begin
+
+Starts a transaction on the current storage object.
+
+B<This method must be implemented in custom subclasses.>
+
+=head2 txn_commit
+
+Commits the current transaction on the current storage object.
+
+B<This method must be implemented in custom subclasses.>
+
+=head2 txn_rollback
+
+Rolls back the current transaction on the current storage object.
+
+B<This method must be implemented in custom subclasses.>
 
 =head2 validation_module
 

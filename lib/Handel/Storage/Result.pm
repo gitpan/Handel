@@ -1,3 +1,4 @@
+# $Id: Result.pm 1394 2006-09-04 17:54:57Z claco $
 package Handel::Storage::Result;
 use strict;
 use warnings;
@@ -8,11 +9,15 @@ BEGIN {
 };
 
 sub delete {
-    return $_[0]->storage_result->delete;
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+};
+
+sub discard_changes {
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
 };
 
 sub update {
-    return shift->storage_result->update(@_);
+    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
 };
 
 sub add_item {
@@ -43,6 +48,18 @@ sub create_instance {
         storage_result => $result,
         storage        => $storage
     }, $class;
+};
+
+sub txn_begin {
+    return shift->storage->txn_begin;
+};
+
+sub txn_commit {
+    return shift->storage->txn_commit;
+};
+
+sub txn_rollback {
+    return shift->storage->txn_rollback;
 };
 
 sub AUTOLOAD {
@@ -80,10 +97,6 @@ Handel::Storage operations. Its main purpose is to abstract storage result
 objects away from the Cart/Order/Item classes that use them. Each result is
 assumed to exposed methods for each 'property' or 'column' it has, as well as
 support the methods described below.
-
-While Handel::Storage currently operates on DBIx::Class schemas and uses DBIC
-resultset results, it should be possible to use a custom storage object to
-return results based on other operations, like SOAP/XMLRPC calls.
 
 =head1 METHODS
 
@@ -182,6 +195,8 @@ storage.
     
     $result->delete;
 
+B<This method must be implemented in custom subclasses.>
+
 =head2 delete_items
 
 =over
@@ -208,12 +223,11 @@ Deletes items matching the filter from the current result.
 This method is just a convenience method that forwards to the implementation in
 the current storage object. See L<Handel::Storage/delete_items> for more details.
 
-=head2 inflate_result
+=head2 discard_changes
 
-This method is called by the iterator class to create a new storage result
-for first/next operations. This method is only used by DBIC resultset-based
-iterators. For non DBIC iterators, and other result creation, use
-C<create_instance> instead.
+Discards all changes made since the last successful update.
+
+B<This method must be implemented in custom subclasses.>
 
 =head2 items
 
@@ -266,6 +280,18 @@ result.
     
     print $result->storage; # Handel::Storage::Cart
 
+=head2 txn_begin
+
+Starts a transaction on the current storage object.
+
+=head2 txn_commit
+
+Commits the current transaction on the current storage object.
+
+=head2 txn_rollback
+
+Rolls back the current transaction on the current storage object.
+
 =head2 update
 
 =over
@@ -274,7 +300,7 @@ result.
 
 =back
 
-Updates the current result with the date specified.
+Updates the current result with the data specified.
 
     my $storage = Handel::Storage::Cart->new;
     my $result = $storage->create({
@@ -284,6 +310,8 @@ Updates the current result with the date specified.
     $result->update({
         name => 'My Cart'
     });
+
+B<This method must be implemented in custom subclasses.>
 
 =head1 SEE ALSO
 

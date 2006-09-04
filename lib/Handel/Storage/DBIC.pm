@@ -1,4 +1,4 @@
-# $Id: DBIC.pm 1386 2006-08-26 01:46:16Z claco $
+# $Id: DBIC.pm 1394 2006-09-04 17:54:57Z claco $
 package Handel::Storage::DBIC;
 use strict;
 use warnings;
@@ -32,6 +32,7 @@ __PACKAGE__->constraints_class('Handel::Components::Constraints');
 __PACKAGE__->default_values_class('Handel::Components::DefaultValues');
 __PACKAGE__->item_relationship('items');
 __PACKAGE__->iterator_class('Handel::Iterator::DBIC');
+__PACKAGE__->result_class('Handel::Storage::DBIC::Result');
 __PACKAGE__->validation_class('Handel::Components::Validation');
 
 sub add_columns {
@@ -465,6 +466,18 @@ sub setup {
 
     # save the setup for last
     $self->schema_instance($schema_instance) if $schema_instance;
+};
+
+sub txn_begin {
+    shift->schema_instance->txn_begin;
+};
+
+sub txn_commit {
+    shift->schema_instance->txn_commit;
+};
+
+sub txn_rollback {
+    shift->schema_instance->txn_rollback;
 };
 
 sub _configure_schema_instance {
@@ -1395,6 +1408,18 @@ other options have been applied.
 
 Gets/sets the name of the table in the database to be used for this schema
 source.
+
+=head2 txn_begin
+
+Starts a transaction on the current schema instance.
+
+=head2 txn_commit
+
+Commits the current transaction on the current schema instance.
+
+=head2 txn_rollback
+
+Rolls back the current transaction on the current schema instance.
 
 =head2 validation_class
 

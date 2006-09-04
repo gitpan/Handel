@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1390 2006-09-04 01:02:49Z claco $
+# $Id: Checkout.pm 1394 2006-09-04 17:54:57Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
@@ -242,7 +242,7 @@ sub process {
     $self->_setup($self);
 
     {
-        $self->order->storage->schema_instance->txn_begin;
+        $self->order->result->txn_begin;
 
         foreach my $phase (@{$phases}) {
             next unless $phase;
@@ -255,7 +255,7 @@ sub process {
                 if ($status != CHECKOUT_HANDLER_OK && $status != CHECKOUT_HANDLER_DECLINE) {
                     $self->_teardown($self);
 
-                    $self->order->storage->schema_instance->txn_rollback;
+                    $self->order->result->txn_rollback;
                     $self->order->result->discard_changes;
                     foreach my $item ($self->order->items) {
                         $item->result->discard_changes;
@@ -270,7 +270,7 @@ sub process {
             };
         };
 
-        $self->order->storage->schema_instance->txn_commit;
+        $self->order->result->txn_commit;
     };
 
     $self->_teardown($self);

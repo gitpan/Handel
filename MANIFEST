@@ -83,6 +83,7 @@ lib/Handel/Storage/Cart/Item.pm
 lib/Handel/Storage/Order.pm
 lib/Handel/Storage/Order/Item.pm
 lib/Handel/Storage/Result.pm
+lib/Handel/Storage/DBIC/Result.pm
 lib/Template/Plugin/Handel/Cart.pm
 lib/Template/Plugin/Handel/Checkout.pm
 lib/Template/Plugin/Handel/Constants.pm

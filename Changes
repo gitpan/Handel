@@ -1,5 +1,11 @@
 Revision history for Perl module Handel
 
+0.99_08 Mon Sep 04 16:45:22 2006
+    - Added txn_begin/commit/rollback to Storage and Storage::DBIC to help
+        abstract Checkout::process from Storage.
+    - Added Storage::DBIC::Result to get DBIC specific things out of Storage::Result
+    - Minor pod fixes
+
 0.99_07 Sun Sep 03 20:58:13 2006
 	WARNING: The auto generated Catalyst helper code requires FormValidator::Simple
 	changes/fixes that have yet to be commited or accepted until the author responds.

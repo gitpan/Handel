@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: base_update.t 1386 2006-08-26 01:46:16Z claco $
+# $Id: base_update.t 1394 2006-09-04 17:54:57Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -42,7 +42,7 @@ BEGIN {
     my $iterator = $storage->iterator_class->new({
         data => $it,
         storage => $storage,
-        result_class => 'Handel::Storage::Result'
+        result_class => 'Handel::Storage::DBIC::Result'
     });
 
     my $cart = Handel::Base->create_instance($iterator->next, $storage);
@@ -59,7 +59,7 @@ BEGIN {
     my $reiter = $storage->iterator_class->new({
         data => $reit,
         storage => $storage,
-        result_class => 'Handel::Storage::Result'
+        result_class => 'Handel::Storage::DBIC::Result'
     });
 
     my $recart = Handel::Base->create_instance($reiter->first, $storage);
@@ -71,7 +71,7 @@ BEGIN {
     my $reit2 = $storage->iterator_class->new({
         data => $it2,
         storage => $storage,
-        result_class => 'Handel::Storage::Result'
+        result_class => 'Handel::Storage::DBIC::Result'
     });
 
 

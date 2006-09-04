@@ -1,6 +1,6 @@
 =head1 NAME
 
-Handel::Manual::About - A few words about the Handel Framework.
+Handel::Manual::Requirements - What you need to install to use Handel.
 
 =head1 DESCRIPTION
 
@@ -118,7 +118,7 @@ TT plugins.
 
 Version 5.7001 or greater.
 
-Catalyst is only required if you plan on using the suppled Catalyst Cart/Order models withing a Catalyst app.
+Catalyst is only required if you plan on using the supplied Catalyst Cart/Order models withing a Catalyst app.
 
 =head3 Catalyst::Devel
 
