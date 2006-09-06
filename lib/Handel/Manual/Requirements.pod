@@ -18,6 +18,10 @@ send me an email and I'll lower the version requirements.
 
 Version 0.08 or greater.
 
+B<Until 0.08 is released, please use the DBIx-Class-current branch from the repo:>
+
+    http://dev.catalystframework.org/repos/bast/branches/DBIx-Class-current/
+
 =head3 DBIx::Class::UUIDColumns
 
 Version 0.01 or greater.

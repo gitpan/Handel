@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1390 2006-09-04 01:02:49Z claco $
+# $Id: Cart.pm 1399 2006-09-06 01:48:15Z claco $
 package Catalyst::Helper::Controller::Handel::Cart;
 use strict;
 use warnings;
@@ -9,7 +9,7 @@ BEGIN {
     use Path::Class;
 
     # check for prereqs as early as possible
-    use FormValidator::Simple;
+    use FormValidator::Simple 0.17;
     use YAML;
 };
 
@@ -123,7 +123,7 @@ use warnings;
 BEGIN {
     use base qw/Catalyst::Controller/;
     use Handel::Constants qw/:cart/;
-    use FormValidator::Simple;
+    use FormValidator::Simple 0.17;
     use YAML;
 };
 
@@ -156,6 +156,10 @@ sub COMPONENT {
 
 =head2 default 
 
+Default action when browsing to [% uri %]/. If no session exists, or the shopper
+id isn't set, no cart will be loaded. This keeps non-shoppers like Google
+and others from wasting sessions and cart records for no good reason.
+
 =cut
 
 sub default : Private {
@@ -174,6 +178,16 @@ sub default : Private {
 
 =head2 add
 
+=over
+
+=item Parameters: (See L<Handel::Cart/add>)
+
+=back
+
+Adds an item to the current cart during POST.
+
+    [% uri %]/add/
+
 =cut
 
 sub add : Local {
@@ -188,6 +202,10 @@ sub add : Local {
 };
 
 =head2 clear
+
+Clears all items form the current shopping cart during POST.
+
+    [% uri %]/clear/
 
 =cut
 
@@ -204,6 +222,11 @@ sub clear : Local {
 };
 
 =head2 create
+
+Creats a new temporary shopping cart or returns the existing cart, creating a
+new session shopper id if necessary.
+
+    my $cart = $c->forward('create');
 
 =cut
 
@@ -227,6 +250,16 @@ sub create : Private {
 };
 
 =head2 delete
+
+=over
+
+=item Parameters: id
+
+=back
+
+Deletes an item from the current shopping cart during a POST.
+
+    [% uri %]/delete/
 
 =cut
 
@@ -253,6 +286,16 @@ sub delete : Local {
 };
 
 =head2 destroy
+
+=over
+
+=item Parameters: id
+
+=back
+
+Deletes the specified saved cart and all of its items during a POST.
+
+    [% uri %]/destroy/
 
 =cut
 
@@ -286,6 +329,10 @@ sub destroy : Local {
 
 =head2 list
 
+Displays a list of the current shoppers saved carts/wishlists.
+
+    [% uri %]/list/
+
 =cut
 
 sub list : Local {
@@ -306,6 +353,10 @@ sub list : Local {
 
 =head2 load
 
+Loads the shoppers current cart.
+
+    my $cart = $c->forward('load');
+
 =cut
 
 sub load : Private {
@@ -322,6 +373,16 @@ sub load : Private {
 };
 
 =head2 restore
+
+=over
+
+=item Parameters: id
+
+=back
+
+Restores a saved shopping cart into the shoppers current cart during a POST.
+
+    [% uri %]/restore/
 
 =cut
 
@@ -351,6 +412,16 @@ sub restore : Local {
 
 =head2 save
 
+=over
+
+=item Parameters: name
+
+=back
+
+Saves the current cart with the name specified.
+
+    [% uri %]/save/
+
 =cut
 
 sub save : Local {
@@ -375,6 +446,16 @@ sub save : Local {
 };
 
 =head2 update
+
+=over
+
+=item Parameters: quantity
+
+=back
+
+Updates the specified cart item qith the quantity given.
+
+    [% uri %]/update/
 
 =cut
 
@@ -405,6 +486,13 @@ sub update : Local {
 };
 
 =head2 validate
+
+Validates the current form parameters using the profile in profiles.yml that
+matches the current action.
+
+    if ($c->forward('validate')) {
+    
+    };
 
 =cut
 

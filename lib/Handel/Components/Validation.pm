@@ -1,8 +1,11 @@
 package Handel::Components::Validation;
 use strict;
 use warnings;
-use Scalar::Util qw/blessed/;
-use base qw/DBIx::Class::Validation/;
+
+BEGIN {
+    use base qw/DBIx::Class::Validation/;
+    use Scalar::Util qw/blessed/;
+};
 
 sub throw_exception {
     my ($self, $exception) = @_;

@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 1390 2006-09-04 01:02:49Z claco $
+# $Id: Makefile.PL 1398 2006-09-05 22:39:51Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -88,7 +88,7 @@ WriteMakefile(
     PREREQ_PM    => {
         'DBIx::Class'              => '0.08',
         'DBIx::Class::UUIDColumns' => '0',
-        'DBIx::Class::Validation'  => '0',
+        'DBIx::Class::Validation'  => '0.01001',
         'Class::Accessor::Grouped' => '0.02',
         'Class::ISA'               => '0',
         'Class::Inspector'         => '0',

@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1390 2006-09-04 01:02:49Z claco $
+# $Id: Checkout.pm 1399 2006-09-06 01:48:15Z claco $
 package Catalyst::Helper::Controller::Handel::Checkout;
 use strict;
 use warnings;
@@ -9,7 +9,7 @@ BEGIN {
     use Path::Class;
 
     # check for prereqs as early as possible
-    use FormValidator::Simple;
+    use FormValidator::Simple 0.17;
     use HTML::FillInForm;
     use YAML;
 };
@@ -143,7 +143,7 @@ BEGIN {
     use base qw/Catalyst::Controller/;
     use Handel::Checkout;
     use Handel::Constants qw/:cart :order :checkout/;
-    use FormValidator::Simple;
+    use FormValidator::Simple 0.17;
     use HTML::FillInForm;
     use YAML;
 };
@@ -179,6 +179,12 @@ sub COMPONENT {
 
 =head2 default 
 
+Default action when browsing to [% uri %]/ that loads the checkout process for
+the current shopper. If no session exists, or the shopper id isn't set, or there
+os no temporary order record, nothing will be loaded. This keeps non-shoppers 
+like Google and others from wasting sessions and order records for no good
+reason.
+
 =cut
 
 sub default : Private {
@@ -193,6 +199,10 @@ sub default : Private {
 };
 
 =head2 billing
+
+Loads/saves the billing and shipping information during GET/POST.
+
+    [% uri %]/billing/
 
 =cut
 
@@ -227,6 +237,10 @@ sub billing : Local {
 };
 
 =head2 load
+
+Loads the current temporary order for the current shopper.
+
+    my $order = $c->forward('load');
 
 =cut
 
@@ -263,6 +277,10 @@ sub load : Private {
 };
 
 =head2 payment
+
+Loads/Saves the payment information during GET/POST.
+
+    [% uri %]/payment/
 
 =cut
 
@@ -305,6 +323,10 @@ sub payment : Local {
 
 =head2 preview
 
+Displays a preview of the current order.
+
+    [% uri %]/preview/
+
 =cut
 
 sub preview : Local {
@@ -322,6 +344,8 @@ sub preview : Local {
 
 =head2 complete
 
+Displays the order complete page.
+
 =cut
 
 sub complete : Local {
@@ -335,11 +359,16 @@ sub complete : Local {
 
 =head2 render
 
+Local render method to attach the load end method and HTML::FIllInForm to.
+
 =cut
 
 sub render : ActionClass('RenderView') {};
 
 =head2 end
+
+Runs HTML::FillInForm on the curret request before sending the output to the
+browser.
 
 =cut
 
@@ -358,6 +387,13 @@ sub end : Private {
 };
 
 =head2 validate
+
+Validates the current form parameters using the profile in profiles.yml that
+matches the current action.
+
+    if ($c->forward('validate')) {
+    
+    };
 
 =cut
 

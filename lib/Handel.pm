@@ -1,13 +1,16 @@
-# $Id: Handel.pm 1392 2006-09-04 01:18:53Z claco $
+# $Id: Handel.pm 1399 2006-09-06 01:48:15Z claco $
 package Handel;
 use strict;
 use warnings;
 use vars qw/$VERSION/;
-use Handel::Exception qw/:try/;
-use Handel::L10N qw/translate/;
-use base qw/Class::Accessor::Grouped/;
 
-$VERSION = '0.99_08';
+$VERSION = '0.99_09';
+
+BEGIN {
+    use base qw/Class::Accessor::Grouped/;
+    use Handel::Exception qw/:try/;
+    use Handel::L10N qw/translate/;
+};
 
 __PACKAGE__->config_class('Handel::ConfigReader');
 

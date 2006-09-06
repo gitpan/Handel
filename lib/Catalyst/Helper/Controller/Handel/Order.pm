@@ -1,4 +1,4 @@
-# $Id: Order.pm 1390 2006-09-04 01:02:49Z claco $
+# $Id: Order.pm 1399 2006-09-06 01:48:15Z claco $
 package Catalyst::Helper::Controller::Handel::Order;
 use strict;
 use warnings;
@@ -9,7 +9,7 @@ BEGIN {
     use Path::Class;
 
     # check for prereqs as early as possible
-    use FormValidator::Simple;
+    use FormValidator::Simple 0.17;
     use YAML;
 };
 
@@ -113,7 +113,7 @@ use warnings;
 BEGIN {
     use base qw/Catalyst::Controller/;
     use Handel::Constants qw/:order/;
-    use FormValidator::Simple;
+    use FormValidator::Simple 0.17;
     use YAML;
 };
 
@@ -146,6 +146,11 @@ sub COMPONENT {
 
 =head2 default
 
+Default action when browsing to [% uri %]/ that lists the saved orders for the
+current shopper. If no session exists, or the shopper id isn't set, no orders
+will be loaded. This keeps non-shoppers like Google and others from wasting
+sessions and order records for no good reason.
+
 =cut
 
 sub default : Private {
@@ -166,6 +171,10 @@ sub default : Private {
 
 =head2 create
 
+Creates a new order from the current shopping cart.
+
+    my $order = $c->forward('create');
+
 =cut
 
 sub create : Private {
@@ -184,6 +193,10 @@ sub create : Private {
 
 =head2 load
 
+Loads the current temporary order for the current shopper.
+
+    my $order = $c->forward('load');
+
 =cut
 
 sub load : Private {
@@ -200,6 +213,16 @@ sub load : Private {
 };
 
 =head2 view
+
+=over
+
+=item Parameters: id
+
+=back
+
+Loads the specified order and displays its details during a GET operation.
+
+    [% uri %]/view/$id
 
 =cut
 
@@ -226,6 +249,13 @@ sub view : Local {
 };
 
 =head2 validate
+
+Validates the current form parameters using the profile in profiles.yml that
+matches the current action.
+
+    if ($c->forward('validate')) {
+    
+    };
 
 =cut
 
