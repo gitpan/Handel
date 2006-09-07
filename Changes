@@ -1,5 +1,10 @@
 Revision history for Perl module Handel
 
+0.99_10 Wed Sep 06 21:02:33 2006
+    - Added start of Cookbook and Cookbook/AddColumns
+    - Moved DBIC specific Storage classes into DBIC namespace
+    - Changed process to get items->all instead of (items)
+
 0.99_09 Tue Sep 05 19:18:52 2006
     - Catalyst Helpers now require FormValidator::Simple 0.17 (Woohoo!)
     - Validation component now requires DBIx::Class::Validation 0.01001
@@ -9,12 +14,15 @@ Revision history for Perl module Handel
 0.99_08 Mon Sep 04 16:45:22 2006
     - Added txn_begin/commit/rollback to Storage and Storage::DBIC to help
         abstract Checkout::process from Storage.
-    - Added Storage::DBIC::Result to get DBIC specific things out of Storage::Result
+    - Added Storage::DBIC::Result to get DBIC specific things out of
+    Storage::Result
     - Minor pod fixes
 
 0.99_07 Sun Sep 03 20:58:13 2006
-	WARNING: The auto generated Catalyst helper code requires FormValidator::Simple
-	changes/fixes that have yet to be commited or accepted until the author responds.
+	WARNING: The auto generated Catalyst helper code requires
+	FormValidator::Simple
+	changes/fixes that have yet to be commited or accepted until the author
+	responds.
 	Contact me if you need a copy of the modified version.
 
     - Moved perl_critic.t to style_perl_critic.t
@@ -33,17 +41,22 @@ Revision history for Perl module Handel
     - Added Spanish lexion provided by Diego Kuperman
     - Abstracted Iterator and added subclasses for lists, DBIC resultsets
         and storage results
-    - Added result_iterator_class to Base using default of Handel::Iterator::Results
-    - Storage now leaves DBIC result_class alone and returns Handel::Iterator::DBIC
+    - Added result_iterator_class to Base using default of
+    Handel::Iterator::Results
+    - Storage now leaves DBIC result_class alone and returns
+    Handel::Iterator::DBIC
         iterators for search/search_items
     - Cart/Order now use Handel::Iterator::Results iterator
     - Split DBIC specific storage into Storage::DBIC w/ massive tests
-    - Started moving news tests to Handel::Test w/ better db deploy/var directory
+    - Started moving news tests to Handel::Test w/ better db deploy/var
+    directory
     - Split Manual Storage into Storage/Storage::DBIC
     - Added param checks to many Storage methods
-    - Replaced old Makefile warnings w/ mention of Test::More and DateTime compares
+    - Replaced old Makefile warnings w/ mention of Test::More and DateTime
+    compares
     - Added Perl::Critic tests for my personal gratification. None pass yet. :-)
-    - currency_columns gets/sets list instead of arrayrefs to better match generic
+    - currency_columns gets/sets list instead of arrayrefs to better match
+    generic
         columns/primary_columns
     - Bumped DBIC requirement to 0.08 (use -current for now)
     - Reworked Catalyst Helpers for Models (Controllers are still broken)
@@ -60,7 +73,8 @@ Revision history for Perl module Handel
         destination column values
     - Various pod fixes
     - Added more tests for create_instance/clone changes
-    - Cart/Order/Item new/load/destroy now take \%options, specifically $options{storage}
+    - Cart/Order/Item new/load/destroy now take \%options, specifically
+    $options{storage}
     - Order->new $process argument moved into \%options
     - Order->copy_cart_items now just uses add
     - Added checkout_class to Storage
@@ -532,6 +546,7 @@ Revision history for Perl module Handel
 
 0.01_01 Mon Dec 27 21:47:04 2004
     - Initial alpha release
+
 
 
 

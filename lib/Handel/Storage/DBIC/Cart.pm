@@ -1,5 +1,5 @@
-# $Id: Cart.pm 1371 2006-08-17 01:17:58Z claco $
-package Handel::Storage::Cart;
+# $Id: Cart.pm 1402 2006-09-06 23:29:59Z claco $
+package Handel::Storage::DBIC::Cart;
 use strict;
 use warnings;
 
@@ -30,7 +30,7 @@ __END__
 
 =head1 NAME
 
-Handel::Storage::Cart - Default storage configuration for Handel::Cart
+Handel::Storage::DBIC::Cart - Default storage configuration for Handel::Cart
 
 =head1 SYNOPSIS
 
@@ -39,16 +39,17 @@ Handel::Storage::Cart - Default storage configuration for Handel::Cart
     use warnings;
     use base qw/Handel::Base/;
     
-    __PACKAGE__->storage_class('Handel::Storage::Cart');
+    __PACKAGE__->storage_class('Handel::Storage::DBIC::Cart');
 
 =head1 DESCRIPTION
 
-Handel::Storage::Cart is a subclass of L<Handel::Storage|Handel::Storage> that
-contains all of the default settings used by Handel::Cart.
+Handel::Storage::DBIC::Cart is a subclass of
+L<Handel::Storage::DBIC|Handel::Storage::DBIC> that contains all of the default
+settings used by Handel::Cart.
 
 =head1 SEE ALSO
 
-L<Handel::Cart>, L<Handel::Storage>
+L<Handel::Cart>, L<Handel::Storage::Storage>
 
 =head1 AUTHOR
 

@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: pod_spelling.t 1390 2006-09-04 01:02:49Z claco $
+# $Id: pod_spelling.t 1402 2006-09-06 23:29:59Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -161,3 +161,4 @@ resultsets
 xml
 YAML
 m'kay
+DBIx-Class-current

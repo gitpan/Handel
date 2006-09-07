@@ -1,4 +1,4 @@
-# $Id: Order.pm 1368 2006-08-16 03:14:40Z claco $
+# $Id: Order.pm 1402 2006-09-06 23:29:59Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -12,7 +12,7 @@ BEGIN {
     use Carp qw/carp/;
 
     use base qw/Handel::Base/;
-    __PACKAGE__->storage_class('Handel::Storage::Order');
+    __PACKAGE__->storage_class('Handel::Storage::DBIC::Order');
     __PACKAGE__->mk_group_accessors('inherited', qw/ccn cctype ccm ccy ccvn ccname ccissuenumber ccstartdate ccenddate/);
     __PACKAGE__->create_accessors;
 };

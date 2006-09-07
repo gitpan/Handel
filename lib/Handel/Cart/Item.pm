@@ -1,4 +1,4 @@
-# $Id: Item.pm 1355 2006-08-07 01:51:41Z claco $
+# $Id: Item.pm 1402 2006-09-06 23:29:59Z claco $
 package Handel::Cart::Item;
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ BEGIN {
     use base qw/Handel::Base/;
     use Handel::L10N qw/translate/;
 
-    __PACKAGE__->storage_class('Handel::Storage::Cart::Item');
+    __PACKAGE__->storage_class('Handel::Storage::DBIC::Cart::Item');
     __PACKAGE__->create_accessors;
 };
 

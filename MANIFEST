@@ -61,6 +61,8 @@ lib/Handel/L10N/zh_tw.pm
 lib/Handel/L10N/es_es.pm
 lib/Handel/Manual.pod
 lib/Handel/Manual/About.pod
+lib/Handel/Manual/Cookbook.pod
+lib/Handel/Manual/Cookbook/AddingColumns.pod
 lib/Handel/Manual/Intro.pod
 lib/Handel/Manual/QuickStart.pod
 lib/Handel/Manual/Schema.pod
@@ -77,12 +79,12 @@ lib/Handel/Schema/Cart/Item.pm
 lib/Handel/Schema/Order.pm
 lib/Handel/Schema/Order/Item.pm
 lib/Handel/Storage.pm
-lib/Handel/Storage/DBIC.pm
-lib/Handel/Storage/Cart.pm
-lib/Handel/Storage/Cart/Item.pm
-lib/Handel/Storage/Order.pm
-lib/Handel/Storage/Order/Item.pm
 lib/Handel/Storage/Result.pm
+lib/Handel/Storage/DBIC.pm
+lib/Handel/Storage/DBIC/Cart.pm
+lib/Handel/Storage/DBIC/Cart/Item.pm
+lib/Handel/Storage/DBIC/Order.pm
+lib/Handel/Storage/DBIC/Order/Item.pm
 lib/Handel/Storage/DBIC/Result.pm
 lib/Template/Plugin/Handel/Cart.pm
 lib/Template/Plugin/Handel/Checkout.pm

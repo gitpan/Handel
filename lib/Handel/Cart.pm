@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1390 2006-09-04 01:02:49Z claco $
+# $Id: Cart.pm 1402 2006-09-06 23:29:59Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
@@ -10,7 +10,7 @@ BEGIN {
     use Scalar::Util qw/blessed/;
 
     use base qw/Handel::Base/;
-    __PACKAGE__->storage_class('Handel::Storage::Cart');
+    __PACKAGE__->storage_class('Handel::Storage::DBIC::Cart');
     __PACKAGE__->create_accessors;
 };
 

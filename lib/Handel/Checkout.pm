@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1394 2006-09-04 17:54:57Z claco $
+# $Id: Checkout.pm 1403 2006-09-06 23:43:58Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
@@ -257,7 +257,7 @@ sub process {
 
                     $self->order->result->txn_rollback;
                     $self->order->result->discard_changes;
-                    foreach my $item ($self->order->items) {
+                    foreach my $item ($self->order->items->all) {
                         $item->result->discard_changes;
                     };
 

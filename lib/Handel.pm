@@ -1,10 +1,10 @@
-# $Id: Handel.pm 1399 2006-09-06 01:48:15Z claco $
+# $Id: Handel.pm 1401 2006-09-06 22:05:02Z claco $
 package Handel;
 use strict;
 use warnings;
 use vars qw/$VERSION/;
 
-$VERSION = '0.99_09';
+$VERSION = '0.99_10';
 
 BEGIN {
     use base qw/Class::Accessor::Grouped/;

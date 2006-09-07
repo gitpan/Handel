@@ -1,5 +1,5 @@
-# $Id: Item.pm 1371 2006-08-17 01:17:58Z claco $
-package Handel::Storage::Cart::Item;
+# $Id: Item.pm 1402 2006-09-06 23:29:59Z claco $
+package Handel::Storage::DBIC::Order::Item;
 use strict;
 use warnings;
 
@@ -9,19 +9,21 @@ BEGIN {
 };
 
 __PACKAGE__->setup({
-    schema_class     => 'Handel::Cart::Schema',
+    schema_class     => 'Handel::Order::Schema',
     schema_source    => 'Items',
-    currency_columns => [qw/price/],
+    currency_columns => [qw/price total/],
     constraints      => {
         quantity     => {'Check Quantity' => \&constraint_quantity},
         price        => {'Check Price'    => \&constraint_price},
+        total        => {'Check Total'    => \&constraint_price},
         id           => {'Check Id'       => \&constraint_uuid},
-        cart         => {'Check Cart'     => \&constraint_uuid}
+        orderid      => {'Check Order Id' => \&constraint_uuid}
     },
     default_values   => {
         id           => sub {__PACKAGE__->new_uuid(shift)},
         price        => 0,
-        quantity     => 1
+        quantity     => 1,
+        total        => 0
     }
 });
 
@@ -30,25 +32,26 @@ __END__
 
 =head1 NAME
 
-Handel::Storage::Cart::Item - Default storage configuration for Handel::Cart::Item
+Handel::Storage::DBIC::Order::Item - Default storage configuration for Handel::Order::Item
 
 =head1 SYNOPSIS
 
-    package Handel::Cart::Item;
+    package Handel::Order::Item;
     use strict;
     use warnings;
     use base qw/Handel::Base/;
     
-    __PACKAGE__->storage_class('Handel::Storage::Cart::Item');
+    __PACKAGE__->storage_class('Handel::Storage::DBIC::Order::Item');
 
 =head1 DESCRIPTION
 
-Handel::Storage::Cart::Item is a subclass of L<Handel::Storage|Handel::Storage>
-that contains all of the default settings used by Handel::Cart::Item.
+Handel::Storage::DBIC::Order::Item is a subclass of
+L<Handel::Storage::DBIC|Handel::Storage::DBIC> that contains all of the default
+settings used by Handel::Order::Item.
 
 =head1 SEE ALSO
 
-L<Handel::Cart::Item>, L<Handel::Storage>
+L<Handel::Order::Item>, L<Handel::Storage::DBIC>
 
 =head1 AUTHOR
 

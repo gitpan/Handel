@@ -18,7 +18,7 @@ send me an email and I'll lower the version requirements.
 
 Version 0.08 or greater.
 
-B<Until 0.08 is released, please use the DBIx-Class-current branch from the repo:>
+B<Until 0.08 is released, please use the DBIx-Class-current branch from the Bast repository:>
 
     http://dev.catalystframework.org/repos/bast/branches/DBIx-Class-current/
 

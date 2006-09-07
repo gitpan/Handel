@@ -1,5 +1,5 @@
-# $Id: Order.pm 1371 2006-08-17 01:17:58Z claco $
-package Handel::Storage::Order;
+# $Id: Order.pm 1402 2006-09-06 23:29:59Z claco $
+package Handel::Storage::DBIC::Order;
 use strict;
 use warnings;
 
@@ -44,7 +44,7 @@ __END__
 
 =head1 NAME
 
-Handel::Storage::Order - Default storage configuration for Handel::Order
+Handel::Storage::DBIC::Order - Default storage configuration for Handel::Order
 
 =head1 SYNOPSIS
 
@@ -53,16 +53,17 @@ Handel::Storage::Order - Default storage configuration for Handel::Order
     use warnings;
     use base qw/Handel::Base/;
     
-    __PACKAGE__->storage_class('Handel::Storage::Order');
+    __PACKAGE__->storage_class('Handel::Storage::DBIC::Order');
 
 =head1 DESCRIPTION
 
-Handel::Storage::Order is a subclass of L<Handel::Storage|Handel::Storage> that
-contains all of the default settings used by Handel::Order.
+Handel::Storage::DBIC::Order is a subclass of
+L<Handel::Storage::DBIC|Handel::Storage::DBIC> that contains all of the default
+settings used by Handel::Order.
 
 =head1 SEE ALSO
 
-L<Handel::Order>, L<Handel::Storage>
+L<Handel::Order>, L<Handel::Storage::DBIC>
 
 =head1 AUTHOR
 
