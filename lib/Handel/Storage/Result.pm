@@ -1,4 +1,4 @@
-# $Id: Result.pm 1394 2006-09-04 17:54:57Z claco $
+# $Id: Result.pm 1408 2006-09-08 23:26:08Z claco $
 package Handel::Storage::Result;
 use strict;
 use warnings;
@@ -80,9 +80,9 @@ Handel::Storage::Result - Generic result object returned by storage operations
 
 =head1 SYNOPSIS
 
-    use Handel::Storage::Cart;
+    use Handel::Storage::DBIC::Cart;
     
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -104,7 +104,7 @@ support the methods described below.
 
 Maps undefined method calls to the underlying result object.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -124,7 +124,7 @@ Maps undefined method calls to the underlying result object.
 
 Adds a new item to the current result, returning a storage result object.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -142,7 +142,7 @@ the current storage object. See L<Handel::Storage/add_item> for more details.
 
 Returns the number of items associated with the current result.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -184,7 +184,7 @@ resultset results and assign the generic results with the given storage object.
 Deletes the current result and all of it's associated items from the current
 storage.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -207,7 +207,7 @@ B<This method must be implemented in custom subclasses.>
 
 Deletes items matching the filter from the current result.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -243,7 +243,7 @@ Same as L</search_items>.
 
 Returns items matching the filter associated with the current result.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->search({
         id => '11111111-1111-1111-1111-111111111111'
     });
@@ -258,7 +258,7 @@ the current storage object. See L<Handel::Storage/search_items> for more details
 Returns the original result created by the underlying storage mechanism. This
 will be the DBIx::Class::Row result returned from the current schema.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -273,12 +273,12 @@ current result object.
 Returns a reference to the storage object used to create the current storage
 result.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
     
-    print $result->storage; # Handel::Storage::Cart
+    print $result->storage; # Handel::Storage::DBIC::Cart
 
 =head2 txn_begin
 
@@ -302,7 +302,7 @@ Rolls back the current transaction on the current storage object.
 
 Updates the current result with the data specified.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });

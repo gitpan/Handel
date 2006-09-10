@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_dbic_copyable_item_columns.t 1379 2006-08-22 02:21:53Z claco $
+# $Id: storage_dbic_copyable_item_columns.t 1409 2006-09-09 21:16:54Z claco $
 use strict;
 use warnings;
 use lib 't/lib';
@@ -19,10 +19,10 @@ BEGIN {
 };
 
 my $storage = Handel::Storage::DBIC->new({
-    schema_class    => 'Handel::Cart::Schema',
-    schema_source   => 'Carts',
-    item_class      => 'Handel::Cart::Item',
-    connection_info => [
+    schema_class       => 'Handel::Cart::Schema',
+    schema_source      => 'Carts',
+    item_storage_class => 'Handel::Storage::DBIC::Cart::Item',
+    connection_info    => [
         Handel::Test->init_schema(no_populate => 1)->dsn
     ]
 });
@@ -37,16 +37,17 @@ $storage->schema_instance->source('Items')->set_primary_key(qw/id sku/);
 is_deeply([sort $storage->copyable_item_columns], [qw/description price quantity/]);
 
 
-## no item class
+## no item storage
 try {
     local $ENV{'LANG'} = 'en';
-    $storage->item_class(undef);
+    $storage->item_storage_class(undef);
+    $storage->item_storage(undef);
     $storage->copyable_item_columns;
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
     pass;
-    like(shift, qr/no item class/i);
+    like(shift, qr/no item storage/i);
 } otherwise {
     fail;
 };

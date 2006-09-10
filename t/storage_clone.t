@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: storage_clone.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_clone.t 1409 2006-09-09 21:16:54Z claco $
 use strict;
 use warnings;
-use Test::More tests => 29;
+use Test::More tests => 25;
 
 BEGIN {
     use_ok('Handel::Storage');
@@ -14,8 +14,6 @@ BEGIN {
     ## create a new storage and check configuration
     my $sub = sub{};
     my $storage = Handel::Storage->new({
-        cart_class         => 'Handel::Cart',
-        item_class         => 'Handel::Cart::Item',
         default_values     => {id => 1, name => 'New Cart'},
         validation_profile => {cart => [param1 => [ ['BLANK'], ['ASCII', 2, 12] ]]},
         add_columns        => [qw/one two/],
@@ -33,14 +31,6 @@ BEGIN {
     is_deeply($clone, $storage);
     
     ## make them diverge
-    $clone->cart_class('Handel::Base');
-    is($clone->cart_class, 'Handel::Base');
-    is($storage->cart_class, 'Handel::Cart');
-
-    $clone->item_class('Handel::Base');
-    is($clone->item_class, 'Handel::Base');
-    is($storage->item_class, 'Handel::Cart::Item');
-
     $clone->iterator_class('Handel::Base');
     is($clone->iterator_class, 'Handel::Base');
     is($storage->iterator_class, 'Handel::Iterator::List');

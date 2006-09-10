@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: base_create_instance.t 1386 2006-08-26 01:46:16Z claco $
+# $Id: base_create_instance.t 1409 2006-09-09 21:16:54Z claco $
 use strict;
 use warnings;
 use lib 't/lib';
@@ -13,7 +13,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 19;
+        plan tests => 14;
     };
 
     use_ok('Handel::Storage::DBIC');
@@ -26,7 +26,6 @@ BEGIN {
     my $storage = Handel::Storage::DBIC->new({
         schema_class       => 'Handel::Cart::Schema',
         schema_source      => 'Carts',
-        item_class         => 'Handel::Cart::Item',
         connection_info    => [Handel::Test->init_schema(no_populate => 1)->dsn]
     });
 
@@ -62,17 +61,4 @@ BEGIN {
     is(refaddr $cart->result->{'storage'}, refaddr $storage);
     is(refaddr $cart->result->storage, refaddr $storage);
     is(refaddr $cart->result->{'storage'}->_schema_instance, refaddr $schema);
-
-    my $item = $cart->result->add_item({
-        cart => '11111111-1111-1111-1111-111111111111',
-        sku => 'ABC123'
-    });
-
-    $item = $storage->item_class->create_instance($item);
-    isa_ok($item, 'Handel::Cart::Item');
-
-    isnt(refaddr $item->result->{'storage'}, refaddr $storage);
-    isnt(refaddr $item->result->{'storage'}, refaddr Handel::Cart::Item->storage);
-    isnt(refaddr $item->result->storage, refaddr $storage);
-    is(refaddr $item->result->{'storage'}->_schema_instance, refaddr $schema);
 };

@@ -1,8 +1,8 @@
-# $Id: CheckoutStash.pm 1076 2006-01-19 02:00:55Z claco $
+# $Id: CheckoutStash.pm 1409 2006-09-09 21:16:54Z claco $
 package Handel::Subclassing::CheckoutStash;
 use strict;
 use warnings;
-use base 'Handel::Checkout';
+use base qw/Handel::Checkout/;
 
 __PACKAGE__->stash_class('Handel::Subclassing::Stash');
 

@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1402 2006-09-06 23:29:59Z claco $
+# $Id: Cart.pm 1409 2006-09-09 21:16:54Z claco $
 package Handel::Storage::DBIC::Cart;
 use strict;
 use warnings;
@@ -10,18 +10,18 @@ BEGIN {
 };
 
 __PACKAGE__->setup({
-    schema_class   => 'Handel::Cart::Schema',
-    schema_source  => 'Carts',
-    item_class     => 'Handel::Cart::Item',
-    constraints    => {
-        id         => {'Check Id'      => \&constraint_uuid},
-        shopper    => {'Check Shopper' => \&constraint_uuid},
-        type       => {'Check Type'    => \&constraint_cart_type},
-        name       => {'Check Name'    => \&constraint_cart_name}
+    schema_class       => 'Handel::Cart::Schema',
+    schema_source      => 'Carts',
+    item_storage_class => 'Handel::Storage::DBIC::Cart::Item',
+    constraints        => {
+        id             => {'Check Id'      => \&constraint_uuid},
+        shopper        => {'Check Shopper' => \&constraint_uuid},
+        type           => {'Check Type'    => \&constraint_cart_type},
+        name           => {'Check Name'    => \&constraint_cart_name}
     },
-    default_values => {
-        id         => sub {__PACKAGE__->new_uuid(shift)},
-        type       => CART_TYPE_TEMP
+    default_values     => {
+        id             => sub {__PACKAGE__->new_uuid(shift)},
+        type           => CART_TYPE_TEMP
     }
 });
 

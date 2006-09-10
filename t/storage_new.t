@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: storage_new.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_new.t 1409 2006-09-09 21:16:54Z claco $
 use strict;
 use warnings;
-use Test::More tests => 23;
+use Test::More tests => 19;
 
 BEGIN {
     use_ok('Handel::Storage');
@@ -30,8 +30,6 @@ BEGIN {
     my $currency_columns = [qw/foo/];
 
     my $storage = Handel::Storage->new({
-        cart_class         => 'Handel::Base',
-        item_class         => 'Handel::Base',
         iterator_class     => 'Handel::Base',
         currency_class     => 'Handel::Base',
         autoupdate         => 2,
@@ -44,14 +42,6 @@ BEGIN {
     });
 
     isa_ok($storage, 'Handel::Storage');
-
-    ## cart_class
-    is($storage->cart_class, 'Handel::Base');
-    is(Handel::Storage->cart_class, undef);
-
-    ## item_class
-    is($storage->item_class, 'Handel::Base');
-    is(Handel::Storage->item_class, undef);
 
     ## iterator_class
     is($storage->iterator_class, 'Handel::Base');

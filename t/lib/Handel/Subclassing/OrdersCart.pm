@@ -1,8 +1,8 @@
-# $Id: OrdersCart.pm 1355 2006-08-07 01:51:41Z claco $
+# $Id: OrdersCart.pm 1409 2006-09-09 21:16:54Z claco $
 package Handel::Subclassing::OrdersCart;
 use strict;
 use warnings;
-use base 'Handel::Cart';
+use base qw/Handel::Cart/;
 
 sub search {
     my ($self, $filter, $wantiterator)  = @_;

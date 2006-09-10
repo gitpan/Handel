@@ -1,4 +1,4 @@
-# $Id: Order.pm 1402 2006-09-06 23:29:59Z claco $
+# $Id: Order.pm 1409 2006-09-09 21:16:54Z claco $
 package Handel::Storage::DBIC::Order;
 use strict;
 use warnings;
@@ -10,20 +10,18 @@ BEGIN {
 };
 
 __PACKAGE__->setup({
-    schema_class   => 'Handel::Order::Schema',
-    schema_source  => 'Orders',
-    item_class     => 'Handel::Order::Item',
-    cart_class     => 'Handel::Cart',
-    checkout_class => 'Handel::Checkout',
-    constraints    => {
-        id       => {'Check Id'       => \&constraint_uuid},
-        shopper  => {'Check Shopper'  => \&constraint_uuid},
-        type     => {'Check Type'     => \&constraint_order_type},
-        shipping => {'Check Shopping' => \&constraint_price},
-        handling => {'Check Handling' => \&constraint_price},
-        subtotal => {'Check Subtotal' => \&constraint_price},
-        tax      => {'Check Tax'      => \&constraint_price},
-        total    => {'Check Total'    => \&constraint_price}
+    schema_class       => 'Handel::Order::Schema',
+    schema_source      => 'Orders',
+    item_storage_class => 'Handel::Storage::DBIC::Order::Item',
+    constraints        => {
+        id             => {'Check Id'       => \&constraint_uuid},
+        shopper        => {'Check Shopper'  => \&constraint_uuid},
+        type           => {'Check Type'     => \&constraint_order_type},
+        shipping       => {'Check Shopping' => \&constraint_price},
+        handling       => {'Check Handling' => \&constraint_price},
+        subtotal       => {'Check Subtotal' => \&constraint_price},
+        tax            => {'Check Tax'      => \&constraint_price},
+        total          => {'Check Total'    => \&constraint_price}
     },
     currency_columns => [qw/shipping handling subtotal tax total/],
     default_values => {

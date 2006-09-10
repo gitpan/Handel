@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: basic.t 1386 2006-08-26 01:46:16Z claco $
+# $Id: basic.t 1409 2006-09-09 21:16:54Z claco $
 use strict;
 use warnings;
-use Test::More tests => 55;
+use Test::More tests => 60;
 
 BEGIN {
     use_ok('Handel');
@@ -30,6 +30,7 @@ BEGIN {
     use_ok('Handel::Iterator::Results');
     use_ok('Handel::L10N');
     use_ok('Handel::L10N::en_us');
+    use_ok('Handel::L10N::es_es');
     use_ok('Handel::L10N::fr');
     use_ok('Handel::L10N::zh_tw');
     use_ok('Handel::Order');
@@ -41,9 +42,13 @@ BEGIN {
     use_ok('Handel::Schema::Order');
     use_ok('Handel::Schema::Order::Item');
     use_ok('Handel::Storage');
+    use_ok('Handel::Storage::Result');
     use_ok('Handel::Storage::DBIC');
-    use_ok('Handel::Storage::Cart');
-    use_ok('Handel::Storage::Order');
+    use_ok('Handel::Storage::DBIC::Result');
+    use_ok('Handel::Storage::DBIC::Cart');
+    use_ok('Handel::Storage::DBIC::Cart::Item');
+    use_ok('Handel::Storage::DBIC::Order');
+    use_ok('Handel::Storage::DBIC::Order::Item');
 
     {
         ## no need for the deprected warnings here

@@ -1,4 +1,4 @@
-# $Id: Base.pm 1383 2006-08-24 23:18:23Z claco $
+# $Id: Base.pm 1409 2006-09-09 21:16:54Z claco $
 package Handel::Base;
 use strict;
 use warnings;
@@ -7,7 +7,9 @@ BEGIN {
     use base qw/Class::Accessor::Grouped/;
     __PACKAGE__->mk_group_accessors('simple', qw/autoupdate result/);
     __PACKAGE__->mk_group_accessors('inherited', qw/accessor_map/);
-    __PACKAGE__->mk_group_accessors('component_class', qw/storage_class result_iterator_class/);
+    __PACKAGE__->mk_group_accessors('component_class', qw/
+        cart_class checkout_class item_class storage_class result_iterator_class
+    /);
 
     use Handel::Exception qw/:try/;
     use Handel::L10N qw/translate/;
@@ -83,6 +85,10 @@ sub storage {
         $storage = $self->_get_storage;
     };
 
+    if (!$storage->_item_storage && $self->item_class) {
+        $storage->item_storage($self->item_class->storage);
+    };
+
     $storage->setup($args) if $args;
 
     return $storage;
@@ -143,6 +149,9 @@ sub _get_storage {
 
             if ($storage && blessed($storage) eq $self->storage_class) {
                 $storage = $storage->clone;
+
+                # we want our own, not da clones item storage
+                $storage->_item_storage(undef) if $storage->_item_storage;
             } else {
                 $storage = $self->storage_class->new;
             };
@@ -190,9 +199,10 @@ Handel::Base - Base class for Cart/Order/Item classes
     use warnings;
     use base qw/Handel::Base/;
     
+    __PACKAGE__->item_class('MyCustomCart::Item');
+    
     __PACKAGE__->storage({
         schema_source  => 'Carts',
-        item_class     => 'MyCustomItem',
         constraints    => {
             id         => {'Check Id'      => \&constraint_uuid},
             shopper    => {'Check Shopper' => \&constraint_uuid},
@@ -232,6 +242,39 @@ to get the accessor name for any given column.
         
         $self->result->$accessor($value);
     };
+
+=head2 cart_class
+
+=over
+
+=item Arguments: $cart_class
+
+=back
+
+Gets/sets the cart class to be used when creating orders from carts.
+
+    __PACKAGE__->cart_class('CustomCart');
+
+A L<Handel::Exception|Handel::Exception> exception will be thrown if the
+specified class can not be loaded.
+
+=head2 checkout_class
+
+=over
+
+=item Arguments: $checkout_class
+
+=back
+
+Gets/sets the checkout class to be used to process the order through the
+C<CHECKOUT_PHASE_INITIALIZE> phase when creating a new order and the process
+options is set. The default checkout class is
+L<Handel::Checkout|Handel::Checkout>.
+
+    __PACKAGE__->checkout_class('CustomCheckout');
+
+A L<Handel::Exception|Handel::Exception> exception will be thrown if the
+specified class can not be loaded.
 
 =head2 create_accessors
 
@@ -319,6 +362,24 @@ superclass if necessary.
     if (!__PACKAGE__->has_storage) {
         __PACKAGE->init_storage;
     };
+
+=head2 item_class
+
+=over
+
+=item Arguments: $item_class
+
+=back
+
+Gets/sets the item class to be used when returning cart/order items.
+
+    __PACKAGE__->item_class('CustomCartItem');
+
+The class specified should be a subclass of Handel::Base, or at least provide
+its C<create_instance> and C<result> methods.
+
+A L<Handel::Exception|Handel::Exception> exception will be
+thrown if the specified class can not be loaded.
 
 =head2 set_column
 

@@ -1,8 +1,8 @@
 #!perl -w
-# $Id: compat.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: compat.t 1409 2006-09-09 21:16:54Z claco $
 use strict;
 use warnings;
-use Test::More tests => 16;
+use Test::More tests => 12;
 
 BEGIN {
     local $SIG{__WARN__} = sub {
@@ -31,14 +31,6 @@ is_deeply(Handel::Compat->storage->_columns_to_add, [qw/foo bar baz/]);
 my $constraint = sub {};
 Handel::Compat->add_constraint('Check Id', id => $constraint);
 is_deeply(Handel::Compat->storage->constraints, {'id', {'Check Id' => $constraint}});
-
-Handel::Compat->item_class('Handel::Base');
-is(Handel::Compat->item_class, 'Handel::Base');
-is(Handel::Compat->storage->item_class, 'Handel::Base');
-
-Handel::Compat->cart_class('Handel::Base');
-is(Handel::Compat->cart_class, 'Handel::Base');
-is(Handel::Compat->storage->cart_class, 'Handel::Base');
 
 Handel::Compat->iterator_class('Handel::Base');
 is(Handel::Compat->iterator_class, 'Handel::Base');

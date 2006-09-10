@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1402 2006-09-06 23:29:59Z claco $
+# $Id: Cart.pm 1412 2006-09-10 17:47:08Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
@@ -10,6 +10,7 @@ BEGIN {
     use Scalar::Util qw/blessed/;
 
     use base qw/Handel::Base/;
+    __PACKAGE__->item_class('Handel::Cart::Item');
     __PACKAGE__->storage_class('Handel::Storage::DBIC::Cart');
     __PACKAGE__->create_accessors;
 };
@@ -41,7 +42,7 @@ sub add {
     my $storage = $result->storage;
 
     if (ref($data) eq 'HASH') {
-        return $storage->item_class->create_instance(
+        return $self->item_class->create_instance(
             $result->add_item($data)
         );
     } else {
@@ -55,7 +56,7 @@ sub add {
             };
         };
 
-        return $storage->item_class->create_instance(
+        return $self->item_class->create_instance(
             $result->add_item(\%copy)
         );
     };
@@ -116,9 +117,9 @@ sub items {
             ref($filter) eq 'HASH' or !$filter);
 
     my $results = $result->search_items($filter);
-    my $iterator = $storage->item_class->result_iterator_class->new({
+    my $iterator = $self->item_class->result_iterator_class->new({
         data         => $results,
-        result_class => $storage->item_class
+        result_class => $self->item_class
     });
 
     return wantarray ? $iterator->all : $iterator;
@@ -153,10 +154,6 @@ sub restore {
         translate(
             'Param 1 is not a HASH reference or Handel::Cart') . '.') unless(
                 ref($data) eq 'HASH' or $data->isa('Handel::Cart'));
-
-    if (ref $data eq 'HASH') {
-        $data = $self->storage->_migrate_wildcards($data);
-    };
 
     my @carts = (ref($data) eq 'HASH') ?
         $self->search($data)->all : $data;

@@ -1,4 +1,4 @@
-# $Id: Storage.pm 1394 2006-09-04 17:54:57Z claco $
+# $Id: Storage.pm 1413 2006-09-10 18:34:58Z claco $
 package Handel::Storage;
 use strict;
 use warnings;
@@ -13,11 +13,10 @@ BEGIN {
         autoupdate
         uuid_maker
     /);
+    __PACKAGE__->mk_group_accessors('simple', qw/_item_storage/);
     __PACKAGE__->mk_group_accessors('component_class', qw/
-        cart_class
-        checkout_class
         currency_class
-        item_class
+        item_storage_class
         iterator_class
         result_class
         validation_module
@@ -114,9 +113,9 @@ sub columns {
 
 sub copyable_item_columns {
     my $self = shift;
-    my $item_class = $self->item_class;
-    my @columns = $item_class->storage->columns;
-    my %primaries = map {$_ => $_} $item_class->storage->primary_columns;
+    my $item_storage = $self->item_storage;
+    my @columns = $item_storage->columns;
+    my %primaries = map {$_ => $_} $item_storage->primary_columns;
 
     my @remaining;
     foreach my $column (@columns) {
@@ -159,6 +158,25 @@ sub delete {
 
 sub delete_items {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+};
+
+sub has_column {
+    my ($self, $column) = @_;
+    my %columns = map {$_ => $_} $self->columns;
+
+    return exists $columns{$column};
+};
+
+sub item_storage {
+    my $self = shift;
+
+    if (@_) {
+        $self->_item_storage(shift);
+    } elsif (!$self->_item_storage && $self->item_storage_class) {
+        $self->_item_storage($self->item_storage_class->new);
+    };
+
+    return $self->_item_storage;
 };
 
 sub new_uuid {
@@ -420,8 +438,6 @@ their method counterparts:
 
     add_columns
     autoupdate
-    cart_class
-    checkout_class
     constraints
     currency_class
     currency_columns
@@ -476,7 +492,7 @@ constraints.>
 
 Adds a new item to the specified result, returning a storage result object.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -507,39 +523,6 @@ The default is 1.
 
 B<It is up to each custom storage class to decide if and how to implement
 autoupdates.>
-
-=head2 cart_class
-
-=over
-
-=item Arguments: $cart_class
-
-=back
-
-Gets/sets the cart class to be used when creating orders from carts.
-
-    $storage->cart_class('CustomCart');
-
-A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
-thrown if the specified class can not be loaded.
-
-=head2 checkout_class
-
-=over
-
-=item Arguments: $checkout_class
-
-=back
-
-Gets/sets the checkout class to be used to process the order through the
-C<CHECKOUT_PHASE_INITIALIZE> phase when creating a new order and the process
-options is set. The default checkout class is
-L<Handel::Checkout|Handel::Checkout>.
-
-    $storage->checkout_class('CustomCheckout');
-
-A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
-thrown if the specified class can not be loaded.
 
 =head2 clone
 
@@ -616,7 +599,7 @@ relationship.
 
 Returns the number of items associated with the specified result.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -730,7 +713,7 @@ B<This method must be implemented in custom subclasses.>
 
 Deletes items matching the filter from the specified result.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -745,23 +728,54 @@ Deletes items matching the filter from the specified result.
 
 B<This method must be implemented in custom subclasses.>
 
-=head2 item_class
+=head2 has_column
 
 =over
 
-=item Arguments: $item_class
+=item Arguments: $column
 
 =back
 
-Gets/sets the item class to be used when returning cart/order items.
+Returns true if the column exists in the current storage object.
 
-    $storage->item_class('CustomCartItem');
+=head2 item_storage_class
 
-The class specified should be a subclass of Handel::Base, or at least provide
-its C<create_instance> and C<result> methods.
+=over
+
+=item Arguments: $item_storage_class
+
+=back
+
+Gets/sets the item storage class used to hold item storage configuration and/or
+create cart/order items.
+
+    my $storage = My::Storage::Cart->new;
+    $storage->item_storage_class('My::Storage::Cart::Item');
 
 A L<Handel::Exception::Storage|Handel::Exception::Storage> exception will be
 thrown if the specified class can not be loaded.
+
+=head2 item_storage
+
+=over
+
+=item Arguments: $storage
+
+=back
+
+Gets/sets the storage objects used to hold item storage configuration options
+and/or create item storage results. If no storage object is assigned, one will
+be created using the specified C<item_storage_class>.
+
+    $storage->item_storage_class('My::Storage::Cart::Item');
+    my $item_storage = $storage->item_storage;
+    
+    print ref $item_storage;  # My::Storage::Cart:Item
+
+    my $storage = My::Storage::Order->new;
+    my $item_storage = My::Storage::Order::Item->new;
+    
+    $storage->item_storage($item_storage);
 
 =head2 iterator_class
 
@@ -883,7 +897,7 @@ B<This method must be implemented in custom subclasses.>
 
 Returns items matching the filter associated with the specified result.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->search({
         id => '11111111-1111-1111-1111-111111111111'
     });
@@ -1003,7 +1017,8 @@ validation.>
 =head1 SEE ALSO
 
 L<Handel::Storage::DBIC>, L<Handel::Storage::Result>,
-L<Handel::Manual::Storage>, L<Handel::Storage::Cart>, L<Handel::Storage::Order>
+L<Handel::Manual::Storage>, L<Handel::Storage::DBIC::Cart>,
+L<Handel::Storage::DBIC::Order>
 
 =head1 AUTHOR
 

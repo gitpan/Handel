@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: base_storage.t 1310 2006-07-09 04:01:49Z claco $
+# $Id: base_storage.t 1409 2006-09-09 21:16:54Z claco $
 use strict;
 use warnings;
 use lib 't/lib';
@@ -22,12 +22,12 @@ BEGIN {
         item_relationship => 'Base1',
         default_values => {id => 'Base1'}
     });
-    
+
     is_deeply(
         Handel::Subclassing::Base2->storage,
         Handel::Subclassing::Base1->storage
     );
-    
+
     is_deeply(Handel::Subclassing::Base2->storage, {
         schema_source => 'Base1',
         item_relationship => 'Base1',

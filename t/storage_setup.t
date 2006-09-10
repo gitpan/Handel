@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: storage_setup.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_setup.t 1409 2006-09-09 21:16:54Z claco $
 use strict;
 use warnings;
-use Test::More tests => 25;
+use Test::More tests => 21;
 
 BEGIN {
     use_ok('Handel::Storage');
@@ -13,8 +13,6 @@ BEGIN {
 {
     ## setup a schema
     my $storage = Handel::Storage->new({
-        cart_class         => 'Handel::Base',
-        item_class         => 'Handel::Base',
         iterator_class     => 'Handel::Base',
         currency_class     => 'Handel::Base',
         autoupdate         => 2,
@@ -51,8 +49,6 @@ BEGIN {
     my $remove_columns = [qw/this that/];
 
     $storage->setup({
-        cart_class         => 'Handel::Cart',
-        item_class         => 'Handel::Cart::Item',
         iterator_class     => 'Handel::Iterator',
         currency_class     => 'Handel::Currency',
         autoupdate         => 3,
@@ -63,14 +59,6 @@ BEGIN {
         constraints        => $constraints,
         currency_columns   => $currency_columns
     });
-
-    ## cart_class
-    is($storage->cart_class, 'Handel::Cart');
-    is(Handel::Storage->cart_class, undef);
-
-    ## item_class
-    is($storage->item_class, 'Handel::Cart::Item');
-    is(Handel::Storage->item_class, undef);
 
     ## iterator_class
     is($storage->iterator_class, 'Handel::Iterator');

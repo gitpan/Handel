@@ -1,5 +1,18 @@
 Revision history for Perl module Handel
 
+0.99_11 Sun Sep 10 13:%3:22 2006
+    - Fix examples code in AddingColumns.pod
+    - Fixed pod references after DBIC Storage rearrangement
+    - Added item_storage_class/item_storage to Storage so item related methods
+        could get item storage config from item storage without being tied to
+        top level item class
+    - Moved item_class/cart_class back into Handel::Base. They don't belong in
+        storage
+    - Moved checkout_class back into Handel::Order. That doesn't belong in
+        storage either
+    - Added WritingCustomStorage to Cookbook
+    - Added has_column to Storage
+
 0.99_10 Wed Sep 06 21:02:33 2006
     - Added start of Cookbook and Cookbook/AddColumns
     - Moved DBIC specific Storage classes into DBIC namespace

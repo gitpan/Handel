@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_dbic_schema_instance.t 1381 2006-08-24 01:27:08Z claco $
+# $Id: storage_dbic_schema_instance.t 1409 2006-09-09 21:16:54Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -25,7 +25,6 @@ my $constraints = {
 };
 
 my $storage = Handel::Storage::DBIC->new({
-    cart_class         => 'Handel::Cart',
     schema_class       => 'Handel::Cart::Schema',
     schema_source      => 'Carts',
     default_values     => {id => 1, name => 'New Cart'},
@@ -161,11 +160,11 @@ my $storage = Handel::Storage::DBIC->new({
     {
         try {
             my $storage = Handel::Storage::DBIC->new({
-                schema_class      => 'Handel::Cart::Schema',
-                schema_source     => 'Carts',
-                item_class        => 'Handel::Cart::Item',
-                item_relationship => 'foo',
-                connection_info   => [$dsn]
+                schema_class       => 'Handel::Cart::Schema',
+                schema_source      => 'Carts',
+                item_storage_class => 'Handel::Storage::DBIC::Cart::Item',
+                item_relationship  => 'foo',
+                connection_info    => [$dsn]
             });
             $storage->schema_instance;
 

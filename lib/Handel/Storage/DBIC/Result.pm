@@ -1,4 +1,4 @@
-# $Id: Result.pm 1394 2006-09-04 17:54:57Z claco $
+# $Id: Result.pm 1408 2006-09-08 23:26:08Z claco $
 package Handel::Storage::DBIC::Result;
 use strict;
 use warnings;
@@ -28,9 +28,9 @@ Handel::Storage::DBIC::Result - Result object returned by DBIC storage operation
 
 =head1 SYNOPSIS
 
-    use Handel::Storage::Cart;
+    use Handel::Storage::DBIC::Cart;
     
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -54,7 +54,7 @@ described below.
 Deletes the current result and all of it's associated items from the current
 storage.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -79,7 +79,7 @@ Discards all changes made since the last successful update.
 
 Updates the current result with the data specified.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });

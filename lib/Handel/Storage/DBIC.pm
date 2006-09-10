@@ -1,4 +1,4 @@
-# $Id: DBIC.pm 1394 2006-09-04 17:54:57Z claco $
+# $Id: DBIC.pm 1409 2006-09-09 21:16:54Z claco $
 package Handel::Storage::DBIC;
 use strict;
 use warnings;
@@ -170,12 +170,12 @@ sub copyable_item_columns {
             $self->item_relationship;
 
     throw Handel::Exception::Storage(
-        -details => translate('No item class defined') . '.') unless
-            $self->item_class;
+        -details => translate('No item storage or item storage class defined') . '.') unless
+            $self->item_storage;
 
     my $schema_instance = $self->schema_instance;
     my $source = $schema_instance->source($self->schema_source);
-    my $item_source = $schema_instance->source($self->item_class->storage->schema_source);
+    my $item_source = $schema_instance->source($self->item_storage->schema_source);
     my @copyable;
     my %primaries = map {$_ => 1} $item_source->primary_columns;
     my %foreigns;
@@ -485,7 +485,7 @@ sub _configure_schema_instance {
     my $schema_instance = $self->schema_instance;
     my $schema_source = $self->schema_source;
     my $iterator_class = $self->iterator_class;
-    my $item_class = $self->item_class;
+    my $item_storage = $self->item_storage;
     my $item_relationship = $self->item_relationship;
     my $source_class = $schema_instance->class($schema_source);
     my $item_source_class;
@@ -527,8 +527,8 @@ sub _configure_schema_instance {
         };
     };
 
-    if ($item_class) {
-        $item_source_class = $schema_instance->class($item_class->storage->schema_source);
+    if ($item_storage) {
+        $item_source_class = $schema_instance->class($item_storage->schema_source);
 
         #if ($source->has_relationship($item_relationship)) {
         #    $source->related_source($item_relationship)->resultset_class($iterator_class);
@@ -543,11 +543,11 @@ sub _configure_schema_instance {
         ) unless $source->has_relationship($item_relationship);
 
 
-        my $item_source = $self->schema_instance->source($item_class->storage->schema_source);
-        $item_source->name($item_class->storage->table_name) if $item_class->storage->table_name;
+        my $item_source = $self->schema_instance->source($item_storage->schema_source);
+        $item_source->name($item_storage->table_name) if $item_storage->table_name;
 
         # make this source aware of this storage to make inflate_result happier
-        my $item_storage = $item_class->storage->clone;
+        #my $item_storage = $item_class->storage->clone;
         $item_storage->_schema_instance($schema_instance);
         $item_source->{'__handel_storage'} = $item_storage;
         weaken $item_storage;
@@ -555,23 +555,23 @@ sub _configure_schema_instance {
         
 
         # twiddle item source columns
-        if ($self->item_class->storage->_columns_to_add) {
+        if ($item_storage->_columns_to_add) {
             # I'm still not sure why you have to do both after the result_source_instance
             # fix in compose_namespace.
-            $item_source->add_columns(@{$item_class->storage->_columns_to_add});
-            $item_source_class->add_columns(@{$item_class->storage->_columns_to_add});
+            $item_source->add_columns(@{$item_storage->_columns_to_add});
+            $item_source_class->add_columns(@{$item_storage->_columns_to_add});
         };
-        if ($self->item_class->storage->_columns_to_remove) {
+        if ($item_storage->_columns_to_remove) {
             # I'm still not sure why you have to do both after the result_source_instance
             # fix in compose_namespace.
-            $item_source->remove_columns(@{$item_class->storage->_columns_to_remove});
-            $item_source_class->remove_columns(@{$item_class->storage->_columns_to_remove});
+            $item_source->remove_columns(@{$item_storage->_columns_to_remove});
+            $item_source_class->remove_columns(@{$item_storage->_columns_to_remove});
         };
 
         # add currency inflate/deflators
-        if ($self->item_class->storage->currency_columns) {
-            my $currency_class = $self->item_class->storage->currency_class;
-            foreach my $column ($self->item_class->storage->currency_columns) {
+        if ($item_storage->currency_columns) {
+            my $currency_class = $item_storage->currency_class;
+            foreach my $column ($item_storage->currency_columns) {
                 $item_source_class->inflate_column($column, {
                     inflate => sub {$currency_class->new(shift);},
                     deflate => sub {shift->value;}
@@ -599,17 +599,17 @@ sub _configure_schema_instance {
         $source_class->validation_profile($profile);
         $source_class->validation_module($self->validation_module);
     };
-    if ($item_class && $item_class->storage->validation_profile) {
+    if ($item_storage && $item_storage->validation_profile) {
         {
             no warnings 'redefine';
             local *Class::C3::reinitialize = sub {};
-            $item_source_class->load_components('+'.$item_class->storage->validation_class);
+            $item_source_class->load_components('+'.$item_storage->validation_class);
         };
         $item_source_class->validation_profile(
-            $item_class->storage->validation_profile
+            $item_storage->validation_profile
         );
         $item_source_class->validation_module(
-            $item_class->storage->validation_module
+            $item_storage->validation_module
         );
     };
 
@@ -622,14 +622,14 @@ sub _configure_schema_instance {
         };
         $source_class->constraints($constraints);
     };
-    if ($item_class && $item_class->storage->constraints) {
+    if ($item_storage && $item_storage->constraints) {
         {
             no warnings 'redefine';
             local *Class::C3::reinitialize = sub {};
-            $item_source_class->load_components('+'.$item_class->storage->constraints_class);
+            $item_source_class->load_components('+'.$item_storage->constraints_class);
         };
         $item_source_class->constraints(
-            $item_class->storage->constraints
+            $item_storage->constraints
         );
     };
 
@@ -642,14 +642,14 @@ sub _configure_schema_instance {
         };
         $source_class->default_values($defaults);
     };
-    if ($item_class && $item_class->storage->default_values) {
+    if ($item_storage && $item_storage->default_values) {
         {
             no warnings 'redefine';
             local *Class::C3::reinitialize = sub {};
-            $item_source_class->load_components('+'.$item_class->storage->default_values_class);
+            $item_source_class->load_components('+'.$item_storage->default_values_class);
         };
         $item_source_class->default_values(
-            $item_class->storage->default_values
+            $item_storage->default_values
         );
     };
 };
@@ -846,7 +846,7 @@ See L<Handel::Storage/add_constraint> for more information about this method.
 
 Adds a new item to the specified result, returning a storage result object.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -1008,7 +1008,7 @@ method.
 
 Returns the number of items associated with the specified result.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -1124,7 +1124,7 @@ See L<Handel::Storage/delete> for more information about this method.
 
 Deletes items matching the filter from the specified result.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->create({
         shopper => '11111111-1111-1111-1111-111111111111'
     });
@@ -1341,7 +1341,7 @@ See L<Handel::Storage/search> for more information about this method.
 
 Returns items matching the filter associated with the specified result.
 
-    my $storage = Handel::Storage::Cart->new;
+    my $storage = Handel::Storage::DBIC::Cart->new;
     my $result = $storage->search({
         id => '11111111-1111-1111-1111-111111111111'
     });
@@ -1447,7 +1447,7 @@ use data validation.
 =head1 SEE ALSO
 
 L<Handel::Storage>, L<Handel::Storage::Result>, L<Handel::Manual::Storage>,
-L<Handel::Storage::Cart>, L<Handel::Storage::Order>
+L<Handel::Storage::DBIC::Cart>, L<Handel::Storage::DBIC::Order>
 
 =head1 AUTHOR
 

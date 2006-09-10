@@ -10,7 +10,7 @@ etc.
 
 =head1 GOOD
 
-If you need a quick fix in a script or want to alter all instance of Handel objects within the same process, you
+If you need a quick fix in a script or want to alter all instances of Handel objects within the same process, you
 can simple add a column to the desired classes storage using L<Handel::Storage/add_columns>.
 
     #!/usr/bin/perl -w
@@ -38,20 +38,20 @@ extra field in it.
 The better, more polite approach is to make your own custom classes and use [ab]use them instead.
 
     package My::Cart;
-    use strict
+    use strict;
     use warnings;
     use base qw/Handel::Cart/;
     
+    __PACKAGE__->item_class('My::Cart::Item');
     __PACKAGE__->storage->add_columns('custom');
-    __PACKAGE__->storage->item_class('My::Cart::Item');
-    __PACKAGE__create_accessors;
+    __PACKAGE__->create_accessors;
     
     1;
 
 You don't have to subclass both the cart and items classes, but for the sake of good practice, there's no
 reason not to if  you've gone this far.
 
-    package My::Cart;
+    package My::Cart::Item;
     use strict;
     use warnings;
     use base qw/Handel::Cart::Item/;
@@ -63,7 +63,7 @@ Then in your script, use you're cart instead.
     #!/usr/bin/perl -w
     use strict;
     use warnings;
-    use My::Cart;    
+    use My::Cart;
     
     my $carts = My::Cart->search;
     print $carts->count;
@@ -93,6 +93,8 @@ understand the syntax.
         size        => 50,
         is_nullable => 1
     });
+    
+    1;
 
 This is a potential problem when setting any storage class option from within the interface classes that
 uses it. To help abstract the storage specifics away from the interface classes that use them, you should go
@@ -107,7 +109,7 @@ First we need to create custom storage classes for the Cart and Item interface c
     use warnings;
     use base qw/Handel::Storage::DBIC::Cart/;
     
-    __PACKAGE__->item_class('My::Cart');
+    __PACKAGE__->item_storage_class('My::Storage::Cart::Item');
     
     __PACKAGE__->add_columns('foo' => {
         data_type   => 'varchar',
@@ -116,7 +118,7 @@ First we need to create custom storage classes for the Cart and Item interface c
     });
     
     1;
-
+    
     package My::Storage::Cart::Item;
     use strict;
     use warnings;
@@ -131,18 +133,20 @@ First we need to create custom storage classes for the Cart and Item interface c
     use warnings;
     use base qw/Handel::Cart/;
     
+    __PACKAGE__->item_class('My::Cart::Item');
+    
     # No storage changes in here
     # The storage class takes care of adding the column
     __PACKAGE__->storage_class('My::Storage::Cart');
     
     1;
-
+    
     package My::Cart::Item;
     use strict;
     use warnings;
     use base qw/Handel::Cart::Item/;
     
-    __PACKAGE__storage_class('My::Storage::Cart::Item');
+    __PACKAGE__->storage_class('My::Storage::Cart::Item');
     
     1;
 
@@ -151,7 +155,7 @@ First we need to create custom storage classes for the Cart and Item interface c
     #!/usr/bin/perl -w
     use strict;
     use warnings;
-    use My::Cart;    
+    use My::Cart;
     
     my $carts = My::Cart->search;
     print $carts->count;
@@ -168,7 +172,7 @@ any changes that storage class needs to make in order to add a column:
     use warnings;
     use base qw/Handel::Storage::DBIC::Cart/;
     
-    __PACKAGE__->item_class('My::Cart');
+    __PACKAGE__->item_storage_class('My::Storage::Cart::Item');
     
     __PACKAGE__->add_columns([qw/foo varchar 50 nullable/]);
     
@@ -176,7 +180,7 @@ any changes that storage class needs to make in order to add a column:
 
 =head1 SEE ALSO
 
-L<Handel::Storage>, L<Handel::Storage::DBIC>, L<Handel::Storage::Cart>, L<Handel::Storage::Cart::Item>
+L<Handel::Storage>, L<Handel::Storage::DBIC>, L<Handel::Storage::DBIC::Cart>, L<Handel::Storage::DBIC::Cart::Item>
 
 =head1 AUTHOR
 

@@ -1,4 +1,4 @@
-# $Id: Order.pm 1402 2006-09-06 23:29:59Z claco $
+# $Id: Order.pm 1409 2006-09-09 21:16:54Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -12,6 +12,9 @@ BEGIN {
     use Carp qw/carp/;
 
     use base qw/Handel::Base/;
+    __PACKAGE__->item_class('Handel::Order::Item');
+    __PACKAGE__->cart_class('Handel::Cart');
+    __PACKAGE__->checkout_class('Handel::Checkout');
     __PACKAGE__->storage_class('Handel::Storage::DBIC::Order');
     __PACKAGE__->mk_group_accessors('inherited', qw/ccn cctype ccm ccy ccvn ccname ccissuenumber ccstartdate ccenddate/);
     __PACKAGE__->create_accessors;
@@ -37,13 +40,13 @@ sub create {
                   (ref($cart) eq 'HASH' or (blessed($cart) && $cart->isa('Handel::Cart')) or $is_uuid);
 
         if (ref $cart eq 'HASH') {
-            $cart = $storage->cart_class->search($cart)->first;
+            $cart = $self->cart_class->search($cart)->first;
 
             throw Handel::Exception::Order( -details =>
                 translate(
                     'Could not find a cart matching the supplied search criteria') . '.') unless $cart;
         } elsif ($is_uuid) {
-            $cart = $storage->cart_class->search({id => $cart})->first;
+            $cart = $self->cart_class->search({id => $cart})->first;
 
             throw Handel::Exception::Order( -details =>
                 translate(
@@ -70,7 +73,7 @@ sub create {
     };
 
     if ($process) {
-        my $checkout = $storage->checkout_class->new;
+        my $checkout = $self->checkout_class->new;
         $checkout->order($order);
 
         my $status = $checkout->process([CHECKOUT_PHASE_INITIALIZE]);
@@ -117,7 +120,7 @@ sub add {
     my $storage = $result->storage;
 
     if (ref($data) eq 'HASH') {
-        return $storage->item_class->create_instance(
+        return $self->item_class->create_instance(
             $result->add_item($data)
         );
     } else {
@@ -131,7 +134,7 @@ sub add {
             };
         };
 
-        return $storage->item_class->create_instance(
+        return $self->item_class->create_instance(
             $result->add_item(\%copy)
         );
     };
@@ -192,9 +195,9 @@ sub items {
             ref($filter) eq 'HASH' or !$filter);
 
     my $results = $result->search_items($filter);
-    my $iterator = $storage->item_class->result_iterator_class->new({
+    my $iterator = $self->item_class->result_iterator_class->new({
         data         => $results,
-        result_class => $storage->item_class
+        result_class => $self->item_class
     });
 
     return wantarray ? $iterator->all : $iterator;
@@ -232,13 +235,13 @@ sub reconcile {
                   (ref($cart) eq 'HASH' or (blessed($cart) && $cart->isa('Handel::Cart')) or $is_uuid);
 
         if (ref $cart eq 'HASH') {
-            $cart = $self->storage->cart_class->search($cart)->first;
+            $cart = $self->cart_class->search($cart)->first;
 
             throw Handel::Exception::Order( -details =>
                 translate(
                     'Could not find a cart matching the supplied search criteria') . '.') unless $cart;
         } elsif ($is_uuid) {
-            $cart = $self->storage->cart_class->search({id => $cart})->first;
+            $cart = $self->cart_class->search({id => $cart})->first;
 
             throw Handel::Exception::Order( -details =>
                 translate(

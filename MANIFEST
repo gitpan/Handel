@@ -63,6 +63,7 @@ lib/Handel/Manual.pod
 lib/Handel/Manual/About.pod
 lib/Handel/Manual/Cookbook.pod
 lib/Handel/Manual/Cookbook/AddingColumns.pod
+lib/Handel/Manual/Cookbook/WritingCustomStorage.pod
 lib/Handel/Manual/Intro.pod
 lib/Handel/Manual/QuickStart.pod
 lib/Handel/Manual/Schema.pod
@@ -102,6 +103,8 @@ t/base_storage_class.t
 t/base_update.t
 t/base_create_accessors.t
 t/base_create_instance.t
+t/base_cart_class.t
+t/base_item_class.t
 t/basic.t
 t/cart_add.t
 t/cart_clear.t
@@ -502,11 +505,10 @@ t/storage_setup.t
 t/storage_constraints.t
 t/storage_default_values.t
 t/storage_validation.t
-t/storage_cart_class.t
-t/storage_item_class.t
 t/storage_iterator_class.t
 t/storage_currency_class.t
 t/storage_currency_columns.t
+t/storage_has_column.t
 t/storage_remove_constraints.t
 t/storage_column_accessors.t
 t/storage_clone.t

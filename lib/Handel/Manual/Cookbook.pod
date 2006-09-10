@@ -12,6 +12,10 @@ The following recipes cover the most common questions and problems encountered w
 
 Various ways to add columns in Handel.
 
+=head2 L<Writing Custom Storage Classes|Handel::Manual::Cookbook::WritingCustomStorage>
+
+Step by Step example of writing a custom storage class.
+
 =head1 AUTHOR
 
     Christopher H. Laco

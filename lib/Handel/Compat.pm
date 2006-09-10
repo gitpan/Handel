@@ -1,4 +1,4 @@
-# $Id: Compat.pm 1360 2006-08-09 03:17:09Z claco $
+# $Id: Compat.pm 1409 2006-09-09 21:16:54Z claco $
 package Handel::Compat;
 use strict;
 use warnings;
@@ -24,16 +24,6 @@ sub add_constraint {
     $self->storage->add_constraint($column, $name, $sub);
 };
 
-sub cart_class {
-    my ($self, $cart_class) = @_;
-
-    if ($cart_class) {
-        $self->storage->cart_class($cart_class);
-    };
-
-    return $self->storage->cart_class;
-};
-
 sub has_wildcard {
     my $filter = shift;
 
@@ -42,16 +32,6 @@ sub has_wildcard {
     };
 
     return undef;
-};
-
-sub item_class {
-    my ($self, $item_class) = @_;
-
-    if ($item_class) {
-        $self->storage->item_class($item_class);
-    };
-
-    return $self->storage->item_class;
 };
 
 sub iterator_class {

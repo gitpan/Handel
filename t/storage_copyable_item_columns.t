@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_copyable_item_columns.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_copyable_item_columns.t 1409 2006-09-09 21:16:54Z claco $
 use strict;
 use warnings;
 use lib 't/lib';
@@ -11,7 +11,10 @@ BEGIN {
 };
 
 my $storage = Handel::Storage->new({
-    item_class => 'Handel::Subclassing::GenericItem'
+    item_storage => Handel::Storage->new({
+        add_columns     => [qw/a b c/],
+        primary_columns => ['a']
+    })
 });
 isa_ok($storage, 'Handel::Storage');
 

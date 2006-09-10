@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_dbic_search_items.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_dbic_search_items.t 1409 2006-09-09 21:16:54Z claco $
 use strict;
 use warnings;
 use lib 't/lib';
@@ -20,10 +20,10 @@ BEGIN {
 };
 
 my $storage = Handel::Storage::DBIC->new({
-    schema_class    => 'Handel::Cart::Schema',
-    schema_source   => 'Carts',
-    item_class      => 'Handel::Cart::Item',
-    connection_info => [
+    schema_class       => 'Handel::Cart::Schema',
+    schema_source      => 'Carts',
+    item_storage_class => 'Handel::Storage::DBIC::Cart::Item',
+    connection_info    => [
         Handel::Test->init_schema->dsn
     ]
 });
@@ -39,7 +39,7 @@ my $result = bless {'storage_result' => $cart}, 'GenericResult';
     my @results = $storage->search_items($result);
     is(@results, 2);
     foreach my $result (@results) {
-        isa_ok($result, $storage->item_class->storage->result_class);
+        isa_ok($result, $storage->item_storage->result_class);
         is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage);
         like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/);
     };
@@ -52,7 +52,7 @@ my $result = bless {'storage_result' => $cart}, 'GenericResult';
     is($results->count, 2);
     isa_ok($results, $storage->iterator_class);
     while (my $result = $results->next) {
-        isa_ok($result, $storage->item_class->storage->result_class);
+        isa_ok($result, $storage->item_storage->result_class);
         is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage);
         like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/);
     };
@@ -64,7 +64,7 @@ my $result = bless {'storage_result' => $cart}, 'GenericResult';
     my $items = $storage->search_items($result, { id => '1111%'});
     is($items->count, 1);
     my $result = $items->first;
-    isa_ok($result, $storage->item_class->storage->result_class);
+    isa_ok($result, $storage->item_storage->result_class);
     is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage);
     like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/);
     is($result->id, '11111111-1111-1111-1111-111111111111');
