@@ -1,4 +1,4 @@
-# $Id: Constraints.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Constraints.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Constraints;
 use strict;
 use warnings;
@@ -37,10 +37,10 @@ sub constraint_quantity {
     if ($action =~ /^exception$/i && $max) {
         throw Handel::Exception::Constraint( -details =>
             translate('The quantity requested ([_1]) is greater than the maximum quantity allowed ([_2])', $value, $max)
-        ) if $value > $max;
+        ) if $value > $max; ## no critic
     } elsif ($action =~ /^adjust$/i && $max) {
-        if (ref($object) && $value) {
-            $changing->{'quantity'} = $max if $value > $max;
+        if (ref($object) && $value && $value > $max) {
+            $changing->{'quantity'} = $max;
         };
     };
 
@@ -89,9 +89,9 @@ sub constraint_cart_name {
 sub constraint_currency_code {
     my $value = defined $_[0] ? uc(shift) : '';
 
-    return  unless ($value =~ /^[A-Z]{3}$/);
+    return unless ($value =~ /^[A-Z]{3}$/); ## no critic
 
-    eval 'use Locale::Currency';
+    eval 'use Locale::Currency'; ## no critic
     if (!$@) {
         if (! keys %codes) {
             %codes = map {uc($_) => uc($_)} all_currency_codes();

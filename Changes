@@ -1,6 +1,17 @@
 Revision history for Perl module Handel
 
-0.99_11 Sun Sep 10 13:%3:22 2006
+0.99_12 Fri Sep 15 22:28:53 2006
+    - Moved Locale::Currency/Format and WebServiceX modules to requirements
+    - Currency new() now takes $code and $format params
+    - Added name/code to Currency
+    - Added converter_class to Currency
+    - Added currency_code and currency_format to Storage
+    - Storage::DBIC now passes currency_code/format into DBIC inflate subs for
+        currency_columns
+    - Added Storage::DBIC currency_code/currency_format tests
+    - Finished Perl::Critic cleanup
+
+0.99_11 Sun Sep 10 13:33:22 2006
     - Fix examples code in AddingColumns.pod
     - Fixed pod references after DBIC Storage rearrangement
     - Added item_storage_class/item_storage to Storage so item related methods

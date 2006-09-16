@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1412 2006-09-10 17:47:08Z claco $
+# $Id: Cart.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
@@ -19,8 +19,8 @@ sub create {
     my ($self, $data, $opts) = @_;
 
     throw Handel::Exception::Argument(
-        -details => translate('Param 1 is not a HASH reference') . '.') unless
-            ref($data) eq 'HASH';
+        -details => translate('Param 1 is not a HASH reference')
+    ) unless ref($data) eq 'HASH'; ## no critic
 
     no strict 'refs';
     my $storage = $opts->{'storage'} || $self->storage;
@@ -34,9 +34,8 @@ sub add {
     my ($self, $data) = @_;
 
     throw Handel::Exception::Argument( -details =>
-      translate(
-          'Param 1 is not a HASH reference or Handel::Cart::Item') . '.') unless
-              (ref($data) eq 'HASH' or $data->isa('Handel::Cart::Item'));
+      translate('Param 1 is not a HASH reference or Handel::Cart::Item')
+    ) unless (ref($data) eq 'HASH' or $data->isa('Handel::Cart::Item')); ## no critic
 
     my $result = $self->result;
     my $storage = $result->storage;
@@ -78,8 +77,8 @@ sub delete {
     my ($self, $filter) = @_;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference') . '.') unless
-            ref($filter) eq 'HASH';
+        translate('Param 1 is not a HASH reference')
+    ) unless ref($filter) eq 'HASH'; ## no critic
 
     return $self->result->delete_items($filter);
 };
@@ -95,8 +94,8 @@ sub destroy {
         return $result;
     } else {
         throw Handel::Exception::Argument( -details =>
-            translate('Param 1 is not a HASH reference') . '.') unless
-                ref($filter) eq 'HASH';
+            translate('Param 1 is not a HASH reference')
+        ) unless ref($filter) eq 'HASH'; ## no critic
 
         no strict 'refs';
         my $storage = $opts->{'storage'} || $self->storage;
@@ -113,8 +112,8 @@ sub items {
     my $storage = $result->storage;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference') . '.') unless(
-            ref($filter) eq 'HASH' or !$filter);
+        translate('Param 1 is not a HASH reference')
+    ) unless (ref($filter) eq 'HASH' || !$filter); ## no critic
 
     my $results = $result->search_items($filter);
     my $iterator = $self->item_class->result_iterator_class->new({
@@ -130,8 +129,8 @@ sub search {
     my $class = blessed $self || $self;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference') . '.') unless(
-            ref($filter) eq 'HASH' or !$filter);
+        translate('Param 1 is not a HASH reference')
+    ) unless(ref($filter) eq 'HASH' || !$filter); ## no critic
 
     no strict 'refs';
     my $storage = $opts->{'storage'} || $self->storage;
@@ -151,9 +150,8 @@ sub restore {
     $mode ||= CART_MODE_REPLACE;
 
     throw Handel::Exception::Argument( -details =>
-        translate(
-            'Param 1 is not a HASH reference or Handel::Cart') . '.') unless(
-                ref($data) eq 'HASH' or $data->isa('Handel::Cart'));
+        translate('Param 1 is not a HASH reference or Handel::Cart')
+    ) unless (ref($data) eq 'HASH' || $data->isa('Handel::Cart')); ## no critic
 
     my @carts = (ref($data) eq 'HASH') ?
         $self->search($data)->all : $data;
@@ -191,15 +189,18 @@ sub restore {
         };
     } else {
         return new Handel::Exception::Argument(-text =>
-            translate('Unknown restore mode'));
+            translate('Unknown restore mode')
+        );
     };
+
+    return;
 };
 
 sub save {
     my $self = shift;
     $self->type(CART_TYPE_SAVED);
 
-    return undef;
+    return;
 };
 
 sub subtotal {

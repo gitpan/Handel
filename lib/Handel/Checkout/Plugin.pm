@@ -1,7 +1,11 @@
-# $Id: Plugin.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Plugin.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Checkout::Plugin;
 use strict;
 use warnings;
+
+BEGIN {
+    use Carp qw/cluck/;
+};
 
 sub new {
     my ($class, $ctx) = @_;
@@ -25,7 +29,9 @@ sub teardown {
 };
 
 sub register {
-    warn "Attempt to register plugin that hasn't defined 'register'!";
+    cluck 'Attempt to register plugin that hasn\'t defined \'register\'!';
+
+    return;
 };
 
 sub name {

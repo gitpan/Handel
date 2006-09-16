@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 1398 2006-09-05 22:39:51Z claco $
+# $Id: Makefile.PL 1415 2006-09-14 00:54:13Z claco $
 use ExtUtils::MakeMaker;
 use 5.006;
 use strict;
@@ -99,7 +99,10 @@ WriteMakefile(
         'Scalar::Util'             => '0',
         'Tie::Hash'                => '0',
         'DateTime'                 => '0',
-        'DateTime::Format::MySQL'  => '0'
+        'DateTime::Format::MySQL'  => '0',
+        'Locale::Currency'         => '2.07',
+        'Locale::Currency::Format' => '1.22',
+        'Finance::Currency::Convert::WebserviceX' => '0.03'
     },
     (ExtUtils::MakeMaker->VERSION >= 6.11) ?
     (NO_META      => 1) : (),

@@ -1,4 +1,4 @@
-# $Id: Order.pm 1409 2006-09-09 21:16:54Z claco $
+# $Id: Order.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -24,8 +24,8 @@ sub create {
     my ($self, $data, $opts) = @_;
 
     throw Handel::Exception::Argument(
-        -details => translate('Param 1 is not a HASH reference') . '.') unless
-            ref($data) eq 'HASH';
+        -details => translate('Param 1 is not a HASH reference')
+    ) unless ref($data) eq 'HASH'; ## no critic
 
     no strict 'refs';
     my $storage = $opts->{'storage'} || $self->storage;
@@ -35,28 +35,26 @@ sub create {
 
     if (defined $cart) {
         throw Handel::Exception::Argument( -details =>
-          translate(
-              'Cart reference is not a HASH reference or Handel::Cart') . '.') unless
-                  (ref($cart) eq 'HASH' or (blessed($cart) && $cart->isa('Handel::Cart')) or $is_uuid);
+          translate('Cart reference is not a HASH reference or Handel::Cart')
+        ) unless (ref($cart) eq 'HASH' || (blessed($cart) && $cart->isa('Handel::Cart')) || $is_uuid); ## no critic
 
         if (ref $cart eq 'HASH') {
             $cart = $self->cart_class->search($cart)->first;
 
             throw Handel::Exception::Order( -details =>
-                translate(
-                    'Could not find a cart matching the supplied search criteria') . '.') unless $cart;
+                translate('Could not find a cart matching the supplied search criteria')
+            ) unless $cart; ## no critic
         } elsif ($is_uuid) {
             $cart = $self->cart_class->search({id => $cart})->first;
 
             throw Handel::Exception::Order( -details =>
-                translate(
-                    'Could not find a cart matching the supplied search criteria') . '.') unless $cart;
+                translate('Could not find a cart matching the supplied search criteria')
+            ) unless $cart; ## no critic
         };
 
         throw Handel::Exception::Order( -details =>
-            translate(
-                'Could not create a new order because the supplied cart is empty') . '.') unless
-                    $cart->count > 0;
+            translate('Could not create a new order because the supplied cart is empty')
+        ) unless $cart->count > 0; ## no critic
     };
 
     if (defined $cart) {
@@ -98,6 +96,8 @@ sub copy_cart {
 
     $order->subtotal($cart->subtotal);
     $order->update;
+
+    return;
 };
 
 sub copy_cart_items {
@@ -106,15 +106,16 @@ sub copy_cart_items {
     foreach my $item ($cart->items) {
         $order->add($item);
     };
+
+    return;
 };
 
 sub add {
     my ($self, $data) = @_;
 
     throw Handel::Exception::Argument( -details =>
-      translate(
-          'Param 1 is not a HASH reference, Handel::Cart::Item or Handel::Order::Item') . '.') unless
-              (ref($data) eq 'HASH' or $data->isa('Handel::Order::Item') or $data->isa('Handel::Cart::Item'));
+      translate('Param 1 is not a HASH reference, Handel::Cart::Item or Handel::Order::Item')
+    ) unless (ref($data) eq 'HASH' || $data->isa('Handel::Order::Item') || $data->isa('Handel::Cart::Item')); ## no critic
 
     my $result = $self->result;
     my $storage = $result->storage;
@@ -156,8 +157,8 @@ sub delete {
     my ($self, $filter) = @_;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference') . '.') unless
-            ref($filter) eq 'HASH';
+        translate('Param 1 is not a HASH reference')
+    ) unless ref($filter) eq 'HASH'; ## no critic
 
     return $self->result->delete_items($filter);
 };
@@ -173,8 +174,8 @@ sub destroy {
         return $result;
     } else {
         throw Handel::Exception::Argument( -details =>
-            translate('Param 1 is not a HASH reference') . '.') unless
-                ref($filter) eq 'HASH';
+            translate('Param 1 is not a HASH reference')
+        ) unless ref($filter) eq 'HASH'; ## no critic
 
         no strict 'refs';
         my $storage = $opts->{'storage'} || $self->storage;
@@ -191,8 +192,8 @@ sub items {
     my $storage = $result->storage;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference') . '.') unless(
-            ref($filter) eq 'HASH' or !$filter);
+        translate('Param 1 is not a HASH reference')
+    ) unless( ref($filter) eq 'HASH' || !$filter); ## no critic
 
     my $results = $result->search_items($filter);
     my $iterator = $self->item_class->result_iterator_class->new({
@@ -208,8 +209,8 @@ sub search {
     my $class = blessed $self || $self;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference') . '.') unless(
-            ref($filter) eq 'HASH' or !$filter);
+        translate('Param 1 is not a HASH reference')
+    ) unless (ref($filter) eq 'HASH' || !$filter); ## no critic
 
     no strict 'refs';
     my $storage = $opts->{'storage'} || $self->storage;
@@ -230,28 +231,26 @@ sub reconcile {
 
     if (defined $cart) {
         throw Handel::Exception::Argument( -details =>
-          translate(
-              'Cart reference is not a HASH reference or Handel::Cart') . '.') unless
-                  (ref($cart) eq 'HASH' or (blessed($cart) && $cart->isa('Handel::Cart')) or $is_uuid);
+          translate('Cart reference is not a HASH reference or Handel::Cart')
+        ) unless (ref($cart) eq 'HASH' || (blessed($cart) && $cart->isa('Handel::Cart')) || $is_uuid); ## no critic
 
         if (ref $cart eq 'HASH') {
             $cart = $self->cart_class->search($cart)->first;
 
             throw Handel::Exception::Order( -details =>
-                translate(
-                    'Could not find a cart matching the supplied search criteria') . '.') unless $cart;
+                translate('Could not find a cart matching the supplied search criteria')
+            ) unless $cart; ## no critic
         } elsif ($is_uuid) {
             $cart = $self->cart_class->search({id => $cart})->first;
 
             throw Handel::Exception::Order( -details =>
-                translate(
-                    'Could not find a cart matching the supplied search criteria') . '.') unless $cart;
+                translate('Could not find a cart matching the supplied search criteria')
+            ) unless $cart; ## no critic
         };
 
         throw Handel::Exception::Order( -details =>
-            translate(
-                'Could not create a new order because the supplied cart is empty') . '.') unless
-                    $cart->count > 0;
+            translate('Could not create a new order because the supplied cart is empty')
+        ) unless $cart->count > 0; ## no critic
     };
 
     if ($self->subtotal != $cart->subtotal || $self->count != $cart->count) {
@@ -259,6 +258,8 @@ sub reconcile {
         $self->copy_cart($self, $cart);
         $self->copy_cart_items($self, $cart);
     };
+
+    return;
 };
 
 1;

@@ -1,3 +1,5 @@
+# $Id: Results.pm 1416 2006-09-15 03:45:35Z claco $
+## no critic (ProhibitAmbiguousNames)
 package Handel::Iterator::Results;
 use strict;
 use warnings;

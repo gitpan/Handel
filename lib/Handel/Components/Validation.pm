@@ -1,3 +1,4 @@
+# $Id: Validation.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Components::Validation;
 use strict;
 use warnings;
@@ -19,6 +20,8 @@ sub throw_exception {
             Handel::Exception::Validation->new(-details => $exception)
         );
     };
+
+    return;
 };
 
 1;

@@ -1,4 +1,4 @@
-# $Id: Base.pm 1409 2006-09-09 21:16:54Z claco $
+# $Id: Base.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Base;
 use strict;
 use warnings;
@@ -27,6 +27,8 @@ sub import {
     if (!$self->has_storage) {
         $self->init_storage;
     };
+
+    return;
 };
 
 sub create_accessors {
@@ -41,6 +43,8 @@ sub create_accessors {
     };
 
     $self->accessor_map($accessors);
+
+    return;
 };
 
 sub get_column {
@@ -55,14 +59,18 @@ sub set_column {
     my $accessor = $self->accessor_map->{$column} || $column;
 
     $self->result->$accessor($value);
-    $self->update if $self->autoupdate;
+    if ($self->autoupdate) {
+        $self->update;
+    };
+
+    return;
 };
 
 sub create_instance {
     my ($self, $result) = @_;
     my $class = blessed $self || $self;
 
-    return unless $result;
+    return unless $result; ## no critic
 
     my $storage = $result->storage;
 
@@ -89,7 +97,9 @@ sub storage {
         $storage->item_storage($self->item_class->storage);
     };
 
-    $storage->setup($args) if $args;
+    if ($args) {
+        $storage->setup($args);
+    };
 
     return $storage;
 };
@@ -108,7 +118,9 @@ sub has_storage {
 };
 
 sub init_storage {
-    shift->_get_storage;
+    shift->_get_storage; ## no critic
+
+    return;
 };
 
 sub get_component_class {
@@ -122,15 +134,17 @@ sub set_component_class {
 
     if ($value) {
         if (!Class::Inspector->loaded($value)) {
-            eval "use $value";
+            eval "use $value"; ## no critic
 
             throw Handel::Exception::Storage(
-                -details => translate('The [_1] [_2] could not be loaded', $field, $value) . '.')
-                    if $@;
+                -details => translate('The [_1] [_2] could not be loaded', $field, $value)
+            ) if $@; ## no critic
         };
     };
 
     $self->set_inherited($field, $value);
+
+    return;
 };
 
 sub _get_storage {
@@ -138,7 +152,6 @@ sub _get_storage {
     my $class = blessed $self || $self;
 
     no strict 'refs';
-    no warnings;
 
     my $storage = $self->{'storage'} || ${"$class\:\:_storage"};
     if (!$storage) {
@@ -151,7 +164,9 @@ sub _get_storage {
                 $storage = $storage->clone;
 
                 # we want our own, not da clones item storage
-                $storage->_item_storage(undef) if $storage->_item_storage;
+                if ($storage->_item_storage) {
+                    $storage->_item_storage(undef);
+                };
             } else {
                 $storage = $self->storage_class->new;
             };
@@ -173,10 +188,11 @@ sub _set_storage {
         $self->{'storage'} = $storage;
     } else {
         no strict 'refs';
-        no warnings;
 
         ${"$class\:\:_storage"} = $storage;
     };
+
+    return;
 };
 
 sub update {

@@ -1,4 +1,4 @@
-# $Id: ConfigReader.pm 1341 2006-07-20 17:55:56Z claco $
+# $Id: ConfigReader.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::ConfigReader;
 use strict;
 use warnings;
@@ -35,7 +35,7 @@ BEGIN {
 sub new {
     my $class = shift;
     my %config;
-    tie %config, __PACKAGE__;
+    tie %config, __PACKAGE__; ## no critic
 
     return bless \%config, $class;
 };

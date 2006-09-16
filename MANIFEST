@@ -527,6 +527,8 @@ t/storage_dbic_remove_columns.t
 t/storage_dbic_constraints.t
 t/storage_dbic_create.t
 t/storage_dbic_currency_columns.t
+t/storage_dbic_currency_code.t
+t/storage_dbic_currency_format.t
 t/storage_dbic_default_values.t
 t/storage_dbic_delete.t
 t/storage_dbic_delete_items.t

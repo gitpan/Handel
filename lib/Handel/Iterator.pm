@@ -1,4 +1,5 @@
-# $Id: Iterator.pm 1372 2006-08-18 01:36:57Z claco $
+# $Id: Iterator.pm 1416 2006-09-15 03:45:35Z claco $
+## no critic (ProhibitAmbiguousNames)
 package Handel::Iterator;
 use strict;
 use warnings;
@@ -23,26 +24,38 @@ sub new {
 
 sub all {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub count {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub first {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub last {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub next {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub reset {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub create_result {
@@ -51,11 +64,11 @@ sub create_result {
 
     throw Handel::Exception::Argument( -text => 
         translate('Result not supplied')
-    ) unless $result;
+    ) unless $result; ## no critic
 
     throw Handel::Exception::Argument( -text => 
         translate('Storage not supplied')
-    ) unless $storage;
+    ) unless $storage; ## no critic
 
     return $self->result_class->create_instance(
         $result, $storage

@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: currency.t 1354 2006-08-06 00:11:31Z claco $
+# $Id: currency.t 1417 2006-09-16 02:19:18Z claco $
 use strict;
 use warnings;
-use Test::More tests => 24;
+use Test::More tests => 29;
 
 BEGIN {
     use_ok('Handel::Currency');
@@ -29,6 +29,17 @@ BEGIN {
         is($currency->format(undef, 'FMT_NAME'), '1.20 US Dollar');
         is($currency->format('CAD', 'FMT_NAME'), '1.20 Canadian Dollar');
     };
+
+    
+    is($currency->code, undef);
+    is($currency->name, 'US Dollar');
+
+    $currency->code('DKK');
+    is($currency->code, 'DKK');
+    is($currency->name, 'Danish Krone');
+    is($currency->name('JPY'), 'Yen');
+
+    $currency->code(undef);
 };
 
 
@@ -112,3 +123,5 @@ SKIP: {
     ok($currency->convert('USD', 'CAD', 1, 'FMT_STANDARD') =~ / CAD$/);
     ok($currency->convert('USD', 'CAD', 0, 'FMT_STANDARD') !~ / CAD$/);
 };
+
+

@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1403 2006-09-06 23:43:58Z claco $
+# $Id: Checkout.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
@@ -55,9 +55,15 @@ sub new {
         };
     };
 
-    $self->cart($opts->{'cart'}) if $opts->{'cart'};
-    $self->order($opts->{'order'}) if $opts->{'order'};
-    $self->phases($opts->{'phases'}) if $opts->{'phases'};
+    if ($opts->{'cart'}) {
+        $self->cart($opts->{'cart'});
+    };
+    if ($opts->{'order'}) {
+        $self->order($opts->{'order'});
+    };
+    if ($opts->{'phases'}) {
+        $self->phases($opts->{'phases'});
+    };
 
     return $self;
 };
@@ -73,14 +79,12 @@ sub add_handler {
     my ($package) = caller;
 
     throw Handel::Exception::Argument( -details =>
-        translate(
-            'Param 1 is not a a valid CHECKOUT_PHASE_* value') . '.')
-            unless constraint_checkout_phase($phase);
+        translate('Param 1 is not a a valid CHECKOUT_PHASE_* value')
+    ) unless constraint_checkout_phase($phase); ## no critic
 
     throw Handel::Exception::Argument( -details =>
-        translate(
-            'Param 1 is not a CODE reference') . '.')
-            unless ref($ref) eq 'CODE';
+        translate('Param 1 is not a CODE reference')
+    ) unless ref($ref) eq 'CODE'; ## no critic
 
     foreach (@{$self->{'plugins'}}) {
         if (ref $_ eq $package) {
@@ -99,6 +103,8 @@ sub add_handler {
             last;
         };
     };
+
+    return;
 };
 
 sub add_message {
@@ -106,9 +112,9 @@ sub add_message {
     my ($package, $filename, $line) = caller;
 
     if (blessed($message) && $message->isa('Handel::Checkout::Message')) {
-        $message->package($package) unless $message->package;
-        $message->filename($filename) unless $message->filename;
-        $message->line($line) unless $message->line;
+        $message->package($package) unless $message->package;       ## no critic
+        $message->filename($filename) unless $message->filename;    ## no critic
+        $message->line($line) unless $message->line;                ## no critic
 
         push @{$self->{'messages'}}, $message;
     } elsif (!ref $message || ref $message eq 'Apache::AxKit::Exception::Error') {
@@ -116,8 +122,11 @@ sub add_message {
             text => $message, source => $package, filename => $filename, line => $line);
     } else {
         throw Handel::Exception::Argument( -details =>
-            translate('Param 1 is not a Handel::Checkout::Message object or text message') . '.');
+            translate('Param 1 is not a Handel::Checkout::Message object or text message')
+        );
     };
+
+    return;
 };
 
 sub add_phase {
@@ -148,12 +157,16 @@ sub add_phase {
 
         push @Handel::Constants::CHECKOUT_ALL_PHASES, $value;
     };
+
+    return;
 };
 
 sub clear_messages {
     my $self = shift;
 
     $self->{'messages'} = [];
+
+    return;
 };
 
 sub cart {
@@ -164,9 +177,12 @@ sub cart {
             $self->order($self->order_class->create({cart => $cart}));
         } else {
             throw Handel::Exception::Argument( -details =>
-                translate('Param 1 is not a HASH reference, Handel::Cart object, or cart id') . '.');
+                translate('Param 1 is not a HASH reference, Handel::Cart object, or cart id')
+            );
         };
     };
+
+    return;
 };
 
 sub messages {
@@ -187,11 +203,14 @@ sub order {
             $self->{'order'} = $self->order_class->search({id => $order})->first;
         } else {
             throw Handel::Exception::Argument( -details =>
-                translate('Param 1 is not a HASH reference, Handel::Order object, or order id') . '.');
+                translate('Param 1 is not a HASH reference, Handel::Order object, or order id')
+            );
         }
     } else {
         return $self->{'order'};
     };
+
+    return;
 };
 
 sub phases {
@@ -199,7 +218,8 @@ sub phases {
 
     if ($phases) {
         throw Handel::Exception::Argument( -details =>
-            translate('Param 1 is not an ARRAY reference or string') . '.') unless (ref($phases) eq 'ARRAY' || !ref($phases));
+            translate('Param 1 is not an ARRAY reference or string')
+        ) unless (ref($phases) eq 'ARRAY' || !ref($phases)); ## no critic
 
         if (! ref $phases) {
             # holy crap, that actually worked!
@@ -209,11 +229,13 @@ sub phases {
         $self->{'phases'} = $phases;
     } else {
         if (wantarray) {
-            return (scalar @{$self->{'phases'}}) ? @{$self->{'phases'}} : @{&CHECKOUT_DEFAULT_PHASES};
+            return (scalar @{$self->{'phases'}}) ? @{$self->{'phases'}} : @{&CHECKOUT_DEFAULT_PHASES}; ## no critic
         } else {
-            return (scalar @{$self->{'phases'}}) ? $self->{'phases'} : &CHECKOUT_DEFAULT_PHASES;
+            return (scalar @{$self->{'phases'}}) ? $self->{'phases'} : CHECKOUT_DEFAULT_PHASES;
         };
     };
+
+    return;
 };
 
 sub process {
@@ -222,9 +244,8 @@ sub process {
 
     if ($phases) {
         throw Handel::Exception::Argument( -details =>
-            translate(
-                'Param 1 is not an ARRAY reference or string') . '.')
-                unless (ref($phases) eq 'ARRAY' || ! ref($phases));
+            translate('Param 1 is not an ARRAY reference or string')
+        ) unless (ref($phases) eq 'ARRAY' || ! ref($phases)); ## no critic
 
         if (! ref $phases) {
             # holy crap, that actually worked!
@@ -235,8 +256,8 @@ sub process {
     };
 
     throw Handel::Exception::Checkout( -details =>
-        translate('No order is assocated with this checkout process') . '.')
-            unless $self->order;
+        translate('No order is assocated with this checkout process')
+    ) unless $self->order; ## no critic
 
     $self->stash->clear;
     $self->_setup($self);
@@ -284,10 +305,10 @@ sub _setup {
     foreach (@{$self->{'plugins'}}) {
         try {
             $_->setup($self);
-        } otherwise {
-            warn shift->text;
         };
     };
+
+    return;
 };
 
 sub _teardown {
@@ -296,10 +317,10 @@ sub _teardown {
     foreach (@{$self->{'plugins'}}) {
         try {
             $_->teardown($self);
-        } otherwise {
-            warn shift->text;
         };
     };
+
+    return;
 };
 
 sub _set_search_path {
@@ -338,7 +359,7 @@ sub _set_search_path {
         $self->only([_path_to_array($only)]);
     };
 
-    return undef;
+    return;
 };
 
 sub _path_to_array {
@@ -363,15 +384,17 @@ sub set_component_class {
 
     if ($value) {
         if (!Class::Inspector->loaded($value)) {
-            eval "use $value";
+            eval "require $value"; ## no critic
     
             throw Handel::Exception::Checkout(
-                -details => translate('The [_1] [_2] could not be loaded', $field, $value) . '.')
-                    if $@;
+                -details => translate('The [_1] [_2] could not be loaded', $field, $value)
+            ) if $@; ## no critic
         };
     };
 
     $self->set_inherited($field, $value);
+
+    return;
 };
 
 1;

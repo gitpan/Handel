@@ -1,4 +1,5 @@
-# $Id: Cart.pm 1399 2006-09-06 01:48:15Z claco $
+# $Id: Cart.pm 1415 2006-09-14 00:54:13Z claco $
+## no critic (ProhibitCaptureWithoutTest)
 package Catalyst::Helper::Controller::Handel::Cart;
 use strict;
 use warnings;

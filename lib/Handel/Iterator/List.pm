@@ -1,4 +1,5 @@
-# $Id: List.pm 1368 2006-08-16 03:14:40Z claco $
+# $Id: List.pm 1416 2006-09-15 03:45:35Z claco $
+## no critic (ProhibitAmbiguousNames)
 package Handel::Iterator::List;
 use strict;
 use warnings;
@@ -60,6 +61,8 @@ sub reset {
     my $self = shift;
 
     $self->index(0);
+
+    return;
 };
 
 1;

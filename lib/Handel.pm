@@ -1,10 +1,10 @@
-# $Id: Handel.pm 1408 2006-09-08 23:26:08Z claco $
+# $Id: Handel.pm 1415 2006-09-14 00:54:13Z claco $
 package Handel;
 use strict;
 use warnings;
 use vars qw/$VERSION/;
 
-$VERSION = '0.99_11';
+$VERSION = '0.99_12';
 
 BEGIN {
     use base qw/Class::Accessor::Grouped/;
@@ -18,11 +18,11 @@ sub config_class {
     my ($self, $config_class) = @_;
 
     if ($config_class) {
-        eval "require $config_class";
+        eval "require $config_class"; ## no critic
 
         throw Handel::Exception(
-            -details => translate('The config_class [_1] could not be loaded', $config_class) . '.')
-                if $@;
+            -details => translate('The config_class [_1] could not be loaded', $config_class)
+        ) if $@; ## no critic
 
         $self->set_inherited('config_class', $config_class);
     };

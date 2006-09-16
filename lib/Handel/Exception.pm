@@ -1,4 +1,4 @@
-# $Id: Exception.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Exception.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Exception;
 use strict;
 use warnings;
@@ -7,10 +7,10 @@ BEGIN {
     use base qw/Error/;
     use Handel::L10N qw/translate/;
 
-    eval 'require Apache::AxKit::Exception';
+    eval 'require Apache::AxKit::Exception';  ## no critic
     if (!$@) {
         no strict 'vars';
-        push @ISA, 'Apache::AxKit::Exception';
+        push @ISA, 'Apache::AxKit::Exception'; ## no critic
     };
 };
 

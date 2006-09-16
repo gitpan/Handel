@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: l10n.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: l10n.t 1416 2006-09-15 03:45:35Z claco $
 use strict;
 use warnings;
 use Test::More tests => 11;
@@ -93,7 +93,7 @@ BEGIN {
     } catch Handel::Exception with {
         my $E = shift;
         is ($E->text,
-            "L'argument fourni est invalide ou du type inapproprié: Le parametre 1 n'est pas une reference a un tableau associatif (HASH).");
+            "L'argument fourni est invalide ou du type inapproprié: Le parametre 1 n'est pas une reference a un tableau associatif (HASH)");
     } otherwise {
         fail;
     };

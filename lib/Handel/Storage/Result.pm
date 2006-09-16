@@ -1,4 +1,4 @@
-# $Id: Result.pm 1408 2006-09-08 23:26:08Z claco $
+# $Id: Result.pm 1415 2006-09-14 00:54:13Z claco $
 package Handel::Storage::Result;
 use strict;
 use warnings;
@@ -10,14 +10,20 @@ BEGIN {
 
 sub delete {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub discard_changes {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub update {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub add_item {

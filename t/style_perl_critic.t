@@ -1,5 +1,5 @@
-#!perl -wT
-# $Id: style_perl_critic.t 1389 2006-08-31 02:21:14Z claco $
+#!perl -w
+# $Id: style_perl_critic.t 1415 2006-09-14 00:54:13Z claco $
 use strict;
 use warnings;
 use Test::More;

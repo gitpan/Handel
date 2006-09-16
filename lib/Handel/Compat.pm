@@ -1,13 +1,14 @@
-# $Id: Compat.pm 1409 2006-09-09 21:16:54Z claco $
+# $Id: Compat.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Compat;
 use strict;
 use warnings;
-use Carp qw/cluck/;
-use NEXT;
+
 
 BEGIN {
     use Handel::Constants qw/:returnas/;
     use Handel::L10N qw/translate/;
+    use Carp qw/cluck/;
+    use NEXT;
 
     cluck 'Handel::Compat is deprecated and will go away one a future release.';
 };
@@ -16,12 +17,16 @@ sub add_columns {
     my $self = shift;
     
     $self->storage->add_columns(@_);
+
+    return;
 };
 
 sub add_constraint {
     my ($self, $name, $column, $sub) = @_;
     
     $self->storage->add_constraint($column, $name, $sub);
+
+    return;
 };
 
 sub has_wildcard {
@@ -31,7 +36,7 @@ sub has_wildcard {
         return 1 if $_ =~ /\%/;
     };
 
-    return undef;
+    return;
 };
 
 sub iterator_class {
@@ -57,15 +62,15 @@ sub table {
 sub uuid {
     my $class = shift || __PACKAGE__;
 
-    $class->storage->new_uuid;
+    return $class->storage->new_uuid;
 };
 
 sub load {
     my ($self, $filter, $wantiterator) = @_;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference') . '.') unless(
-            ref($filter) eq 'HASH' or !$filter);
+        translate('Param 1 is not a HASH reference')
+    ) unless (ref($filter) eq 'HASH' || !$filter); ## no critic
 
     $wantiterator ||= RETURNAS_AUTO;
 
@@ -95,8 +100,8 @@ sub items {
     my ($self, $filter, $wantiterator) = @_;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference') . '.') unless(
-            ref($filter) eq 'HASH' or !$filter);
+        translate('Param 1 is not a HASH reference')
+    ) unless (ref($filter) eq 'HASH' || !$filter); ## no critic
 
     $wantiterator ||= RETURNAS_AUTO;
     $filter       ||= {};

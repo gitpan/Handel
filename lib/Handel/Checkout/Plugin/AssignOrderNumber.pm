@@ -1,4 +1,4 @@
-# $Id: AssignOrderNumber.pm 1390 2006-09-04 01:02:49Z claco $
+# $Id: AssignOrderNumber.pm 1415 2006-09-14 00:54:13Z claco $
 package Handel::Checkout::Plugin::AssignOrderNumber;
 use strict;
 use warnings;
@@ -12,6 +12,8 @@ sub register {
     my ($self, $ctx) = @_;
 
     $ctx->add_handler(CHECKOUT_PHASE_FINALIZE, \&handler);
+
+    return;
 };
 
 sub handler {

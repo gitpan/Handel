@@ -1,4 +1,4 @@
-# $Id: Storage.pm 1413 2006-09-10 18:34:58Z claco $
+# $Id: Storage.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Storage;
 use strict;
 use warnings;
@@ -10,6 +10,8 @@ BEGIN {
         _columns
         _primary_columns
         _currency_columns
+        currency_code
+        currency_format
         autoupdate
         uuid_maker
     /);
@@ -46,7 +48,9 @@ sub new {
     my $class = shift;
     my $self = bless {}, ref $class || $class;
 
-    $self->setup(@_) if scalar @_;
+    if (scalar @_) {
+        $self->setup(@_);
+    };
 
     return $self;
 };
@@ -54,9 +58,11 @@ sub new {
 sub add_columns {
     my ($self, @columns) = @_;
 
-    $self->_columns([]) unless $self->_columns;
+    $self->_columns([]) unless $self->_columns; ## no critic
 
     push @{$self->_columns}, @columns;
+
+    return;
 };
 
 sub add_constraint {
@@ -64,16 +70,16 @@ sub add_constraint {
     my $constraints = $self->constraints || {};
 
     throw Handel::Exception::Argument(
-        -details => translate('No column was specified') . '.')
-            unless $column;
+        -details => translate('No column was specified')
+    ) unless $column; ## no critic
 
     throw Handel::Exception::Argument(
-        -details => translate('No constraint name was specified') . '.')
-            unless $name;
+        -details => translate('No constraint name was specified')
+    ) unless $name; ## no critic
 
     throw Handel::Exception::Argument(
-        -details => translate('No constraint was specified') . '.')
-            unless ref $constraint eq 'CODE';
+        -details => translate('No constraint was specified')
+    ) unless ref $constraint eq 'CODE'; ## no critic
 
     if (!exists $constraints->{$column}) {
         $constraints->{$column} = {};
@@ -82,18 +88,22 @@ sub add_constraint {
     $constraints->{$column}->{$name} = $constraint;
 
     $self->constraints($constraints);
+
+    return;
 };
 
 sub add_item {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub clone {
     my $self = shift;
 
     throw Handel::Exception::Storage(
-        -details => translate('Not a class method') . '.')
-            unless blessed($self);
+        -details => translate('Not a class method')
+    ) unless blessed($self); ## no critic
 
     return Clone::clone($self);
 };
@@ -129,10 +139,14 @@ sub copyable_item_columns {
 
 sub count_items {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub create {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub currency_columns {
@@ -142,8 +156,8 @@ sub currency_columns {
     if (@columns) {
         foreach my $column (@columns) {
             throw Handel::Exception::Storage(
-                -details => translate('Column [_1] does not exist', $column) . '.')
-                    unless exists $columns{$column};
+                -details => translate('Column [_1] does not exist', $column)
+            ) unless exists $columns{$column}; ## no critic
         };
 
         $self->_currency_columns(\@columns);
@@ -154,10 +168,14 @@ sub currency_columns {
 
 sub delete {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub delete_items {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub has_column {
@@ -195,8 +213,8 @@ sub primary_columns {
     if (@columns) {
         foreach my $column (@columns) {
             throw Handel::Exception::Storage(
-                -details => translate('Column [_1] does not exist', $column) . '.')
-                    unless exists $columns{$column};
+                -details => translate('Column [_1] does not exist', $column)
+            ) unless exists $columns{$column}; ## no critic
         };
 
         $self->_primary_columns(\@columns);
@@ -250,21 +268,23 @@ sub remove_columns {
             push @{$self->_columns}, @remaining;
         };
     };
+
+    return;
 };
 
 sub remove_constraint {
     my ($self, $column, $name) = @_;
     my $constraints = $self->constraints;
 
-    return unless $constraints;
+    return unless $constraints; ## no critic
 
     throw Handel::Exception::Argument(
-        -details => translate('No column was specified') . '.')
-            unless defined $column;
+        -details => translate('No column was specified')
+    ) unless defined $column; ## no critic
 
     throw Handel::Exception::Argument(
-        -details => translate('No constraint name was specified') . '.')
-            unless defined $name;
+        -details => translate('No constraint name was specified')
+    ) unless defined $name; ## no critic
 
     if (exists $constraints->{$column} && exists $constraints->{$column}->{$name}) {
         delete $constraints->{$column}->{$name};
@@ -274,6 +294,8 @@ sub remove_constraint {
     };
 
     $self->constraints($constraints);
+
+    return;
 };
 
 sub remove_constraints {
@@ -281,8 +303,8 @@ sub remove_constraints {
     my $constraints = $self->constraints;
 
     throw Handel::Exception::Argument(
-        -details => translate('No column was specified') . '.')
-            unless defined $column;
+        -details => translate('No column was specified')
+    ) unless defined $column; ## no critic
 
     return unless $constraints;
 
@@ -291,22 +313,28 @@ sub remove_constraints {
     };
 
     $self->constraints($constraints);
+
+    return;
 };
 
 sub search {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub search_items {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub setup {
     my ($self, $options) = @_;
 
     throw Handel::Exception::Argument(
-        -details => translate('Param 1 is not a HASH reference') . '.') unless
-            ref($options) eq 'HASH';
+        -details => translate('Param 1 is not a HASH reference')
+    ) unless ref($options) eq 'HASH'; ## no critic
 
     ## do these in order
     foreach my $setting (qw/add_columns remove_columns primary_columns currency_columns/) {
@@ -318,18 +346,26 @@ sub setup {
     foreach my $key (keys %{$options}) {
         $self->$key($options->{$key});
     };
+
+    return;
 };
 
 sub txn_begin {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub txn_commit {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub txn_rollback {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
 };
 
 sub get_component_class {
@@ -343,15 +379,17 @@ sub set_component_class {
 
     if ($value) {
         if (!Class::Inspector->loaded($value)) {
-            eval "use $value";
+            eval "use $value"; ## no critic
 
             throw Handel::Exception::Storage(
-                -details => translate('The [_1] [_2] could not be loaded', $field, $value) . '.')
-                    if $@;
+                -details => translate('The [_1] [_2] could not be loaded', $field, $value)
+            ) if $@; ## no critic
         };
     };
 
     $self->set_inherited($field, $value);
+
+    return;
 };
 
 sub get_component_data {
@@ -364,6 +402,8 @@ sub set_component_data {
     my ($self, $field, $value) = @_;
 
     $self->set_inherited($field, $value);
+
+    return;
 };
 
 1;
@@ -441,6 +481,8 @@ their method counterparts:
     constraints
     currency_class
     currency_columns
+    currency_code
+    currency_format
     default_values
     item_class
     iterator_class
@@ -663,6 +705,33 @@ Gets/sets the columns that should be inflated into currency objects.
 
 B<It is up to each custom storage class to decide if and how to implement
 currency columns.>
+
+=head2 currency_code
+
+=over
+
+=item $code
+
+=back
+
+Gets/sets the currency code used by default when formatting currency objects.
+
+See L<Locale::Currency::Format|Locale::Currency::Format> and
+L<Locale::Currency|Locale::Currency> for the list of available currency codes.
+
+=head2 currency_format
+
+=over
+
+=item $format_options
+
+=back
+
+Gets/sets the currency formatting options used by default when formatting
+currency objects.
+
+See L<Locale::Currency::Format|Locale::Currency::Format> and
+L<Locale::Currency|Locale::Currency> for the list of available currency codes.
 
 =head2 default_values
 

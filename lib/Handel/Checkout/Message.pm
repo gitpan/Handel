@@ -1,8 +1,7 @@
-# $Id: Message.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Message.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Checkout::Message;
 use strict;
 use warnings;
-use vars '$AUTOLOAD';
 use overload '""' => \&stringify, fallback => 1;
 
 sub new {
@@ -21,7 +20,7 @@ sub stringify {
 sub AUTOLOAD {
     my $self = shift;
 
-    my $name = $AUTOLOAD;
+    my $name = our $AUTOLOAD;
     $name =~ s/.*://;
 
     if (@_) {

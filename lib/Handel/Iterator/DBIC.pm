@@ -1,4 +1,5 @@
-# $Id: DBIC.pm 1368 2006-08-16 03:14:40Z claco $
+# $Id: DBIC.pm 1416 2006-09-15 03:45:35Z claco $
+## no critic (ProhibitAmbiguousNames)
 package Handel::Iterator::DBIC;
 use strict;
 use warnings;

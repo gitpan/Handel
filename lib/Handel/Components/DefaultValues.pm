@@ -1,3 +1,4 @@
+# $Id$
 package Handel::Components::DefaultValues;
 use strict;
 use warnings;
@@ -13,7 +14,7 @@ sub set_default_values {
     my %data = $self->get_columns;
     my $defaults = $self->default_values;
 
-    return unless (reftype($defaults) eq 'HASH');
+    return unless (reftype($defaults) eq 'HASH'); ## no critic
 
     foreach my $default (keys %{$defaults}) {;
         if (!defined $data{$default}) {
@@ -24,18 +25,22 @@ sub set_default_values {
             $self->$accessor($new_value);
         };
     };
+
+    return;
 };
 
 sub insert {
     my $self = shift;
     $self->set_default_values;
-    $self->next::method(@_);
+
+    return $self->next::method(@_);
 };
 
 sub update {
     my $self = shift;
     $self->set_default_values;
-    $self->next::method(@_);
+
+    return $self->next::method(@_);
 };
 
 1;

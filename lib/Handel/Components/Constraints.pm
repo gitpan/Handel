@@ -1,3 +1,4 @@
+# $Id: Constraints.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Components::Constraints;
 use strict;
 use warnings;
@@ -20,6 +21,8 @@ sub add_constraint {
     $constraints->{$column}->{$name} = $constraint;
 
     $self->constraints($constraints);
+
+    return;
 };
 
 sub check_constraints {
@@ -45,7 +48,7 @@ sub check_constraints {
     };
 
     if (scalar keys %failed) {
-        my @details = map {"$_(" . $failed{$_} . ")"} keys %failed;
+        my @details = map {"$_(" . $failed{$_} . ')'} keys %failed;
         
         $self->throw_exception(
             Handel::Exception::Constraint->new(-details => join(', ', @details))
@@ -54,18 +57,22 @@ sub check_constraints {
         $self->set_columns(\%data);
         return 1;
     };
+
+    return;
 };
 
 sub insert {
     my $self = shift;
     $self->check_constraints;
-    $self->next::method(@_);
+
+    return $self->next::method(@_);
 };
 
 sub update {
     my $self = shift;
     $self->check_constraints;
-    $self->next::method(@_);
+
+    return $self->next::method(@_);
 };
 
 1;

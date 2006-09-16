@@ -1,4 +1,4 @@
-# $Id: Item.pm 1402 2006-09-06 23:29:59Z claco $
+# $Id: Item.pm 1416 2006-09-15 03:45:35Z claco $
 package Handel::Order::Item;
 use strict;
 use warnings;
@@ -15,8 +15,8 @@ sub create {
     my ($self, $data, $opts) = @_;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference') . '.') unless
-            ref($data) eq 'HASH';
+        translate('Param 1 is not a HASH reference')
+    ) unless ref($data) eq 'HASH'; ## no critic
 
     no strict 'refs';
     my $storage = $opts->{'storage'} || $self->storage;
