@@ -1,5 +1,12 @@
 Revision history for Perl module Handel
 
+0.99_13 Wed Sep 20 19:01:29 2006
+    - Added NEXT to prereqs for Handel::Compat
+    - Moved FormValidator::Simple from recommended to prereqs
+    - Added set_default_values to Storage
+    - Added check_constraints to Storage
+    - Added validate_data to Storage
+
 0.99_12 Fri Sep 15 22:28:53 2006
     - Moved Locale::Currency/Format and WebServiceX modules to requirements
     - Currency new() now takes $code and $format params

@@ -501,6 +501,9 @@ t/storage_new.t
 t/storage_remove_columns.t
 t/storage_add_constraint.t
 t/storage_remove_constraint.t
+t/storage_check_constraints.t
+t/storage_validate_data.t
+t/storage_set_default_values.t
 t/storage_setup.t
 t/storage_constraints.t
 t/storage_default_values.t

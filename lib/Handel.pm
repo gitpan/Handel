@@ -1,10 +1,10 @@
-# $Id: Handel.pm 1415 2006-09-14 00:54:13Z claco $
+# $Id: Handel.pm 1419 2006-09-19 03:43:26Z claco $
 package Handel;
 use strict;
 use warnings;
 use vars qw/$VERSION/;
 
-$VERSION = '0.99_12';
+$VERSION = '0.99_13';
 
 BEGIN {
     use base qw/Class::Accessor::Grouped/;
@@ -55,7 +55,7 @@ This is a generic class containing the default configuration used by other
 Handel classes.
 
 To learn more about what Handel is and how it works, take a look at the
-L<Handel::Manual|manual>.
+L<manual|Handel::Manual>.
 
 =head1 METHODS
 

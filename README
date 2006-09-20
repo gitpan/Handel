@@ -13,7 +13,7 @@ DESCRIPTION
     other Handel classes.
 
     To learn more about what Handel is and how it works, take a look at the
-    Handel::Manual.
+    manual.
 
 METHODS
   config_class

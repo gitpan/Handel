@@ -1,6 +1,6 @@
-# $Id: Makefile.PL 1415 2006-09-14 00:54:13Z claco $
+# $Id: Makefile.PL 1420 2006-09-20 02:35:20Z claco $
 use ExtUtils::MakeMaker;
-use 5.006;
+use 5.006001;
 use strict;
 use warnings FATAL => 'all';
 
@@ -102,7 +102,9 @@ WriteMakefile(
         'DateTime::Format::MySQL'  => '0',
         'Locale::Currency'         => '2.07',
         'Locale::Currency::Format' => '1.22',
-        'Finance::Currency::Convert::WebserviceX' => '0.03'
+        'FormValidator::Simple'    => '0.17',
+        'Finance::Currency::Convert::WebserviceX' => '0.03',
+        'NEXT'                     => '0'
     },
     (ExtUtils::MakeMaker->VERSION >= 6.11) ?
     (NO_META      => 1) : (),

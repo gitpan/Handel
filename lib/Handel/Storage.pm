@@ -1,10 +1,11 @@
-# $Id: Storage.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Storage.pm 1421 2006-09-20 23:04:22Z claco $
 package Handel::Storage;
 use strict;
 use warnings;
 
 BEGIN {
     use base qw/Class::Accessor::Grouped/;
+    use Scalar::Util qw/reftype/;
 
     __PACKAGE__->mk_group_accessors('inherited', qw/
         _columns
@@ -94,6 +95,43 @@ sub add_constraint {
 
 sub add_item {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+
+    return;
+};
+
+sub check_constraints {
+    my ($self, $data) = @_;
+    my $constraints = $self->constraints;
+
+    throw Handel::Exception::Argument(
+        -details => translate('Param 1 is not a HASH reference')
+    ) unless ref($data) eq 'HASH'; ## no critic
+
+    return 1 if !scalar keys(%{$constraints});
+
+    my %failed;
+
+    foreach my $column (keys %{$constraints}) {
+        my $value = $data->{$column};
+        
+        foreach my $name (keys %{$constraints->{$column}}) {
+            if (my $sub = $constraints->{$column}->{$name}) {
+                if (!$sub->($value, $data, $column, $data)) {
+                    $failed{$name} = $column;
+                };
+            };
+        };
+    };
+
+    if (scalar keys %failed) {
+        my @details = map {"$_(" . $failed{$_} . ')'} keys %failed;
+
+        throw Handel::Exception::Constraint(
+            -details => join(', ', @details)
+        ); ## no critic;
+    } else {
+        return 1;
+    };
 
     return;
 };
@@ -329,6 +367,28 @@ sub search_items {
     return;
 };
 
+sub set_default_values {
+    my ($self, $data) = @_;
+    my $defaults = $self->default_values;
+
+    throw Handel::Exception::Argument(
+        -details => translate('Param 1 is not a HASH reference')
+    ) unless ref($data) eq 'HASH'; ## no critic
+
+    return unless (defined $defaults && reftype($defaults) eq 'HASH'); ## no critic
+
+    foreach my $default (keys %{$defaults}) {;
+        if (!defined $data->{$default}) {
+            my $value = $defaults->{$default};
+            my $new_value = (reftype($value) && reftype($value) eq 'CODE') ? $value->($self) : $value ;
+
+            $data->{$default} = $new_value;
+        };
+    };
+
+    return;
+};
+
 sub setup {
     my ($self, $options) = @_;
 
@@ -366,6 +426,31 @@ sub txn_rollback {
     throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
 
     return;
+};
+
+sub validate_data {
+    my ($self, $data) = @_;
+
+    throw Handel::Exception::Argument(
+        -details => translate('Param 1 is not a HASH reference')
+    ) unless ref($data) eq 'HASH'; ## no critic
+
+    my $module = $self->validation_module;
+    my $profile = $self->validation_profile;
+
+    return unless $profile; ## no critic
+
+    if ($module->isa('FormValidator::Simple') && ref $profile ne 'ARRAY') {
+        throw Handel::Exception::Storage(
+            -text => translate('FormValidator::Simple requires an ARRAYREF based profile')
+        );
+    } elsif ($module->isa('Data::FormValidator') && ref $profile ne 'HASH') {
+        throw Handel::Exception::Storage(
+            -text => translate('Data::FormValidator requires an HASHREF based profile')
+        );
+    };
+
+    return $module->check($data => $profile);
 };
 
 sub get_component_class {
@@ -565,6 +650,31 @@ The default is 1.
 
 B<It is up to each custom storage class to decide if and how to implement
 autoupdates.>
+
+=head2 check_constraints
+
+=over
+
+=item Arguments: \%data
+
+=back
+
+Runs the configured constraints against C<data> and returns true if the data
+passes all current constraints. Otherwise, a
+L<Handel::Exception::Constraint|Handel::Exception::Constraint> exception is
+thrown.
+
+    $storage->constraints({
+        id   => {'Check Id Format' => \&constraint_uuid},
+        name => {'Check Name/Type' => \%constraint_cart_type}
+    });
+    
+    my $data = {id => 'abc'};
+    
+    $storage->check_constraints($data);
+
+A L<Handel::Exception::Storage|Handel::Exception::Storage> exception is thrown
+if the first parameter is not a HASHREF.
 
 =head2 clone
 
@@ -978,6 +1088,34 @@ current source in the current schema matching the search filter.
 
 B<This method must be implemented in custom subclasses.>
 
+=head2 set_default_values
+
+=over
+
+=item Arguments: \%data
+
+=back
+
+Sets the default values on any column that is not already defined using the
+values defined in C>default_values>.
+
+    $self->default_values({
+        col1 => 'foo',
+        col2 => sub {'stuff'},
+        col3 => 2
+    });
+    
+    my $data = {col3 => 4};
+    $self->set_default_values($data);
+
+    print %{$data};
+    
+    # {
+    #     col1 => 'foo',
+    #     col2 => 'stuff',
+    #     col3 => 2
+    # }
+
 =head2 setup
 
 =over
@@ -1035,6 +1173,36 @@ Rolls back the current transaction on the current storage object.
 
 B<This method must be implemented in custom subclasses.>
 
+=head2 validate_data
+
+=over
+
+=item Arguments: \%data
+
+=back
+
+Validates the specified data against the current <validation_profile> and
+returns the validation result using the specified C<validation_module>.
+
+    $self->validation_profile([
+        col1 => [ ['NOT_BLANK'] ]
+    ]);
+    
+    my $data = {col1 => ''};
+    
+    my $results = $self->validate_data($data);
+    if ($results->success) {
+        ...
+    };
+
+A L<Handel::Exception::Storage|Handel::Exception::Storage> exception is thrown
+if validation module is set to FormValidator::Simple and the validation
+profile isn't a ARRAYREF, or the validation module is set to Data::FormValidator
+and the validation profile isn't a HASHREF.
+
+A L<Handel::Exception::Storage|Handel::Exception::Storage> exception is thrown
+if the first parameter is not a HASHREF.
+
 =head2 validation_module
 
 =over
@@ -1045,6 +1213,8 @@ B<This method must be implemented in custom subclasses.>
 
 Gets/sets the module validation class should use to do its column data
 validation. The default module is FormValidator::Simple. 
+
+And validation module may be used that supports the check method.
 
 B<It is up to each custom storage class to decide if and how to implement data
 validation.>

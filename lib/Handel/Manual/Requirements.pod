@@ -77,6 +77,10 @@ Version 0.04 or greater.
 This is used in the bulk of core module tests with SQLite. IF you are using another database like Postgres,
 you should install the appropriate module for that database.
 
+=head3 NEXT
+
+This is only used in Handel::Compat.
+
 =head2 Optional Modules
 
 The following modules are not required for Handel to run, although some features may be unavailable

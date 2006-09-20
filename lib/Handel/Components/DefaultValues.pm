@@ -14,7 +14,7 @@ sub set_default_values {
     my %data = $self->get_columns;
     my $defaults = $self->default_values;
 
-    return unless (reftype($defaults) eq 'HASH'); ## no critic
+    return unless (defined $defaults && reftype($defaults) eq 'HASH'); ## no critic
 
     foreach my $default (keys %{$defaults}) {;
         if (!defined $data{$default}) {
