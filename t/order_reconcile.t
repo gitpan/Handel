@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_reconcile.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: order_reconcile.t 1425 2006-09-23 19:31:16Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -76,6 +76,8 @@ sub run {
 
     ## test for Handel::Exception::Argument where first param is not a hashref,
     ## cart instance, or uuid
+    ## this test has changed. constraint_uuid was canned to be more custom
+    ## schema friendly
     {
         try {
             my $order = $subclass->create({
@@ -86,7 +88,7 @@ sub run {
             $order->reconcile('1234');
 
             fail;
-        } catch Handel::Exception::Argument with {
+        } catch Handel::Exception::Order with {
             pass;
         } otherwise {
             fail;

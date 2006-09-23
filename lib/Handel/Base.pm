@@ -1,4 +1,4 @@
-# $Id: Base.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Base.pm 1425 2006-09-23 19:31:16Z claco $
 package Handel::Base;
 use strict;
 use warnings;
@@ -152,6 +152,7 @@ sub _get_storage {
     my $class = blessed $self || $self;
 
     no strict 'refs';
+    no warnings 'once';
 
     my $storage = $self->{'storage'} || ${"$class\:\:_storage"};
     if (!$storage) {

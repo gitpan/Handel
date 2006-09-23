@@ -1,4 +1,4 @@
-# $Id: style_perl_critic.rc 1416 2006-09-15 03:45:35Z claco $
+# $Id: style_perl_critic.rc 1426 2006-09-23 21:15:52Z claco $
 # Remember to Id keyword our files
 [Miscellanea::RequireRcsKeywords]
 keywords = Id
@@ -18,7 +18,7 @@ lib_sections = NAME | SYNOPSIS | DESCRIPTION | AUTHOR
 allow = refs vars
 
 [TestingAndDebugging::ProhibitNoWarnings]
-allow = redefine
+allow = once redefine
 
 # Uhm...no.
 [-RegularExpressions::RequireExtendedFormatting]

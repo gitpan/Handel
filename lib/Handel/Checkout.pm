@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Checkout.pm 1424 2006-09-22 02:14:04Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
@@ -447,8 +447,8 @@ following options in an optional HASH reference:
 
 =item cart
 
-A HASH reference, a class object, or a cart id. This will be loaded
-into a new order object and associated with the new checkout
+A HASH reference, a class object, or a cart primary key value. This will be
+loaded into a new order object and associated with the new checkout
 process. By default, a Handel::Order object will be create unless you have
 set C<order_class> to another class.
 
@@ -462,8 +462,8 @@ automatic processing of C<CHECKOUT_PHASE_INITIALIZE> is disabled.
 
 =item order
 
-A HASH reference, an order object, or an order id. This will be loaded
-and associated with the new checkout process. By default, a Handel::Order
+A HASH reference, an order object, or an order primary key value. This will be
+loaded and associated with the new checkout process. By default, a Handel::Order
 object will be create when you pass in an order id unless you have set
 C<order_class> to another class.
 

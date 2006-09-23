@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_create.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: order_create.t 1425 2006-09-23 19:31:16Z claco $
 use strict;
 use warnings;
 use Test::More;
@@ -88,13 +88,13 @@ sub run {
     };
 
 
-    ## test for Handel::Exception::Argument where cart key scalar is not a uuid
+    ## constraint_uuid is no longer used for interchangable schemas
     {
         try {
             my $order = $subclass->create({cart => '1234'});
 
             fail;
-        } catch Handel::Exception::Argument with {
+        } catch Handel::Exception::Order with {
             pass;
         } otherwise {
             fail;
@@ -316,8 +316,8 @@ sub run {
         is($order->type, ORDER_TYPE_TEMP);
         is($order->count, 0);
         is($order->number, 'O20050723125366');
-        is($order->created, '2005-07-23T12:53:55');
-        is($order->updated, '2005-08-23T12:53:55');
+        is($order->created . '', '2005-07-23T12:53:55');
+        is($order->updated . '', '2005-08-23T12:53:55');
         is($order->comments, 'Rush Order Please');
         is($order->shipmethod, 'UPS Ground');
         is($order->shipping, 1.23);

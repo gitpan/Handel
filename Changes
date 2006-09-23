@@ -1,5 +1,15 @@
 Revision history for Perl module Handel
 
+0.99_14 Sat Sep 23 19:14:22 2006
+    - Added Order::save method
+    - MarkOrderSaved plugin now uses Order::save method instead of setting
+        the type field directly
+    - Removed constraint_uuid check from Order create/reconcile as it's not
+        subclass of interchangable schema friendly (RT#19813,TKP)
+    - Changed id references in search to use first primary key from Storage
+        (RT#19813,TKP)
+    - Order creation from cart no does can('shopper') to help w/ subclassing
+
 0.99_13 Wed Sep 20 19:01:29 2006
     - Added NEXT to prereqs for Handel::Compat
     - Moved FormValidator::Simple from recommended to prereqs

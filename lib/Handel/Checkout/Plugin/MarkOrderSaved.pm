@@ -1,4 +1,4 @@
-# $Id: MarkOrderSaved.pm 1415 2006-09-14 00:54:13Z claco $
+# $Id: MarkOrderSaved.pm 1423 2006-09-21 21:30:29Z claco $
 package Handel::Checkout::Plugin::MarkOrderSaved;
 use strict;
 use warnings;
@@ -19,7 +19,7 @@ sub register {
 sub handler {
     my ($self, $ctx) = @_;
 
-    $ctx->order->type(ORDER_TYPE_SAVED);
+    $ctx->order->save;
 
     return CHECKOUT_HANDLER_OK;
 };

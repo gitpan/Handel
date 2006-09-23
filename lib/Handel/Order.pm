@@ -1,4 +1,4 @@
-# $Id: Order.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Order.pm 1427 2006-09-23 23:00:19Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -20,7 +20,7 @@ BEGIN {
     __PACKAGE__->create_accessors;
 };
 
-sub create {
+sub create { ## no critic (ProhibitExcessComplexity)
     my ($self, $data, $opts) = @_;
 
     throw Handel::Exception::Argument(
@@ -31,12 +31,14 @@ sub create {
     my $storage = $opts->{'storage'} || $self->storage;
     my $process = $opts->{'process'} || 0;
     my $cart = delete $data->{'cart'};
-    my $is_uuid = constraint_uuid($cart);
 
     if (defined $cart) {
         throw Handel::Exception::Argument( -details =>
           translate('Cart reference is not a HASH reference or Handel::Cart')
-        ) unless (ref($cart) eq 'HASH' || (blessed($cart) && $cart->isa('Handel::Cart')) || $is_uuid); ## no critic
+        ) if (
+                (ref($cart) && !blessed($cart) && ref($cart) ne 'HASH') ||
+                (blessed($cart) && !$cart->isa('Handel::Cart'))
+        ); ## no critic
 
         if (ref $cart eq 'HASH') {
             $cart = $self->cart_class->search($cart)->first;
@@ -44,8 +46,10 @@ sub create {
             throw Handel::Exception::Order( -details =>
                 translate('Could not find a cart matching the supplied search criteria')
             ) unless $cart; ## no critic
-        } elsif ($is_uuid) {
-            $cart = $self->cart_class->search({id => $cart})->first;
+        } elsif (!blessed($cart)) {
+            my ($primary_key) = $self->cart_class->storage->primary_columns;
+
+            $cart = $self->cart_class->search({$primary_key => $cart})->first;
 
             throw Handel::Exception::Order( -details =>
                 translate('Could not find a cart matching the supplied search criteria')
@@ -58,7 +62,9 @@ sub create {
     };
 
     if (defined $cart) {
-        $data->{'shopper'} = $cart->shopper unless $data->{'shopper'};
+        if ($cart->can('shopper')) {
+            $data->{'shopper'} = $cart->shopper unless $data->{'shopper'};
+        };
     };
 
     my $order = $self->create_instance(
@@ -224,15 +230,23 @@ sub search {
     return wantarray ? $iterator->all : $iterator;
 };
 
+sub save {
+    my $self = shift;
+    $self->type(ORDER_TYPE_SAVED);
+
+    return;
+};
+
 sub reconcile {
     my ($self, $cart) = @_;
-
-    my $is_uuid = constraint_uuid($cart);
 
     if (defined $cart) {
         throw Handel::Exception::Argument( -details =>
           translate('Cart reference is not a HASH reference or Handel::Cart')
-        ) unless (ref($cart) eq 'HASH' || (blessed($cart) && $cart->isa('Handel::Cart')) || $is_uuid); ## no critic
+        ) if ( ## no critic
+                (ref($cart) && !blessed($cart) && ref($cart) ne 'HASH') ||
+                (blessed($cart) && !$cart->isa('Handel::Cart'))
+        ); 
 
         if (ref $cart eq 'HASH') {
             $cart = $self->cart_class->search($cart)->first;
@@ -240,8 +254,10 @@ sub reconcile {
             throw Handel::Exception::Order( -details =>
                 translate('Could not find a cart matching the supplied search criteria')
             ) unless $cart; ## no critic
-        } elsif ($is_uuid) {
-            $cart = $self->cart_class->search({id => $cart})->first;
+        } elsif (!blessed($cart)) {
+            my ($primary_key) = $self->cart_class->storage->primary_columns;
+
+            $cart = $self->cart_class->search({$primary_key => $cart})->first;
 
             throw Handel::Exception::Order( -details =>
                 translate('Could not find a cart matching the supplied search criteria')
@@ -301,11 +317,11 @@ Handel::Order is a component for maintaining simple order records.
 Creates a new order object containing the specified data.
 
 If the cart key is passed, a new order record will be created from the specified
-carts contents. The cart key can be a cart id (uuid), a cart object, or a hash
-reference contain the search criteria to load matching carts.
+carts contents. The cart key can be a cart primary key value, a cart object,
+or a hash reference contain the search criteria to load matching carts.
 
 By default, new will use Handel::Cart to load the specified cart, unless you
-have set C<cart_class>on in the local <storage> object to use another class.
+have set C<cart_class> to use another class.
 
     my $order = Handel::Order->create({
         shopper => '10020400-E260-11CF-AE68-00AA004A34D5',
@@ -584,6 +600,12 @@ object B<must> have the same columns as the default storage object for the
 current order class.
 
 =back
+
+=head2 save
+
+Marks the current order type as C<ORDER_TYPE_SAVED>.
+
+    $order->save
 
 =head2 reconcile
 
