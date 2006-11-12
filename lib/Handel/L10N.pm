@@ -1,4 +1,4 @@
-# $Id: L10N.pm 1359 2006-08-08 18:54:45Z claco $
+# $Id: L10N.pm 1441 2006-09-27 02:48:09Z claco $
 package Handel::L10N;
 use strict;
 use warnings;
@@ -6,8 +6,7 @@ use utf8;
 use vars qw/@EXPORT_OK %Lexicon $handle/;
 
 BEGIN {
-    use base qw/Locale::Maketext/;
-    use base qw/Exporter/;
+    use base qw/Locale::Maketext Exporter/;
 };
 
 @EXPORT_OK = qw(translate);

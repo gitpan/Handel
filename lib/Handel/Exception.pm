@@ -1,4 +1,4 @@
-# $Id: Exception.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Exception.pm 1551 2006-11-07 02:03:05Z claco $
 package Handel::Exception;
 use strict;
 use warnings;
@@ -6,9 +6,9 @@ use warnings;
 BEGIN {
     use base qw/Error/;
     use Handel::L10N qw/translate/;
+    use Class::Inspector;
 
-    eval 'require Apache::AxKit::Exception';  ## no critic
-    if (!$@) {
+    if (Class::Inspector->loaded('Apache::AxKit::Exception')) {
         no strict 'vars';
         push @ISA, 'Apache::AxKit::Exception'; ## no critic
     };
@@ -20,13 +20,11 @@ sub new {
     my $class = shift;
     my %args  = @_;
     my $text  = translate(
-        $args{-text} || 'An unspecified error has occurred'
+        $args{-text} || 'UNHANDLED_EXCEPTION'
     );
 
-    if ( defined($args{-details}) && ! ref $args{-details}) {
+    if ( defined($args{'-details'}) && ! ref $args{'-details'}) {
         $text .= ': ' . $args{-details};
-    } else {
-        # $text .= '.';
     };
 
     ## don't pass the original text
@@ -48,13 +46,13 @@ use strict;
 use warnings;
 
 BEGIN {
-    use base 'Handel::Exception';
+    use base qw/Handel::Exception/;
 };
 
 sub new {
     my $class = shift;
     return $class->SUPER::new(
-        -text => 'The supplied field(s) failed database constraints', @_ );
+        -text => 'CONSTRAINT_EXCEPTION', @_ );
 };
 
 package Handel::Exception::Argument;
@@ -62,13 +60,13 @@ use strict;
 use warnings;
 
 BEGIN {
-    use base 'Handel::Exception';
+    use base qw/Handel::Exception/;
 };
 
 sub new {
     my $class = shift;
     return $class->SUPER::new(
-        -text => 'The argument supplied is invalid or of the wrong type', @_ );
+        -text => 'ARGUMENT_EXCEPTION', @_ );
 };
 
 package Handel::Exception::Taglib;
@@ -76,13 +74,13 @@ use strict;
 use warnings;
 
 BEGIN {
-    use base 'Handel::Exception';
+    use base qw/Handel::Exception/;
 };
 
 sub new {
     my $class = shift;
     return $class->SUPER::new(
-        -text => 'The tag is out of scope or missing required child tags', @_ );
+        -text => 'XSP_TAG_EXCEPTION', @_ );
 };
 
 package Handel::Exception::Order;
@@ -90,13 +88,13 @@ use strict;
 use warnings;
 
 BEGIN {
-    use base 'Handel::Exception';
+    use base qw/Handel::Exception/;
 };
 
 sub new {
     my $class = shift;
     return $class->SUPER::new(
-        -text => 'An error occurred while while creating or validating the current order', @_ );
+        -text => 'ORDER_EXCEPTION', @_ );
 };
 
 package Handel::Exception::Checkout;
@@ -104,13 +102,13 @@ use strict;
 use warnings;
 
 BEGIN {
-    use base 'Handel::Exception';
+    use base qw/Handel::Exception/;
 };
 
 sub new {
     my $class = shift;
     return $class->SUPER::new(
-        -text => 'An error occurred during the checkout process', @_ );
+        -text => 'CHECKOUT_EXCEPTION', @_ );
 };
 
 package Handel::Exception::Storage;
@@ -118,13 +116,13 @@ use strict;
 use warnings;
 
 BEGIN {
-    use base 'Handel::Exception';
+    use base qw/Handel::Exception/;
 };
 
 sub new {
     my $class = shift;
     return $class->SUPER::new(
-        -text => 'An error occurred while loading storage', @_ );
+        -text => 'STORAGE_EXCEPTION', @_ );
 };
 
 package Handel::Exception::Validation;
@@ -132,13 +130,27 @@ use strict;
 use warnings;
 
 BEGIN {
-    use base 'Handel::Exception';
+    use base qw/Handel::Exception/;
 };
 
 sub new {
     my $class = shift;
     return $class->SUPER::new(
-        -text => 'The data could not be written because it failed validation', @_ );
+        -text => 'VALIDATION_EXCEPTION', @_ );
+};
+
+package Handel::Exception::Virtual;
+use strict;
+use warnings;
+
+BEGIN {
+    use base qw/Handel::Exception/;
+};
+
+sub new {
+    my $class = shift;
+    return $class->SUPER::new(
+        -text => 'VIRTUAL_METHOD', @_ );
 };
 
 1;

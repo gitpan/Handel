@@ -1,12 +1,13 @@
 #!perl -wT
-# $Id: base_storage_class.t 1268 2006-06-30 02:06:54Z claco $
+# $Id: base_storage_class.t 1559 2006-11-09 23:48:19Z claco $
 use strict;
 use warnings;
-use Class::Inspector;
-use lib 't/lib';
-use Test::More tests => 9;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 10;
+    use Class::Inspector;
+
     use_ok('Handel::Base');
     use_ok('Handel::Exception', ':try');
 };
@@ -15,27 +16,29 @@ BEGIN {
 {
     my $base = bless {}, 'Handel::Base';
     
-    is($base->storage_class, 'Handel::Storage');
+    is($base->storage_class, 'Handel::Storage', 'storage class is set');
     
-    ok(!Class::Inspector->loaded('Handel::Subclassing::Storage'));
+    ok(!Class::Inspector->loaded('Handel::Subclassing::Storage'), 'storage class not loaded');
     $base->storage_class('Handel::Subclassing::Storage');
-    is($base->storage_class, 'Handel::Subclassing::Storage');
-    ok(Class::Inspector->loaded('Handel::Subclassing::Storage'));
+    is($base->storage_class, 'Handel::Subclassing::Storage', 'storage class is set');
+    ok(Class::Inspector->loaded('Handel::Subclassing::Storage'), 'storage class is loaded');
 
     ## throw exception when setting a bogus storage class
     {
         try {
+            local $ENV{'LANG'} = 'en';
             $base->storage_class('Funklebean');
 
             fail('no exception thrown');
         } catch Handel::Exception::Storage with {
-            pass;
+            pass('caught storage exception');
+            like(shift, qr/storage_class.*could not be loaded/i, 'class not loaded in message');
         } otherwise {
-            fail;
+            fail('cauht other exception');
         };
     };
 
-    is($base->storage_class, 'Handel::Subclassing::Storage');
+    is($base->storage_class, 'Handel::Subclassing::Storage', 'storage class is unchanged');
     $base->storage_class(undef);
-    is($base->storage_class, undef);
+    is($base->storage_class, undef, 'undefined storae class');
 };

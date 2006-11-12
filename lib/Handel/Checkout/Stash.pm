@@ -1,4 +1,4 @@
-# $Id: Stash.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Stash.pm 1476 2006-10-16 20:41:50Z claco $
 package Handel::Checkout::Stash;
 use strict;
 use warnings;
@@ -11,10 +11,10 @@ sub new {
     my ($class, $data) = @_;
 
     throw Handel::Exception::Argument(
-        -details => translate('Param 1 is not a HASH reference')
+        -details => translate('PARAM1_NOT_HASHREF')
     ) if defined $data && ref($data) ne 'HASH'; ## no critic
 
-    my $self = bless $data || {}, ref $class || $class;
+    my $self = bless $data || {}, $class;
 
     return $self;
 };

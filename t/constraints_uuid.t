@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: constraints_uuid.t 837 2005-09-19 22:56:39Z claco $
+# $Id: constraints_uuid.t 1512 2006-10-27 23:25:34Z claco $
 use strict;
 use warnings;
-use Test::More tests => 5;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 7;
+
     use_ok('Handel::Constraints', qw(:all));
 };
 
@@ -21,3 +23,6 @@ ok(!constraint_uuid('{D597DEED-5B9F-11D1-8DD2-00AA004ABD5E}'),
 ok(constraint_uuid('D597DEED-5B9F-11D1-8DD2-00AA004ABD5E'),
     'valid uuid'
 );
+
+ok(!constraint_uuid(undef),        'value is undefined');
+ok(!constraint_uuid(''),           'value is empty string');

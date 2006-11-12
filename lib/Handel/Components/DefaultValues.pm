@@ -19,8 +19,19 @@ sub set_default_values {
     foreach my $default (keys %{$defaults}) {;
         if (!defined $data{$default}) {
             my $value = $defaults->{$default};
-            my $new_value = (reftype($value) && reftype($value) eq 'CODE') ? $value->($self) : $value ;
-            my $accessor = $self->column_info($default)->{'accessor'} || $default;
+            my $new_value;
+
+            if (reftype($value) && reftype($value) eq 'CODE') {
+                $new_value = $value->($self);
+            } elsif (!reftype($value)) {
+                $new_value = $value;
+            } else {
+                next;
+            };
+            my $accessor = $self->column_info($default)->{'accessor'};
+            if (!$accessor) {
+                $accessor = $default;
+            };
             
             $self->$accessor($new_value);
         };
@@ -91,6 +102,16 @@ executed and their return values inserted into the columns.
 
 Note: Always use the real column name in the database, not the accessor alias
 for the column.
+
+=head2 insert
+
+Calls C<set_default_values> and then inserts the row. See
+L<DBIx::Class::Row/insert> for more information about insert.
+
+=head2 update
+
+Calls C<set_default_values> and then updates the row. See
+L<DBIx::Class::Row/update> for more information about update.
 
 =head2 set_default_values
 

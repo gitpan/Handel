@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1415 2006-09-14 00:54:13Z claco $
+# $Id: Checkout.pm 1441 2006-09-27 02:48:09Z claco $
 ## no critic
 package AxKit::XSP::Handel::Checkout;
 use strict;
@@ -43,7 +43,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Checkout';
 
         if ($tag eq 'new') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of other Handel tags", $tag)
+                -text => translate('TAG_NOT_ALLOWED_IN_OTHERS', $tag)
             ) if ($context[-1] ne 'root');
 
             push @context, $tag;
@@ -68,7 +68,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Checkout';
             return $code;
         } elsif ($tag eq 'plugin') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of tag '" . $context[-1] . "'", $tag)
+                -text => translate('Tag [_1] not valid inside of tag [_2]', $tag, $context[-1])
             ) if ($context[-1] ne 'plugins');
 
             push @context, $tag;
@@ -96,7 +96,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Checkout';
             undef $property if ($property eq 'checkout');
 
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of tag '" . $context[-1] . "'", $tag)
+                -text => translate('Tag [_1] not valid inside of tag [_2]', $tag, $context[-1])
             ) if ($context[-1] ne 'messages');
 
             push @context, $tag;
@@ -135,7 +135,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Checkout';
             return $code;
         } elsif ($tag eq 'phase') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of tag '" . $context[-1] . "'", $tag)
+                -text => translate('Tag [_1] not valid inside of tag [_2]', $tag, $context[-1])
             ) if ($context[-1] ne 'phases');
 
             push @context, $tag;

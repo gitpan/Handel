@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1415 2006-09-14 00:54:13Z claco $
+# $Id: Cart.pm 1552 2006-11-07 03:31:50Z claco $
 ## no critic
 package AxKit::XSP::Handel::Cart;
 use strict;
@@ -149,7 +149,7 @@ BEGIN {
 my @context = 'root';
 
 sub start_document {
-    return "use Handel::Cart;\n";
+    return "use Handel::Cart;\nuse Handel::Compat::Currency;\n";
 };
 
 sub quoted_text {
@@ -182,7 +182,7 @@ sub new_start {
     my ($e, $tag, %attr) = @_;
 
     throw Handel::Exception::Taglib(
-        -text => translate("Tag '[_1]' not valid inside of other Handel tags", $tag)
+        -text => translate('TAG_NOT_ALLOWED_IN_OTHERS', $tag)
     ) if ($context[-1] ne 'root');
 
     push @context, $tag;
@@ -235,7 +235,7 @@ sub new_results_start {
     my ($e, $tag, %attr) = @_;
 
     throw Handel::Exception::Taglib(
-        -text => translate("Tag '[_1]' not valid here", $tag)
+        -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
     ) if ($context[-1] !~ /^(new|add|cart(s?)|item(s?))$/);
 
     push @context, $tag;
@@ -372,7 +372,7 @@ sub new_results_shopper_start {
         ## cart:new
         } elsif ($tag eq 'new') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of other Handel tags", $tag)
+                -text => translate('TAG_NOT_ALLOWED_IN_OTHERS', $tag)
             ) if ($context[-1] ne 'root');
 
             push @context, $tag;
@@ -388,7 +388,7 @@ sub new_results_shopper_start {
         ## cart:restore
         } elsif ($tag eq 'restore') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of tag '" . $context[-1] . "'", $tag)
+                -text => translate('Tag [_1] not valid inside of tag [_2]', $tag, $context[-1])
             ) if ($context[-1] =~ /^(cart(s?))$/);
 
             push @context, $tag;
@@ -405,7 +405,7 @@ sub new_results_shopper_start {
         ## cart:cart
         } elsif ($tag eq 'cart') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of other Handel tags", $tag)
+                -text => translate('TAG_NOT_ALLOWED_IN_OTHERS', $tag)
             ) if ($context[-1] ne 'root');
 
             push @context, $tag;
@@ -421,7 +421,7 @@ sub new_results_shopper_start {
         ## cart:carts
         } elsif ($tag eq 'carts') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of other Handel tags", $tag)
+                -text => translate('TAG_NOT_ALLOWED_IN_OTHERS', $tag)
             ) if ($context[-1] ne 'root');
 
             push @context, $tag;
@@ -437,7 +437,7 @@ sub new_results_shopper_start {
         ## cart:item
         } elsif ($tag eq 'item') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of tag '" . $context[-1] . "'", $tag)
+                -text => translate('Tag [_1] not valid inside of tag [_2]', $tag, $context[-1])
             ) if ($context[-1] =~ /^(cart(s?))$/);
 
             push @context, $tag;
@@ -453,7 +453,7 @@ sub new_results_shopper_start {
         ## cart:items
         } elsif ($tag eq 'items') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of tag '" . $context[-1] . "'", $tag)
+                -text => translate('Tag [_1] not valid inside of tag [_2]', $tag, $context[-1])
             ) if ($context[-1] =~ /^(cart(s?))$/);
 
             push @context, $tag;
@@ -469,7 +469,7 @@ sub new_results_shopper_start {
         ## cart:clear
         } elsif ($tag eq 'clear') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] ne 'results' || $context[-2] !~ /^(cart(s?))$/);
 
            return "\n\$_xsp_handel_cart_cart->clear;\n";
@@ -478,7 +478,7 @@ sub new_results_shopper_start {
         ## cart:add
         } elsif ($tag eq 'add') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] ne 'results' || $context[-2] !~ /^(new|cart(s?))$/);
 
             push @context, $tag;
@@ -494,7 +494,7 @@ sub new_results_shopper_start {
         ## cart:update
         } elsif ($tag eq 'update') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] ne 'results' || $context[-2] !~ /^((cart(s?)|item(s?)))$/);
 
             push @context, $tag;
@@ -510,7 +510,7 @@ sub new_results_shopper_start {
 
         } elsif ($tag eq 'save') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-2] !~ /^(cart(s?))$/);
 
             return '
@@ -521,7 +521,7 @@ sub new_results_shopper_start {
         ## cart:delete
         } elsif ($tag eq 'delete') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] ne 'results' || $context[-2] !~ /^(cart(s?))$/);
 
             push @context, $tag;
@@ -553,9 +553,9 @@ sub new_results_shopper_start {
                     AxKit::Debug(5, "[Handel] [Cart] [$tag] code=$code, format=$format, from=$from, to=$to");
 
                     if ($attr{'convert'}) {
-                        $e->append_to_script("\$_xsp_handel_cart_cart->$tag->convert('$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
+                        $e->append_to_script("Handel::Compat::Currency::convert(\$_xsp_handel_cart_cart->$tag, '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
                     } elsif ($attr{'format'}) {
-                        $e->append_to_script("\$_xsp_handel_cart_cart->$tag->format('$code', '$format');\n");
+                        $e->append_to_script("Handel::Compat::Currency::format(\$_xsp_handel_cart_cart->$tag, '$code', '$format');\n");
                     };
                 } else {
                     $e->append_to_script("\$_xsp_handel_cart_cart->$tag;\n");
@@ -573,7 +573,7 @@ sub new_results_shopper_start {
                 return "\n\$_xsp_handel_cart_delete_filter{$tag} = ''";
             } elsif ($context[-1] eq 'update') {
                 throw Handel::Exception::Taglib(
-                    -text => translate("Tag '[_1]' not valid here", $tag)
+                    -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
                 ) if ($tag eq 'id');
 
                 if ($context[-3] =~ /^(cart(s?))$/) {
@@ -605,9 +605,9 @@ sub new_results_shopper_start {
                     AxKit::Debug(5, "[Handel] [Cart] [$tag] code=$code, format=$format, from=$from, to=$to");
 
                     if ($attr{'convert'}) {
-                        $e->append_to_script("\$_xsp_handel_cart_item->$tag->convert('$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
+                        $e->append_to_script("Handel::Compat::Currency::convert(\$_xsp_handel_cart_item->$tag, '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
                     } elsif ($attr{'format'}) {
-                        $e->append_to_script("\$_xsp_handel_cart_item->$tag->format('$code', '$format');\n");
+                        $e->append_to_script("Handel::Compat::Currency::format(\$_xsp_handel_cart_item->$tag, '$code', '$format');\n");
                     };
                 } else {
                     $e->append_to_script("\$_xsp_handel_cart_item->$tag;\n");
@@ -643,7 +643,7 @@ sub new_results_shopper_start {
         ## cart:results
         } elsif ($tag =~ /^result(s?)$/) {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] !~ /^(new|add|cart(s?)|item(s?))$/);
 
             push @context, $tag;
@@ -716,7 +716,7 @@ sub new_results_shopper_start {
         ## cart:no-results
         } elsif ($tag =~ /^no-result(s?)$/) {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] !~ /^(new|add|cart(s?)|item(s?))$/);
 
             push @context, $tag;

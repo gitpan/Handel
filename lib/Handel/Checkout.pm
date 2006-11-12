@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1424 2006-09-22 02:14:04Z claco $
+# $Id: Checkout.pm 1488 2006-10-19 23:12:26Z claco $
 package Handel::Checkout;
 use strict;
 use warnings;
@@ -7,10 +7,10 @@ BEGIN {
     use Handel;
     use Handel::Constants qw/:all/;
     use Handel::Constraints qw/constraint_checkout_phase constraint_uuid/;
-    use Handel::Exception qw/:try/;
+    use Handel::Exception qw/try with otherwise finally/;
     use Handel::Checkout::Message;
     use Handel::L10N qw/translate/;
-    use Module::Pluggable 2.95 instantiate => 'new', sub_name => '_plugins';
+    use Module::Pluggable::Object;
     use Class::Inspector;
     use Scalar::Util qw/blessed/;
 
@@ -30,7 +30,7 @@ sub new {
         handlers => {},
         phases => [],
         messages => []
-    }, ref $class || $class;
+    }, $class;
 
     my $stash = $opts->{'stash'};
 
@@ -46,9 +46,7 @@ sub new {
         );
     };
 
-    $self->_set_search_path($opts);
-
-    foreach ($self->_plugins($self)) {
+    foreach ($self->load_plugins($opts)) {
         if (blessed($_) && $_->isa('Handel::Checkout::Plugin')) {
             push @{$self->{'plugins'}}, $_;
             $_->register($self);
@@ -79,11 +77,11 @@ sub add_handler {
     my ($package) = caller;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a a valid CHECKOUT_PHASE_* value')
+        translate('PARAM1_NOT_CHECKOUT_PHASE')
     ) unless constraint_checkout_phase($phase); ## no critic
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a CODE reference')
+        translate('PARAM1_NOT_CODEREF')
     ) unless ref($ref) eq 'CODE'; ## no critic
 
     foreach (@{$self->{'plugins'}}) {
@@ -93,7 +91,8 @@ sub add_handler {
                     my $plugin = $self->{'handlers'}->{$phase}->{$preference}->[0];
 
                     throw Handel::Exception::Checkout( -details =>
-                        translate("There is already a handler in phase ([_1]) for preference ([_2]) from the plugin ([_3])", $phase, $preference, $plugin) . '.')
+                        translate('HANDLER_EXISTS_IN_PHASE', $phase, $preference, $plugin)
+                    );
                 };
             } else {
                 my @prefs = sort {$a <=> $b} keys %{$self->{'handlers'}->{$phase}};
@@ -122,7 +121,7 @@ sub add_message {
             text => $message, source => $package, filename => $filename, line => $line);
     } else {
         throw Handel::Exception::Argument( -details =>
-            translate('Param 1 is not a Handel::Checkout::Message object or text message')
+            translate('PARAM1_NOT_CHECKOUT_MESSAGE')
         );
     };
 
@@ -135,15 +134,15 @@ sub add_phase {
 
     if (Handel::Constants->can($name)) {
         throw Handel::Exception::Constraint(
-            -text => translate("A constant named '$name' already exists in Handel::Constants")
+            -text => translate('CONSTANT_NAME_ALREADY_EXISTS', $name)
         );
     } elsif (constraint_checkout_phase($value)) {
         throw Handel::Exception::Constraint(
-            -text => translate("A phase constant value of '$value' already exists")
+            -text => translate('CONSTANT_VALUE_ALREADY_EXISTS', $value)
         );
     } elsif ($import && main->can($name)) {
         throw Handel::Exception::Constraint(
-            -text => translate("A constant named '$name' already exists in caller '$caller'")
+            -text => translate('CONSTANT_EXISTS_IN_CALLER', $name, $caller)
         );
     } else {
         my $sub = sub {return $value};
@@ -173,13 +172,7 @@ sub cart {
     my ($self, $cart) = @_;
 
     if ($cart) {
-        if (ref $cart eq 'HASH' || (blessed($cart) && $cart->isa('Handel::Cart')) || constraint_uuid($cart)) {
-            $self->order($self->order_class->create({cart => $cart}));
-        } else {
-            throw Handel::Exception::Argument( -details =>
-                translate('Param 1 is not a HASH reference, Handel::Cart object, or cart id')
-            );
-        };
+        $self->order($self->order_class->create({cart => $cart}));
     };
 
     return;
@@ -197,20 +190,26 @@ sub order {
     if ($order) {
         if (ref $order eq 'HASH') {
             $self->{'order'} = $self->order_class->search($order)->first;
-        } elsif ( blessed($order) && $order->isa('Handel::Order')) {
+        } elsif (blessed($order) && $order->isa('Handel::Order')) {
             $self->{'order'} = $order;
-        } elsif (constraint_uuid($order)) {
-            $self->{'order'} = $self->order_class->search({id => $order})->first;
+        } elsif (!ref $order) {
+            my ($primary_key) = $self->order_class->storage->primary_columns;
+
+            $self->{'order'} = $self->order_class->search({$primary_key => $order})->first;
         } else {
             throw Handel::Exception::Argument( -details =>
-                translate('Param 1 is not a HASH reference, Handel::Order object, or order id')
+                translate('PARAM1_NOT_HASHREF_ORDER')
             );
-        }
-    } else {
-        return $self->{'order'};
+        };
+
+        if (!$self->order) {
+            throw Handel::Exception::Checkout( -details =>
+                translate('ORDER_NOT_FOUND')
+            );
+        };
     };
 
-    return;
+    return $self->{'order'};
 };
 
 sub phases {
@@ -218,7 +217,7 @@ sub phases {
 
     if ($phases) {
         throw Handel::Exception::Argument( -details =>
-            translate('Param 1 is not an ARRAY reference or string')
+            translate('PARAM1_NOT_ARRAYREF_STRING')
         ) unless (ref($phases) eq 'ARRAY' || !ref($phases)); ## no critic
 
         if (! ref $phases) {
@@ -244,7 +243,7 @@ sub process {
 
     if ($phases) {
         throw Handel::Exception::Argument( -details =>
-            translate('Param 1 is not an ARRAY reference or string')
+            translate('PARAM1_NOT_ARRAYREF_STRING')
         ) unless (ref($phases) eq 'ARRAY' || ! ref($phases)); ## no critic
 
         if (! ref $phases) {
@@ -252,11 +251,11 @@ sub process {
             $phases = [map(eval "$_", _path_to_array($phases))];
         };
     } else {
-        $phases = $self->{'phases'} || CHECKOUT_DEFAULT_PHASES;
+        $phases = scalar @{$self->{'phases'}} ? $self->{'phases'} : CHECKOUT_DEFAULT_PHASES;
     };
 
     throw Handel::Exception::Checkout( -details =>
-        translate('No order is assocated with this checkout process')
+        translate('NO_ORDER_LOADED')
     ) unless $self->order; ## no critic
 
     $self->stash->clear;
@@ -276,14 +275,14 @@ sub process {
                 if ($status != CHECKOUT_HANDLER_OK && $status != CHECKOUT_HANDLER_DECLINE) {
                     $self->_teardown($self);
 
-                    $self->order->result->txn_rollback;
-                    $self->order->result->discard_changes;
-                    foreach my $item ($self->order->items->all) {
-                        $item->result->discard_changes;
-                    };
-
-                    if ($@) {
-                        throw Handel::Exception(-details => "Transaction aborted. Rollback failed: $@");
+                    try {
+                        $self->order->result->txn_rollback;
+                        $self->order->result->discard_changes;
+                        foreach my $item ($self->order->items->all) {
+                            $item->result->discard_changes;
+                        };
+                    } otherwise {
+                        throw Handel::Exception::Checkout(-details => translate('ROLLBACK_FAILED', shift));
                     };
 
                     return CHECKOUT_STATUS_ERROR;
@@ -323,9 +322,11 @@ sub _teardown {
     return;
 };
 
-sub _set_search_path {
+sub load_plugins {
     my ($self, $opts) = @_;
+    my ($package, $file) = caller;
     my $config = Handel->config;
+    my $search_path;
 
     my $pluginpaths = ref $opts->{'pluginpaths'} eq 'ARRAY' ?
         join(' ', @{$opts->{'pluginpaths'}}) : $opts->{'pluginpaths'} || '';
@@ -334,32 +335,35 @@ sub _set_search_path {
         join(' ', @{$opts->{'addpluginpaths'}}) : $opts->{'addpluginpaths'} || '' ;
 
     if ($pluginpaths) {
-        $self->search_path(new => _path_to_array($pluginpaths));
+        $search_path = [_path_to_array($pluginpaths)];
     } elsif (my $path = $config->{'HandelPluginPaths'}) {
-        $self->search_path(new => _path_to_array($path));
+        $search_path = [_path_to_array($path)];
     } elsif ($path = $config->{'HandelAddPluginPaths'} || $addpluginpaths) {
-        $self->search_path(new => 'Handel::Checkout::Plugin', _path_to_array("$path $addpluginpaths"));
+        $search_path = ["$package\:\:Plugin", _path_to_array("$path $addpluginpaths")];
+    } else {
+        $search_path = ["$package\:\:Plugin"];
     };
 
-    ## reset these crazy things
-    $self->except([]);
-    $self->only([]);
-
     my $ignore = $opts->{'ignoreplugins'} || $config->{'HandelIgnorePlugins'};
-    if (ref $ignore eq 'Regexp' || ref $ignore eq 'ARRAY') {
-        $self->except($ignore);
-    } elsif ($ignore) {
-        $self->except([_path_to_array($ignore)]);
+    if (ref $ignore ne 'Regexp' && ref $ignore ne 'ARRAY' && $ignore) {
+        $ignore = [_path_to_array($ignore)];
     };
 
     my $only = $opts->{'loadplugins'} || $config->{'HandelLoadPlugins'};
-    if (ref $only eq 'Regexp' || ref $only eq 'ARRAY') {
-        $self->only($only);
-    } elsif ($only) {
-        $self->only([_path_to_array($only)]);
+    if (ref $only ne 'Regexp' && ref $only ne 'ARRAY' && $only) {
+        $only = [_path_to_array($only)];
     };
 
-    return;
+    my $finder = Module::Pluggable::Object->new(
+        instantiate => 'new',
+        package     => $package,
+        file        => $file,
+        search_path => $search_path,
+        except      => $ignore,
+        only        => $only
+    );
+
+    return $finder->plugins;
 };
 
 sub _path_to_array {
@@ -387,7 +391,7 @@ sub set_component_class {
             eval "require $value"; ## no critic
     
             throw Handel::Exception::Checkout(
-                -details => translate('The [_1] [_2] could not be loaded', $field, $value)
+                -details => translate('COMPCLASS_NOT_LOADED', $field, $value)
             ) if $@; ## no critic
         };
     };
@@ -739,6 +743,19 @@ decisions and activities. Returns a list in list context.
         warn $_->text, "\n";
     };
 
+=head2 load_plugins
+
+=over
+
+=item Arguments: \%options
+
+=back
+
+Returns a list of plugins pre-instantiated that match the options specified.
+The plugins returned are not yet registered.
+
+See L</new> for the available plugin/plugin path options.
+
 =head2 plugins
 
 Returns a list plugins loaded for current checkout object in list context:
@@ -862,6 +879,37 @@ unless you have set C<stash_class> to another class.
     my ($self, $ctx) = @_;
 
     $ctx->stash->{'template'} = 'template.tt';
+
+=head2 get_component_class
+
+=over
+
+=item Arguments: $name
+
+=back
+
+Gets the current class for the specified component name.
+
+    my $class = $self->get_component_class('cart_class');
+
+There is no good reason to use this. Use the specific class accessors instead.
+
+=head2 set_component_class
+
+=over
+
+=item Arguments: $name, $value
+
+=back
+
+Sets the current class for the specified component name.
+
+    $self->set_component_class('cart_class', 'MyCartClass');
+
+A L<Handel::Exception|Handel::Exception> exception will be thrown if the
+specified class can not be loaded.
+
+There is no good reason to use this. Use the specific class accessors instead.
 
 =head1 CONFIGURATION
 

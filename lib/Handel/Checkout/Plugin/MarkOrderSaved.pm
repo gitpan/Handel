@@ -1,4 +1,4 @@
-# $Id: MarkOrderSaved.pm 1423 2006-09-21 21:30:29Z claco $
+# $Id: MarkOrderSaved.pm 1480 2006-10-17 23:58:11Z claco $
 package Handel::Checkout::Plugin::MarkOrderSaved;
 use strict;
 use warnings;
@@ -47,6 +47,16 @@ Handel::Checkout::Plugin::MarkOrderSaved - Checkout plugin to mark the order ORD
 
 This checkout plugin simply changes $order->type to ORDER_TYPE_SAVED during the
 CHECKOUT_PHASE_FINALIZE phase.
+
+=head1 METHODS
+
+=head2 register
+
+Registers this plugin for the CHECKOUT_PHASE_FINALIZE phase.
+
+=head2 handler
+
+Calls L<Handel::Order/save> to mark the current order as saved.
 
 =head1 SEE ALSO
 

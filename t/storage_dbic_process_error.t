@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: storage_dbic_process_error.t 1381 2006-08-24 01:27:08Z claco $
+# $Id: storage_dbic_process_error.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Test::More;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 7;
+        plan tests => 8;
     };
 
     use_ok('Handel::Storage::DBIC');
@@ -34,9 +34,11 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception with {
-    isa_ok(shift, 'Handel::Exception');
+    my $e = shift;
+    isa_ok($e, 'Handel::Exception');
+    like($e, qr/unspecified error/i, 'unspecified in message');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };
 
 
@@ -50,10 +52,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Constraint with {
-    pass;
-    like(shift, qr/id value already exists/);
+    pass('caught constraint exception');
+    like(shift, qr/id value already exists/i, 'value exists in message');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };
 
 
@@ -66,8 +68,8 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/Can't find source/);
+    pass('caught storage exception');
+    like(shift, qr/can't find source/i, 'source in massage');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };

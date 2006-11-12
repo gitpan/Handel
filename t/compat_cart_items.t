@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: compat_cart_items.t 1357 2006-08-08 01:55:08Z claco $
+# $Id: compat_cart_items.t 1524 2006-10-31 04:02:19Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 262;
+        plan tests => 278;
     };
 
     use_ok('Handel::Cart');
@@ -28,29 +28,24 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+
 &run('Handel::Subclassing::CartOnly', 'Handel::Cart::Item', 2);
 &run('Handel::Subclassing::Cart', 'Handel::Subclassing::CartItem', 3);
 
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
-    ## Setup SQLite DB for tests
+
     {
-        my $dbfile  = "t/compat_cart_items_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/cart_create_table.sql';
-        my $data    = 't/sql/cart_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-
         no strict 'refs';
         unshift @{"$subclass\:\:ISA"}, 'Handel::Compat' unless $subclass->isa('Handel::Compat');
         unshift @{"itemclass\:\:ISA"}, 'Handel::Compat' unless $itemclass->isa('Handel::Compat');
+        $subclass->storage->currency_class('Handel::Compat::Currency');
+        $itemclass->storage->currency_class('Handel::Compat::Currency');
     };
 
 
@@ -103,8 +98,29 @@ sub run {
             is($item2->custom, 'custom');
         };
 
+
+        ## get single item as item
+        my $single = $cart->items({id => '22222222-2222-2222-2222-222222222222'}, 42);
+        isa_ok($single, $itemclass);
+
+
+        ## in list context, and without iterator
+        my @listitems = $cart->items(undef, RETURNAS_ITERATOR);
+        is(scalar @listitems, 1);
+        isa_ok($listitems[0], 'Handel::Iterator');
+
+
+        ## thank god this crap went away :-)
+        my $list = $cart->items(undef, RETURNAS_LIST);
+        is($list, 2);
+
+        my ($c1, $c2) = $cart->items(undef, RETURNAS_LIST);
+        isa_ok($c1, $itemclass);
+        isa_ok($c2, $itemclass);
+
+
         ## While we are here, lets poop out a max quantity exception
-        ## THere should be a better place for this, but I haven't found it yet. :-)
+        ## There should be a better place for this, but I haven't found it yet. :-)
         {
             local $ENV{'HandelMaxQuantity'} = 5;
             local $ENV{'HandelMaxQuantityAction'} = 'Exception';
@@ -126,6 +142,22 @@ sub run {
 
             $item2->quantity(6);
             is($item2->quantity, 2);
+        };
+
+
+        ## throw exception when filter isn't a hashref
+        {
+            try {
+                local $ENV{'LANG'} = 'en';
+                $cart->items(['foo']);
+
+                fail('no exception thrown');
+            } catch Handel::Exception::Argument with {
+                pass('Argument exception thrown');
+                like(shift, qr/not a hash/i, 'not a hash ref in message');
+            } otherwise {
+                fail('Other exception thrown');
+            };
         };
     };
 

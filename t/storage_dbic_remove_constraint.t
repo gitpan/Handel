@@ -1,12 +1,12 @@
 #!perl -wT
-# $Id: storage_dbic_remove_constraint.t 1381 2006-08-24 01:27:08Z claco $
+# $Id: storage_dbic_remove_constraint.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Test::More;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
@@ -28,7 +28,7 @@ my $storage = Handel::Storage::DBIC->new({
 
 
 ## start w/ nothing
-is($storage->constraints, undef);
+is($storage->constraints, undef, 'constraints are undefined');
 
 my $sub = {};
 $storage->constraints({
@@ -41,7 +41,7 @@ $storage->constraints({
 
 ## remove constraint from unconnected schema
 $storage->remove_constraint('id', 'Check Id');
-is_deeply($storage->constraints, {'id' => {'Check It Again' => $sub}});
+is_deeply($storage->constraints, {'id' => {'Check It Again' => $sub}}, 'constraints was removed');
 
 
 ## throw exception when connected
@@ -53,8 +53,8 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/existing schema instance/);
+    pass('caught storage exception');
+    like(shift, qr/existing schema instance/i, 'existing schema instance in message');
 } otherwise {
-    fail;
+    fail('caught other exception');
 };

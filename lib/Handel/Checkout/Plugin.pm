@@ -1,15 +1,16 @@
-# $Id: Plugin.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Plugin.pm 1478 2006-10-17 01:28:01Z claco $
 package Handel::Checkout::Plugin;
 use strict;
 use warnings;
 
 BEGIN {
+    use Handel::L10N qw/translate/;
     use Carp qw/cluck/;
 };
 
 sub new {
     my ($class, $ctx) = @_;
-    my $self = bless {}, ref $class || $class;
+    my $self = bless {}, $class;
 
     $self->init($ctx);
 
@@ -17,19 +18,19 @@ sub new {
 };
 
 sub init {
-
+    return;
 };
 
 sub setup {
-
+    return;
 };
 
 sub teardown {
-
+    return;
 };
 
 sub register {
-    cluck 'Attempt to register plugin that hasn\'t defined \'register\'!';
+    cluck translate('PLUGIN_HAS_NO_REGISTER');
 
     return;
 };

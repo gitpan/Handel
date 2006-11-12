@@ -1,10 +1,10 @@
-# $Id: Handel.pm 1426 2006-09-23 21:15:52Z claco $
+# $Id: Handel.pm 1579 2006-11-12 21:47:22Z claco $
 package Handel;
 use strict;
 use warnings;
 use vars qw/$VERSION/;
 
-$VERSION = '0.99_14';
+$VERSION = '0.99_15';
 
 BEGIN {
     use base qw/Class::Accessor::Grouped/;
@@ -39,7 +39,7 @@ __END__
 
 =head1 NAME
 
-Handel - Simple commerce framework with AxKit/TT/Catalyst support
+Handel - A cart/order/checkout framework with AxKit/TT/Catalyst support
 
 =head1 SYNOPSIS
 

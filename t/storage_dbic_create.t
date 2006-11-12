@@ -1,13 +1,13 @@
 #!perl -wT
-# $Id: storage_dbic_create.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_dbic_create.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Test::More;
-use Scalar::Util qw/refaddr/;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+    use Scalar::Util qw/refaddr/;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
@@ -30,16 +30,16 @@ my $storage = Handel::Storage::DBIC->new({
 
 
 ## create a new record
-is($storage->schema_instance->resultset($storage->schema_source)->search->count, 0);
+is($storage->schema_instance->resultset($storage->schema_source)->search->count, 0, 'cart table empty');
 my $result = $storage->create({
     id      => '11111111-1111-1111-1111-111111111111',
     shopper => '21111111-1111-1111-1111-111111111111'
 });
 isa_ok($result, $storage->result_class);
-is($storage->schema_instance->resultset($storage->schema_source)->search->count, 1);
-is($result->{'storage_result'}->id, '11111111-1111-1111-1111-111111111111');
-is($result->{'storage_result'}->shopper, '21111111-1111-1111-1111-111111111111');
-is(refaddr $result->{'storage'}, refaddr $storage);
+is($storage->schema_instance->resultset($storage->schema_source)->search->count, 1, 'added 1 cart');
+is($result->{'storage_result'}->id, '11111111-1111-1111-1111-111111111111', 'id is set');
+is($result->{'storage_result'}->shopper, '21111111-1111-1111-1111-111111111111', 'shopper is set');
+is(refaddr $result->{'storage'}, refaddr $storage, 'result storae is original storage');
 
 
 ## throw exception if no hash ref is passed
@@ -49,10 +49,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Argument with {
-    pass;
-    like(shift, qr/not a HASH/);
+    pass('argument exception caught');
+    like(shift, qr/not a HASH/i, 'not a hash in message');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };
 
 

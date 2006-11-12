@@ -1,4 +1,4 @@
-# $Id: Order.pm 1343 2006-07-23 01:29:57Z claco $
+# $Id: Order.pm 1580 2006-11-12 22:20:23Z claco $
 package Handel::Schema::Order;
 use strict;
 use warnings;
@@ -33,13 +33,11 @@ __PACKAGE__->add_columns(
     },
     created => {
         data_type     => 'datetime',
-        size          => 19,
         is_nullable   => 1,
         default_value => undef
     },
     updated => {
         data_type     => 'datetime',
-        size          => 19,
         is_nullable   => 1,
         default_value => undef
     },
@@ -325,7 +323,6 @@ The date this order record was created.
 
     created => {
         data_type     => 'datetime',
-        size          => 19,
         is_nullable   => 1,
         default_value => undef
     },
@@ -336,7 +333,6 @@ The date this order record was last updated.
 
     updated => {
         data_type     => 'datetime',
-        size          => 19,
         is_nullable   => 1,
         default_value => undef
     },

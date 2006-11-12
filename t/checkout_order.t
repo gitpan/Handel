@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: checkout_order.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: checkout_order.t 1481 2006-10-18 02:51:46Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 126;
+        plan tests => 130;
     };
 
     use_ok('Handel::Checkout');
@@ -23,7 +23,33 @@ BEGIN {
 };
 
 
+## throw exception when setting a bogus order class
+{
+    try {
+        Handel::Checkout->order_class('Funklebean');
+
+        fail('no exception thrown');
+    } catch Handel::Exception::Checkout with {
+        pass('caught Handel::Exception::Checkout');
+    } otherwise {
+        fail('failed to catch Handel::Exception');
+    };
+};
+
+
+## unset something altogether
+{
+    is(Handel::Checkout->order_class, 'Handel::Order', 'order class is set');
+    Handel::Checkout->order_class(undef);
+    is(Handel::Checkout->order_class, undef, 'order class is unset');
+    Handel::Checkout->order_class('Handel::Order');
+    is(Handel::Checkout->order_class, 'Handel::Order', 'order class is reset');
+};
+
+
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+
 &run('Handel::Checkout', 'Handel::Order', 1);
 &run('Handel::Checkout', 'Handel::Subclassing::Order', 2);
 &run('Handel::Checkout', 'Handel::Subclassing::OrderOnly', 3);
@@ -31,31 +57,19 @@ BEGIN {
 sub run {
     my ($subclass, $orderclass, $dbsuffix) = @_;
 
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
+
     $subclass->order_class($orderclass);
 
-    ## Setup SQLite DB for tests
-    {
-        my $dbfile  = "t/checkout_order_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/order_create_table.sql';
-        my $data    = 't/sql/order_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-    };
-
     ## test for Handel::Exception::Argument where first param is not a hashref
+    ## no constraint_uuid check now. instead we just do nothing.
     {
         try {
             my $checkout = $subclass->new;
 
             $checkout->order('1234');
-
-            fail;
-        } catch Handel::Exception::Argument with {
+        } catch Handel::Exception::Checkout with {
             pass;
         } otherwise {
             fail;
@@ -68,8 +82,8 @@ sub run {
         try {
             my $checkout = $subclass->new({order => '1234'});
 
-            fail;
-        } catch Handel::Exception::Argument with {
+            ok(!$checkout->order);
+        } catch Handel::Exception::Checkout with {
             pass;
         } otherwise {
             fail;

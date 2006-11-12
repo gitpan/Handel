@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: order_items.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: order_items.t 1497 2006-10-24 00:43:51Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 374;
+        plan tests => 380;
     };
 
     use_ok('Handel::Order');
@@ -23,6 +23,8 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+
 &run('Handel::Order', 'Handel::Order::Item', 1);
 &run('Handel::Subclassing::OrderOnly', 'Handel::Order::Item', 2);
 &run('Handel::Subclassing::Order', 'Handel::Subclassing::OrderItem', 3);
@@ -30,20 +32,8 @@ BEGIN {
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
-
-    ## Setup SQLite DB for tests
-    {
-        my $dbfile  = "t/order_items_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/order_create_table.sql';
-        my $data    = 't/sql/order_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-    };
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
 
     ## load multiple item Handel::Order object and get items array
@@ -92,6 +82,22 @@ sub run {
         is($item2->description, 'Line Item SKU 2');
         if ($itemclass ne 'Handel::Order::Item') {
             is($item2->custom, 'custom');
+        };
+
+
+        ## throw exception when filter isn't a hashref
+        {
+            try {
+                local $ENV{'LANG'} = 'en';
+                $order->items(['foo']);
+
+                fail('no exception thrown');
+            } catch Handel::Exception::Argument with {
+                pass('Argument exception thrown');
+                like(shift, qr/not a hash/i, 'not a hash ref in message');
+            } otherwise {
+                fail('Other exception thrown');
+            };
         };
     };
 

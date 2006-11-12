@@ -1,6 +1,6 @@
-# $Id: extra.conf.in 900 2005-10-10 23:06:29Z claco $
+# $Id: extra.conf.in 1445 2006-10-04 01:34:13Z claco $
 <IfModule mod_perl.c>
-	PerlSetVar db_name		@documentroot@/xsp.db
+	PerlSetVar db_name		@ServerRoot@/var/axkit.db
 	PerlSetVar db_driver	"SQLite"
 
 	<IfDefine APACHE1>
@@ -14,7 +14,7 @@
 			AxAddXSPTaglib	AxKit::XSP::Handel::Cart
 			AxAddXSPTaglib	AxKit::XSP::Handel::Checkout
 			AxAddXSPTaglib	AxKit::XSP::Handel::Order
-	
+
 			<Files *.xsp>
 				SetHandler	AxKit
 			</Files>

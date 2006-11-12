@@ -1,16 +1,18 @@
 #!perl -wT
-# $Id: subclassing.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: subclassing.t 1566 2006-11-11 00:23:59Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
-    eval 'require DBD::SQLite';
-    plan skip_all => 'DBD::SQLite not installed' if($@);
+    use lib 't/lib';
+    use Handel::Test;
 
-    plan tests => 68;
+    eval 'require DBD::SQLite';
+    if($@) {
+        plan skip_all => 'DBD::SQLite not installed';
+    } else {
+        plan tests => 68;
+    };
 
     use_ok('Handel::Subclassing::Cart');
     use_ok('Handel::Subclassing::CartOnly');
@@ -25,23 +27,8 @@ BEGIN {
 
 
 ## Setup SQLite DB for tests
-{
-    my $dbfile      = 't/subclassing.db';
-    my $db          = "dbi:SQLite:dbname=$dbfile";
-    my $createcart  = 't/sql/cart_create_table.sql';
-    my $datacart    = 't/sql/cart_fake_data.sql';
-    my $createorder = 't/sql/order_create_table.sql';
-    my $dataorder   = 't/sql/order_fake_data.sql';
-
-    unlink $dbfile;
-    executesql($db, $createcart);
-    executesql($db, $createorder);
-    executesql($db, $datacart);
-    executesql($db, $dataorder);
-
-    $ENV{'HandelDBIDSN'} = $db;
-};
-
+my $schema = Handel::Test->init_schema;
+local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
 ## Create a custom cart that still returns Handel::Cart::Item
 {
@@ -53,7 +40,7 @@ BEGIN {
     isa_ok($cart, 'Handel::Subclassing::CartOnly');
     isa_ok($cart, 'Handel::Cart');
     can_ok($cart, 'custom');
-    is($cart->custom, 'custom');
+    is($cart->custom, 'custom', 'got custom field');
 
     my $item = $cart->add({
         sku => 'SKU123',
@@ -62,8 +49,8 @@ BEGIN {
     });
 
     isa_ok($item, 'Handel::Cart::Item');
-    is(ref $item, 'Handel::Cart::Item');
-    ok(!$item->can('custom'));
+    is(ref $item, 'Handel::Cart::Item', 'is exactly a Handel::Cart::Item object');
+    ok(!$item->can('custom'), 'no custom method');
 };
 
 
@@ -77,7 +64,7 @@ BEGIN {
     isa_ok($cart, 'Handel::Subclassing::Cart');
     isa_ok($cart, 'Handel::Cart');
     can_ok($cart, 'custom');
-    is($cart->custom, 'custom');
+    is($cart->custom, 'custom', 'got custom field');
 
     my $item = $cart->add({
         sku    => 'SKU123',
@@ -88,9 +75,9 @@ BEGIN {
 
     isa_ok($item, 'Handel::Cart::Item');
     isa_ok($item, 'Handel::Subclassing::CartItem');
-    is(ref $item, 'Handel::Subclassing::CartItem');
+    is(ref $item, 'Handel::Subclassing::CartItem', 'is exactly a Handel::Subclassing::CartItem object');
     can_ok($item, 'custom');
-    is($cart->custom, 'custom');
+    is($cart->custom, 'custom', 'got custom field');
 };
 
 
@@ -101,7 +88,7 @@ BEGIN {
     });
 
     isa_ok($cart, 'Handel::Cart');
-    ok(!$cart->can('custom'));
+    ok(!$cart->can('custom'), 'no custom method');
 
     my $item = $cart->add({
         sku    => 'SKU123',
@@ -110,8 +97,8 @@ BEGIN {
     });
 
     isa_ok($item, 'Handel::Cart::Item');
-    is(ref $item, 'Handel::Cart::Item');
-    ok(!$item->can('custom'));
+    is(ref $item, 'Handel::Cart::Item', 'is exactly a Handel::Cart::Item object');
+    ok(!$item->can('custom'), 'has no custom method');
 };
 
 
@@ -125,7 +112,7 @@ BEGIN {
     isa_ok($order, 'Handel::Subclassing::OrderOnly');
     isa_ok($order, 'Handel::Order');
     can_ok($order, 'custom');
-    is($order->custom, 'custom');
+    is($order->custom, 'custom', 'got custom field');
 
     my $item = $order->add({
         sku => 'SKU123',
@@ -134,8 +121,8 @@ BEGIN {
     });
 
     isa_ok($item, 'Handel::Order::Item');
-    is(ref $item, 'Handel::Order::Item');
-    ok(!$item->can('custom'));
+    is(ref $item, 'Handel::Order::Item', 'is exactly a Handel::Order::Item object');
+    ok(!$item->can('custom'), 'has no custom method');
 };
 
 
@@ -149,7 +136,7 @@ BEGIN {
     isa_ok($order, 'Handel::Subclassing::Order');
     isa_ok($order, 'Handel::Order');
     can_ok($order, 'custom');
-    is($order->custom, 'custom');
+    is($order->custom, 'custom', 'got custom field');
 
     my $item = $order->add({
         sku    => 'SKU123',
@@ -160,9 +147,9 @@ BEGIN {
 
     isa_ok($item, 'Handel::Order::Item');
     isa_ok($item, 'Handel::Subclassing::OrderItem');
-    is(ref $item, 'Handel::Subclassing::OrderItem');
+    is(ref $item, 'Handel::Subclassing::OrderItem', 'is exactly a Handel::Subclassing::OrderItem object');
     can_ok($item, 'custom');
-    is($order->custom, 'custom');
+    is($order->custom, 'custom', 'got custom field');
 };
 
 
@@ -173,7 +160,7 @@ BEGIN {
     });
 
     isa_ok($order, 'Handel::Order');
-    ok(!$order->can('custom'));
+    ok(!$order->can('custom'), 'has no custom method');
 
     my $item = $order->add({
         sku    => 'SKU123',
@@ -182,8 +169,8 @@ BEGIN {
     });
 
     isa_ok($item, 'Handel::Order::Item');
-    is(ref $item, 'Handel::Order::Item');
-    ok(!$item->can('custom'));
+    is(ref $item, 'Handel::Order::Item', 'is exactly a Handel::Order::Item object');
+    ok(!$item->can('custom'), 'has no custom method');
 };
 
 
@@ -198,7 +185,7 @@ BEGIN {
     isa_ok($checkout, 'Handel::Checkout');
     isa_ok($checkout->order, 'Handel::Subclassing::Order');
     isa_ok($checkout->order, 'Handel::Order');
-    is(ref $checkout->order, 'Handel::Subclassing::Order');
+    is(ref $checkout->order, 'Handel::Subclassing::Order', 'is exactly a Handel::Subclassing::Order object');
 };
 
 
@@ -211,7 +198,7 @@ BEGIN {
 
     isa_ok($order, 'Handel::Subclassing::OrderCart');
     isa_ok($order, 'Handel::Order');
-    is($Handel::Subclassing::OrdersCart::Searches, 1);
+    is($Handel::Subclassing::OrdersCart::Searches, 1, 'performed search');
 
     my $item = $order->add({
         sku => 'SKU123',
@@ -220,8 +207,8 @@ BEGIN {
     });
 
     isa_ok($item, 'Handel::Order::Item');
-    is(ref $item, 'Handel::Order::Item');
-    ok(!$item->can('custom'));
+    is(ref $item, 'Handel::Order::Item', 'is exactly a Handel::Order::Item object');
+    ok(!$item->can('custom'), 'has no custom method');
 };
 
 ## Load an order from a cart after setting cart_class using using a hash
@@ -234,7 +221,7 @@ BEGIN {
     isa_ok($order, 'Handel::Subclassing::OrderCart');
     isa_ok($order, 'Handel::Order');
 
-    is($Handel::Subclassing::OrdersCart::Searches, 2);
+    is($Handel::Subclassing::OrdersCart::Searches, 2, 'performed search');
 
     my $item = $order->add({
         sku => 'SKU123',
@@ -243,6 +230,6 @@ BEGIN {
     });
 
     isa_ok($item, 'Handel::Order::Item');
-    is(ref $item, 'Handel::Order::Item');
-    ok(!$item->can('custom'));
+    is(ref $item, 'Handel::Order::Item', 'is exactly a Handel::Order::Item object');
+    ok(!$item->can('custom'), 'has no custom method');
 };

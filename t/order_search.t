@@ -1,17 +1,18 @@
 #!perl -wT
-# $Id: order_search.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: order_search.t 1496 2006-10-24 00:35:45Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+    use Scalar::Util qw/refaddr/;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 318;
+        plan tests => 352;
     };
 
     use_ok('Handel::Order');
@@ -23,6 +24,9 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+my $altschema = Handel::Test->init_schema(no_populate => 1, db_file => 'althandel.db', namespace => 'Handel::AltSchema');
+
 &run('Handel::Order', 'Handel::Order::Item', 1);
 &run('Handel::Subclassing::OrderOnly', 'Handel::Order::Item', 2);
 &run('Handel::Subclassing::Order', 'Handel::Subclassing::OrderItem', 3);
@@ -30,20 +34,8 @@ BEGIN {
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
-
-    ## Setup SQLite DB for tests
-    {
-        my $dbfile  = "t/order_search_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/order_create_table.sql';
-        my $data    = 't/sql/order_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-    };
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
 
     ## test for Handel::Exception::Argument where first param is not a hashref
@@ -63,6 +55,28 @@ sub run {
     ## load a single cart returning a Handel::Cart object
     {
         my $it = $subclass->search({
+            id => '11111111-1111-1111-1111-111111111111'
+        });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $order = $it->first;
+        isa_ok($order, 'Handel::Order');
+        isa_ok($order, $subclass);
+        is($order->id, '11111111-1111-1111-1111-111111111111');
+        is($order->shopper, '11111111-1111-1111-1111-111111111111');
+        is($order->type, ORDER_TYPE_TEMP);
+        is($order->count, 2);
+        if ($subclass ne 'Handel::Order') {
+            is($order->custom, 'custom');
+        };
+    };
+
+
+    ## load a single cart returning a Handel::Object object on an instance
+    {
+        my $instance = bless {}, $subclass;
+        my $it = $instance->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -291,4 +305,31 @@ sub run {
         is($order, 0);
     };
 
+};
+
+
+## pass in storage instead
+{
+    my $storage = Handel::Order->storage_class->new;
+    local $ENV{'HandelDBIDSN'} = $altschema->dsn;
+
+    $altschema->resultset('Orders')->create({
+        id      => '88888888-8888-8888-8888-888888888888',
+        shopper => '88888888-8888-8888-8888-888888888888',
+        type    => ORDER_TYPE_SAVED
+    });
+
+    my $order = Handel::Order->search({
+        id => '88888888-8888-8888-8888-888888888888'
+    }, {
+        storage => $storage
+    })->first;
+    isa_ok($order, 'Handel::Order');
+    is($order->shopper, '88888888-8888-8888-8888-888888888888');
+    is($order->type, ORDER_TYPE_SAVED);
+    is($order->count, 0);
+    is($order->subtotal, 0);
+    is(refaddr $order->result->storage, refaddr $storage, 'storage option used');
+    is($altschema->resultset('Orders')->search({id => '88888888-8888-8888-8888-888888888888'})->count, 1, 'order found in alt storage');
+    is($schema->resultset('Orders')->search({id => '88888888-8888-8888-8888-888888888888'})->count, 0, 'alt order not in class storage');
 };

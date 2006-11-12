@@ -1,4 +1,4 @@
-# $Id: Validation.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Validation.pm 1551 2006-11-07 02:03:05Z claco $
 package Handel::Components::Validation;
 use strict;
 use warnings;
@@ -8,7 +8,7 @@ BEGIN {
     use Scalar::Util qw/blessed/;
 };
 
-sub throw_exception {
+sub throw_exception { ## no critic (RequireFinalReturn)
     my ($self, $exception) = @_;
 
     if (blessed $exception) {
@@ -20,8 +20,6 @@ sub throw_exception {
             Handel::Exception::Validation->new(-details => $exception)
         );
     };
-
-    return;
 };
 
 1;
@@ -59,6 +57,11 @@ component will be loaded into the appropriate schema source class automatically.
 If validation
 fails, a L<Handel::Exception::Validation|Handel::Exception::Validation> will be
 thrown containing the the result object returned from the validation module.
+
+=head2 throw_exception
+
+Wraps DBIx::Class::Validation exceptions in Handel exceptions and rethrows. See
+L<DBIx::Class::Row/throw_exception> for more information about throw_exception.
 
 =head1 SEE ALSO
 

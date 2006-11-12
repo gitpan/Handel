@@ -1,11 +1,13 @@
 #!perl -wT
-# $Id: storage_currency_class.t 1255 2006-06-28 01:53:00Z claco $
+# $Id: storage_currency_class.t 1555 2006-11-09 01:46:20Z claco $
 use strict;
 use warnings;
-use Class::Inspector;
-use Test::More tests => 9;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 10;
+    use Class::Inspector;
+
     use_ok('Handel::Storage');
     use_ok('Handel::Exception', ':try');
 };
@@ -15,27 +17,29 @@ BEGIN {
     my $storage = Handel::Storage->new();
     isa_ok($storage, 'Handel::Storage');
 
-    is($storage->currency_class, 'Handel::Currency');
+    is($storage->currency_class, 'Handel::Currency', 'set currenct class');
 
     ## throw exception when setting a bogus currency class
     {
         try {
+            local $ENV{'LANG'} = 'en';
             $storage->currency_class('Funklebean');
 
             fail('no exception thrown');
         } catch Handel::Exception::Storage with {
-            pass;
+            pass('caught storage exception');
+            like(shift, qr/currency_class.*could not be loaded/i, 'could not be loaded in message');
         } otherwise {
-            fail;
+            fail('other exception caught');
         };
     };
 
-    is($storage->currency_class, 'Handel::Currency');
+    is($storage->currency_class, 'Handel::Currency', 'currency class still set');
 
-    ok(!Class::Inspector->loaded('Handel::Base'));
+    ok(!Class::Inspector->loaded('Handel::Base'), 'currency class not loaded');
     $storage->currency_class('Handel::Base');
-    ok(Class::Inspector->loaded('Handel::Base'));
+    ok(Class::Inspector->loaded('Handel::Base'), 'currency class loaded');
 
     $storage->currency_class(undef);
-    is($storage->currency_class, undef);
+    is($storage->currency_class, undef, 'currency class unset');
 };

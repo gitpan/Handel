@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: constraints_cart_name.t 1382 2006-08-24 21:59:15Z claco $
+# $Id: constraints_cart_name.t 1442 2006-09-27 23:35:20Z claco $
 use strict;
 use warnings;
-use Test::More tests => 9;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 9;
+
     use_ok('Handel::Constraints', qw(:all));
     use_ok('Handel::Constants', qw(:cart));
 };

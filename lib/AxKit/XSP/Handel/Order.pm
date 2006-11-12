@@ -1,4 +1,4 @@
-# $Id: Order.pm 1415 2006-09-14 00:54:13Z claco $
+# $Id: Order.pm 1552 2006-11-07 03:31:50Z claco $
 ## no critic
 package AxKit::XSP::Handel::Order;
 use strict;
@@ -29,7 +29,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
     };
 
     sub start_document {
-        return "use Handel::Order;\n";
+        return "use Handel::Order;\nuse Handel::Compat::Currency;\n";
     };
 
     sub parse_char {
@@ -94,7 +94,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:new
         } elsif ($tag eq 'new') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of other Handel tags", $tag)
+                -text => translate('TAG_NOT_ALLOWED_IN_OTHERS', $tag)
             ) if ($context[-1] ne 'root');
 
             push @context, $tag;
@@ -113,7 +113,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:cart
         } elsif ($tag eq 'cart') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] ne 'new');
 
             push @context, $tag;
@@ -128,7 +128,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:order
         } elsif ($tag eq 'order') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of other Handel tags", $tag)
+                -text => translate('TAG_NOT_ALLOWED_IN_OTHERS', $tag)
             ) if ($context[-1] ne 'root');
 
             push @context, $tag;
@@ -144,7 +144,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:orders
         } elsif ($tag eq 'orders') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of other Handel tags", $tag)
+                -text => translate('TAG_NOT_ALLOWED_IN_OTHERS', $tag)
             ) if ($context[-1] ne 'root');
 
             push @context, $tag;
@@ -160,7 +160,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:item
         } elsif ($tag eq 'item') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of tag '" . $context[-1] . "'", $tag)
+                -text => translate('Tag [_1] not valid inside of tag [_2]', $tag, $context[-1])
             ) if ($context[-1] =~ /^(order(s?))$/);
 
             push @context, $tag;
@@ -176,7 +176,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:items
         } elsif ($tag eq 'items') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid inside of tag '" . $context[-1] . "'", $tag)
+                -text => translate('Tag [_1] not valid inside of tag [_2]', $tag, $context[-1])
             ) if ($context[-1] =~ /^(order(s?))$/);
 
             push @context, $tag;
@@ -192,7 +192,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:clear
         } elsif ($tag eq 'clear') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] ne 'results' || $context[-2] !~ /^(order(s?))$/);
 
            return "\n\$_xsp_handel_order_order->clear;\n";
@@ -201,7 +201,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:add
         } elsif ($tag eq 'add') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] ne 'results' || $context[-2] !~ /^(new|order(s?))$/);
 
             push @context, $tag;
@@ -217,7 +217,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:update
         } elsif ($tag eq 'update') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] ne 'results' || $context[-2] !~ /^((order(s?)|item(s?)))$/);
 
             push @context, $tag;
@@ -233,7 +233,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
 
         } elsif ($tag eq 'save') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-2] !~ /^(order(s?))$/);
 
             return '
@@ -244,7 +244,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:delete
         } elsif ($tag eq 'delete') {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] ne 'results' || $context[-2] !~ /^(order(s?))$/);
 
             push @context, $tag;
@@ -285,9 +285,9 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                     AxKit::Debug(5, "[Handel] [Order] [$tag] code=$code, format=$format, from=$from, to=$to");
 
                     if ($attr{'convert'}) {
-                        $e->append_to_script("\$_xsp_handel_order_order->$tag->convert('$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
+                        $e->append_to_script("Handel::Compat::Currency::convert(\$_xsp_handel_order_order->$tag, '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
                     } elsif ($attr{'format'}) {
-                        $e->append_to_script("\$_xsp_handel_order_order->$tag->format('$code', '$format');\n");
+                        $e->append_to_script("Handel::Compat::Currency::format(\$_xsp_handel_order_order->$tag, '$code', '$format');\n");
                     };
                 } else {
                     $e->append_to_script("\$_xsp_handel_order_order->$tag;\n");
@@ -305,7 +305,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                 return "\n\$_xsp_handel_order_delete_filter{$tag} = ''";
             } elsif ($context[-1] eq 'update') {
                 throw Handel::Exception::Taglib(
-                    -text => translate("Tag '[_1]' not valid here", $tag)
+                    -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
                 ) if ($tag eq 'id');
 
                 if ($context[-3] =~ /^(order(s?))$/) {
@@ -340,15 +340,15 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
 
                     if ($attr{'convert'}) {
                         if ($context[-2] =~ /^(new|order(s?))$/) {
-                            $e->append_to_script("\$_xsp_handel_order_order->$tag->convert('$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
+                            $e->append_to_script("Handel::Compat::Currency::convert(\$_xsp_handel_order_order->$tag, '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
                         } else {
-                            $e->append_to_script("\$_xsp_handel_order_item->$tag->convert('$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
+                            $e->append_to_script("Handel::Compat::Currency::convert(\$_xsp_handel_order_item->$tag, '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
                         };
                     } elsif ($attr{'format'}) {
                         if ($context[-2] =~ /^(new|order(s?))$/) {
-                            $e->append_to_script("\$_xsp_handel_order_order->$tag->format('$code', '$format');\n");
+                            $e->append_to_script("Handel::Compat::Currency::format(\$_xsp_handel_order_order->$tag, '$code', '$format');\n");
                         } else {
-                            $e->append_to_script("\$_xsp_handel_order_item->$tag->format('$code', '$format');\n");
+                            $e->append_to_script("Handel::Compat::Currency::format(\$_xsp_handel_order_item->$tag, '$code', '$format');\n");
                         };
                     };
                 } else {
@@ -389,7 +389,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:results
         } elsif ($tag =~ /^result(s?)$/) {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] !~ /^(new|add|order(s?)|item(s?))$/);
 
             push @context, $tag;
@@ -462,7 +462,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
         ## order:no-results
         } elsif ($tag =~ /^no-result(s?)$/) {
             throw Handel::Exception::Taglib(
-                -text => translate("Tag '[_1]' not valid here", $tag)
+                -text => translate('TAG_NOT_ALLOWED_HERE', $tag)
             ) if ($context[-1] !~ /^(new|add|order(s?)|item(s?))$/);
 
             push @context, $tag;

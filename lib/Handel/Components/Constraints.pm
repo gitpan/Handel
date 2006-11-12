@@ -1,18 +1,31 @@
-# $Id: Constraints.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Constraints.pm 1551 2006-11-07 02:03:05Z claco $
 package Handel::Components::Constraints;
 use strict;
 use warnings;
-use Handel::Exception;
-use Handel::L10N qw/translate/;
-use base qw/DBIx::Class Class::Accessor::Grouped/;
 
 BEGIN {
+    use base qw/DBIx::Class Class::Accessor::Grouped/;
+    use Handel::Exception;
+    use Handel::L10N qw/translate/;
+
     __PACKAGE__->mk_group_accessors('inherited', qw/constraints/);
 };
 
 sub add_constraint {
     my ($self, $column, $name, $constraint) = @_;
     my $constraints = $self->constraints || {};
+
+    throw Handel::Exception::Argument(
+        -details => translate('COLUMN_NOT_SPECIFIED')
+    ) unless $column; ## no critic
+
+    throw Handel::Exception::Argument(
+        -details => translate('CONSTRAINT_NAME_NOT_SPECIFIED')
+    ) unless $name; ## no critic
+
+    throw Handel::Exception::Argument(
+        -details => translate('CONSTRAINT_NOT_SPECIFIED')
+    ) unless ref $constraint eq 'CODE'; ## no critic
 
     if (!exists $constraints->{$column}) {
         $constraints->{$column} = {};
@@ -25,7 +38,7 @@ sub add_constraint {
     return;
 };
 
-sub check_constraints {
+sub check_constraints { ## no critic (RequireFinalReturn)
     my $self = shift;
     my $constraints = $self->constraints;
 
@@ -57,8 +70,6 @@ sub check_constraints {
         $self->set_columns(\%data);
         return 1;
     };
-
-    return;
 };
 
 sub insert {
@@ -157,6 +168,16 @@ values in the hash will also change the value inserted/updated in the
 database.
 
 =back
+
+=head2 insert
+
+Calls C<check_constraints> and then inserts the row. See
+L<DBIx::Class::Row/insert> for more information about insert.
+
+=head2 update
+
+Calls C<check_constraints> and then updates the row. See
+L<DBIx::Class::Row/update> for more information about update.
 
 =head1 AUTHOR
 

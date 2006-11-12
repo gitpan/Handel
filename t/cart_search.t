@@ -1,28 +1,32 @@
 #!perl -wT
-# $Id: cart_search.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: cart_search.t 1492 2006-10-22 23:52:28Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+    use Scalar::Util qw/refaddr/;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 444;
+        plan tests => 489;
     };
 
     use_ok('Handel::Cart');
     use_ok('Handel::Subclassing::Cart');
     use_ok('Handel::Subclassing::CartOnly');
-    use_ok('Handel::Constants', qw(:cart));
+    use_ok('Handel::Constants', ':cart');
     use_ok('Handel::Exception', ':try');
 };
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+my $altschema = Handel::Test->init_schema(no_populate => 1, db_file => 'althandel.db', namespace => 'Handel::AltSchema');
+
 &run('Handel::Cart', 'Handel::Cart::Item', 1);
 &run('Handel::Subclassing::CartOnly', 'Handel::Cart::Item', 2);
 &run('Handel::Subclassing::Cart', 'Handel::Subclassing::CartItem', 3);
@@ -30,20 +34,8 @@ BEGIN {
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
-
-    ## Setup SQLite DB for tests
-    {
-        my $dbfile  = "t/cart_load_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/cart_create_table.sql';
-        my $data    = 't/sql/cart_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-    };
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
 
     ## test for Handel::Exception::Argument where first param is not a hashref
@@ -63,6 +55,31 @@ sub run {
     ## load a single cart returning a Handel::Cart object
     {
         my $it = $subclass->search({
+            id => '11111111-1111-1111-1111-111111111111'
+        });
+        isa_ok($it, 'Handel::Iterator');
+        is($it, 1);
+
+        my $cart = $it->first;
+        isa_ok($cart, 'Handel::Cart');
+        isa_ok($cart, $subclass);
+        is($cart->id, '11111111-1111-1111-1111-111111111111');
+        is($cart->shopper, '11111111-1111-1111-1111-111111111111');
+        is($cart->type, CART_TYPE_TEMP);
+        is($cart->name, 'Cart 1');
+        is($cart->description, 'Test Temp Cart 1');
+        is($cart->count, 2);
+        is($cart->subtotal, 5.55);
+        if ($subclass ne 'Handel::Cart') {
+            is($cart->custom, 'custom');
+        };
+    };
+
+
+    ## load a single cart returning a Handel::Cart object from an instance
+    {
+        my $instance = bless {}, $subclass;
+        my $it = $instance->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
@@ -336,4 +353,35 @@ sub run {
         is($cart, 0);
     };
 
+};
+
+
+## pass in storage instead
+{
+    my $storage = Handel::Cart->storage_class->new;
+    local $ENV{'HandelDBIDSN'} = $altschema->dsn;
+
+    $altschema->resultset('Carts')->create({
+        id      => '88888888-8888-8888-8888-888888888888',
+        shopper => '88888888-8888-8888-8888-888888888888',
+        type    => CART_TYPE_SAVED,
+        name    => 'My Alt Cart',
+        description => 'My Alt Cart Description'
+    });
+
+    my $cart = Handel::Cart->search({
+        name => 'My Alt Cart'
+    }, {
+        storage => $storage
+    })->first;
+    isa_ok($cart, 'Handel::Cart');
+    is($cart->shopper, '88888888-8888-8888-8888-888888888888');
+    is($cart->type, CART_TYPE_SAVED);
+    is($cart->name, 'My Alt Cart');
+    is($cart->description, 'My Alt Cart Description');
+    is($cart->count, 0);
+    is($cart->subtotal, 0);
+    is(refaddr $cart->result->storage, refaddr $storage, 'storage option used');
+    is($altschema->resultset('Carts')->search({name => 'My Alt Cart'})->count, 1, 'cart found in alt storage');
+    is($schema->resultset('Carts')->search({name => 'My Alt Cart'})->count, 0, 'alt cart not in class storage');
 };

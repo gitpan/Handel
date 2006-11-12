@@ -1,12 +1,12 @@
 #!perl -wT
-# $Id: storage_dbic_count_items.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_dbic_count_items.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Test::More;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
@@ -31,7 +31,7 @@ my $storage = Handel::Storage::DBIC->new({
 my $schema = $storage->schema_instance;
 my $cart = $schema->resultset($storage->schema_source)->single({id => '11111111-1111-1111-1111-111111111111'});
 my $result = bless {'storage_result' => $cart}, 'GenericResult';
-is($storage->count_items($result), 2);
+is($storage->count_items($result), 2, 'counted 2 items');
 
 
 ## throw exception if no result is passed
@@ -41,10 +41,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Argument with {
-    pass;
-    like(shift, qr/no result/i);
+    pass('argument exception thrown');
+    like(shift, qr/no result/i, 'no result in message');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };
 
 
@@ -56,10 +56,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/no such relationship/i);
+    pass('exception storage caught');
+    like(shift, qr/no such relationship/i, 'no relationship in message');
 } otherwise {
-    fail;
+    fail('caught other exception');
 };
 
 
@@ -71,10 +71,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/no item relationship defined/i);
+    pass('caught storage exception');
+    like(shift, qr/no item relationship defined/i, 'no relationship in message');
 } otherwise {
-    fail;
+    fail('caught other exception');
 };
 
 

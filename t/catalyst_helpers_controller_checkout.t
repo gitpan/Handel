@@ -1,13 +1,15 @@
 #!perl -w
-# $Id: catalyst_helpers_controller_checkout.t 1390 2006-09-04 01:02:49Z claco $
+# $Id: catalyst_helpers_controller_checkout.t 1574 2006-11-12 17:34:59Z claco $
 use strict;
 use warnings;
-use Test::More;
-use Cwd;
-use File::Path;
-use File::Spec::Functions;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+    use Cwd;
+    use File::Path;
+    use File::Spec::Functions;
+
     eval 'use Catalyst 5.7001';
     plan(skip_all =>
         'Catalyst 5.7001 not installed') if $@;
@@ -24,7 +26,7 @@ BEGIN {
     plan(skip_all =>
         'Test::File::Contents 0.02 not installed') if $@;
 
-    plan tests => 76;
+    plan tests => 94;
 
     use_ok('Catalyst::Helper');
 };
@@ -33,9 +35,14 @@ my $helper = Catalyst::Helper->new;
 my $app = 'TestApp';
 
 
+## setup var
+chdir('t');
+mkdir('var') unless -d 'var';
+chdir('var');
+
+
 ## create test app
 {
-    chdir('t');
     rmtree($app);
     $helper->mk_app($app);
     $FindBin::Bin = catdir(cwd, $app, 'lib');
@@ -78,7 +85,7 @@ my $app = 'TestApp';
 {
     my $lib = catfile(cwd, $app, 'lib');
     eval "use lib '$lib';use $app\:\:Controller\:\:Checkout";
-    ok(!$@);
+    ok(!$@, 'loaded new class');
 };
 
 
@@ -187,4 +194,44 @@ my $app = 'TestApp';
     file_contents_like($edit, qr/\[% c.uri_for\('\/mythirdcheckout\/billing\/'\) %\]/);
     file_contents_like($preview, qr/\[% c.uri_for\('\/mythirdcheckout\/payment\/'\) %\]/);
     file_contents_like($payment, qr/\[% c.uri_for\('\/mythirdcheckout\/payment\/'\) %\]/);
+};
+
+
+## create the default checkout controller with bogus controller/models
+{
+    my $module   = catfile($app, 'lib', $app, 'Controller', 'Checkout.pm');
+    my $edit     = catfile($app, 'root', 'checkout', 'billing');
+    my $preview  = catfile($app, 'root', 'checkout', 'preview');
+    my $payment  = catfile($app, 'root', 'checkout', 'payment');
+    my $complete = catfile($app, 'root', 'checkout', 'complete');
+    my $messages = catfile($app, 'root', 'checkout', 'messages.yml');
+    my $profiles = catfile($app, 'root', 'checkout', 'profiles.yml');
+
+    unlink $module;
+    unlink $edit;
+    unlink $preview;
+    unlink $payment;
+    unlink $complete;
+    unlink $messages;
+    unlink $profiles;
+
+    $helper->mk_component($app, 'controller', 'Checkout', 'Handel::Checkout', 'TestApp::Model::', 'TestApp::Model::', 'TestApp::Controller::', 'TestApp::Controller::');
+    file_exists_ok($module);
+    file_exists_ok($edit);
+    file_exists_ok($preview);
+    file_exists_ok($payment);
+    file_exists_ok($complete);
+    file_exists_ok($messages);
+    file_exists_ok($profiles);
+    file_contents_like($module, qr/->controller\('Cart'\)/);
+    file_contents_like($module, qr/->controller\('Order'\)/);
+    file_contents_like($module, qr/\$c->res->redirect\(\$c->uri_for\('\/checkout\/'\)/);
+    file_contents_like($module, qr/\$c->stash->{'template'} = 'checkout\/billing';/);
+    file_contents_like($module, qr/\$c->stash->{'template'} = 'checkout\/payment';/);
+    file_contents_like($module, qr/\$c->stash->{'template'} = 'checkout\/complete';/);
+    file_contents_like($edit, qr/\[% c.uri_for\('\/checkout\/billing\/'\) %\]/);
+    file_contents_like($preview, qr/\[% c.uri_for\('\/checkout\/payment\/'\) %\]/);
+    file_contents_like($payment, qr/\[% c.uri_for\('\/checkout\/payment\/'\) %\]/);
+    file_contents_like($messages, qr/^checkout\/view:/);
+    file_contents_like($profiles, qr/^checkout\/view:/);
 };

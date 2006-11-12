@@ -1,4 +1,5 @@
-# $Id: Result.pm 1415 2006-09-14 00:54:13Z claco $
+# $Id: Result.pm 1551 2006-11-07 02:03:05Z claco $
+## no critic (RequireFinalReturn)
 package Handel::Storage::Result;
 use strict;
 use warnings;
@@ -8,22 +9,20 @@ BEGIN {
     __PACKAGE__->mk_group_accessors('simple', qw/storage_result storage/);
 };
 
-sub delete {
-    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
+sub can {
+    return shift->storage_result->can(shift);
+};
 
-    return;
+sub delete {
+    throw Handel::Exception::Virtual;
 };
 
 sub discard_changes {
-    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
-
-    return;
+    throw Handel::Exception::Virtual;
 };
 
 sub update {
-    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
-
-    return;
+    throw Handel::Exception::Virtual;
 };
 
 sub add_item {
@@ -48,7 +47,7 @@ sub items {
 
 sub create_instance {
     my ($self, $result, $storage) = @_;
-    my $class = blessed $self || $self;
+    my $class = blessed $self ? blessed $self : $self;
 
     return bless {
         storage_result => $result,
@@ -143,6 +142,17 @@ Adds a new item to the current result, returning a storage result object.
 
 This method is just a convenience method that forwards to the implementation in
 the current storage object. See L<Handel::Storage/add_item> for more details.
+
+=head2 can
+
+=over
+
+=item Arguments: $method
+
+=back
+
+Redirects C<can> requests to the internal storage result object, bypassing
+AUTOLOAD and returns the code reference if a method is found.
 
 =head2 count_items
 

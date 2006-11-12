@@ -1,4 +1,4 @@
-# $Id: style_perl_critic.rc 1426 2006-09-23 21:15:52Z claco $
+# $Id: style_critic_core.rc 1560 2006-11-10 02:36:54Z claco $
 # Remember to Id keyword our files
 [Miscellanea::RequireRcsKeywords]
 keywords = Id

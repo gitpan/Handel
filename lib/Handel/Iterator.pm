@@ -1,11 +1,12 @@
-# $Id: Iterator.pm 1416 2006-09-15 03:45:35Z claco $
-## no critic (ProhibitAmbiguousNames)
+# $Id: Iterator.pm 1551 2006-11-07 02:03:05Z claco $
+## no critic (ProhibitAmbiguousNames, RequireFinalReturn)
 package Handel::Iterator;
 use strict;
 use warnings;
 use overload
         '0+'     => \&count,
-        'bool'   => sub { 1; },
+        'bool'   => \&count,
+        '=='     => \&count,
         fallback => 1;
 
 BEGIN {
@@ -19,55 +20,61 @@ BEGIN {
 sub new {
     my ($class, $options) = @_;
 
-    return bless $options, ref $class || $class;
+    throw Handel::Exception::Argument(
+        -details => translate('PARAM1_NOT_HASHREF')
+    ) unless ref $options eq 'HASH'; ## no critic
+
+    throw Handel::Exception::Argument(
+        -details => translate('NO_ITERATOR_DATA')
+    ) unless $options->{'data'}; ## no critic
+
+    throw Handel::Exception::Argument(
+        -details => translate('NO_RESULT_CLASS')
+    ) unless $options->{'result_class'}; ## no critic
+
+    throw Handel::Exception::Argument(
+        -details => translate('NO_STORAGE')
+    ) unless $options->{'storage'}; ## no critic
+
+    return bless $options, $class;
 };
 
 sub all {
-    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
-
-    return;
+    throw Handel::Exception::Virtual;
 };
 
 sub count {
-    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
-
-    return;
+    throw Handel::Exception::Virtual;
 };
 
 sub first {
-    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
-
-    return;
+    throw Handel::Exception::Virtual;
 };
 
 sub last {
-    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
-
-    return;
+    throw Handel::Exception::Virtual;
 };
 
 sub next {
-    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
-
-    return;
+    throw Handel::Exception::Virtual;
 };
 
 sub reset {
-    throw Handel::Exception::Storage(-text => translate('Virtual method not implemented'));
-
-    return;
+    throw Handel::Exception::Virtual;
 };
 
 sub create_result {
     my ($self, $result, $storage) = @_;
-    $storage ||= $self->storage;
+    if (!$storage) {
+        $storage = $self->storage;
+    };
 
     throw Handel::Exception::Argument( -text => 
-        translate('Result not supplied')
+        translate('NO_RESULT')
     ) unless $result; ## no critic
 
     throw Handel::Exception::Argument( -text => 
-        translate('Storage not supplied')
+        translate('NO_STORAGE')
     ) unless $storage; ## no critic
 
     return $self->result_class->create_instance(

@@ -1,5 +1,45 @@
 Revision history for Perl module Handel
 
+0.99_15
+    - L10N files now use constant-like keys rather than english errors
+    - L10N::es_es.pm reworked by Diego Kuperman
+    - L10N::fr reworked by Pierrick DINTRAT
+    - Added l10n_lexicon_synced.t to ensure language lexicons are synced with
+        each other via key checks
+    - Removed constraint_uuid check from Checkout order/cart since it's not
+        subclass friendly (RT#19813,TKP)
+    - Checkout cart now throws an exception of now order can be found matching
+        the search criteria
+    - Converted tests to use Handel::Test
+    - Cleanup tests against Perl::Critic
+    - Fixed Checkout prototype mismatch warning under perl > 5.8.8
+    - Added more config tests for MP1/MP2
+    - Added more Schema connect tests
+    - Added more Base tests
+    - Added Iterator tests
+    - Fixed bug in Iterator:::DBIC where first increments the resulset
+    - Fixed issue in Cat Helpers that treated MyApp::Controller:: as a valid name
+    - Added Catalyst Model setup tests
+    - Added Catalyst Scaffold Helper tests
+    - Added checkout_class to Order pod
+    - Added Module::Starter::Handel to help kickstart Handel projects
+    - Added currency_code_column to storage so DBIC inflators can set currency
+        code using another column in the row
+    - Removed formatting options from Currency->convert now that it always returns
+        a currency object instead of formatted strings
+    - Reworked Handel::Currency to be more object like with its parameters
+    - Added Handel::Compat::Currency, inserted automatically when loading
+        Handel::Compat
+    - Added compat_currency.t tests
+    - Converted to Module::Pluggable::Object
+    - Cart restore now throws exception on unknown mode like it was supposed to
+    - Only create currency converter when calling convert for the first time
+    - Added handel.pl quickstart scripts for Module::Starter::Handel apps
+    - Added Catalyst::Helper::Handel to create entire cat app w/ starter subclasses
+    - Huge test coverage. 99% w00t!
+    - Mostly Perl::Critic happy...except for some test labels
+    - Probably last release before 1.0!
+
 0.99_14 Sat Sep 23 19:14:22 2006
     - Added Order::save method
     - MarkOrderSaved plugin now uses Order::save method instead of setting

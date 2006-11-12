@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: order_reconcile.t 1425 2006-09-23 19:31:16Z claco $
+# $Id: order_reconcile.t 1505 2006-10-25 23:57:55Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 89;
+        plan tests => 122;
     };
 
     use_ok('Handel::Constants', qw(:order :checkout));
@@ -51,6 +51,8 @@ use_ok('Handel::Subclassing::Cart');
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+
 &run('Handel::Order', 'Handel::Order::Item', 1);
 &run('Handel::Subclassing::OrderOnly', 'Handel::Order::Item', 2);
 &run('Handel::Subclassing::Order', 'Handel::Subclassing::OrderItem', 3);
@@ -58,20 +60,8 @@ use_ok('Handel::Subclassing::Cart');
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
-
-    ## Setup SQLite DB for tests
-    {
-        my $dbfile       = "t/order_reconcile_$dbsuffix.db";
-        my $db           = "dbi:SQLite:dbname=$dbfile";
-        my $createcart   = 't/sql/cart_create_table.sql';
-        my $createorder  = 't/sql/order_create_table.sql';
-
-        unlink $dbfile;
-        executesql($db, $createorder);
-        executesql($db, $createcart);
-
-        $ENV{'HandelDBIDSN'} = $db;
-    };
+    Handel::Test->clear_schema($schema);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
 
     ## test for Handel::Exception::Argument where first param is not a hashref,
@@ -245,13 +235,13 @@ sub run {
     };
 
 
-    ## reconcile an order from a cart searc hash
+    ## reconcile an order from a cart search hash
     {
         my $cart = Handel::Cart->create({shopper=>'88BFFD29-8FAD-4200-A22F-E0D80979ADBF'});
         my $item = $cart->add({
             sku => 'SKU123',
             quantity => 1,
-            price => 1.23
+            price => 2.00
         });
         is($cart->count, 1);
 
@@ -261,6 +251,33 @@ sub run {
 
         is($order->count, 1);
         my $orderitem = $order->items()->first;
+        is($item->sku, $orderitem->sku);
+        is($item->quantity, $orderitem->quantity);
+        is($item->price, $orderitem->price);
+        is($item->total, $orderitem->total);
+
+
+        ## reconcile again , which should leave things unchanged
+        $order->reconcile({id => $cart->id});
+        is($order->count, 1);
+        $orderitem = $order->items()->first;
+        is($item->sku, $orderitem->sku);
+        is($item->quantity, $orderitem->quantity);
+        is($item->price, $orderitem->price);
+        is($item->total, $orderitem->total);
+
+
+        ## reconcile with same subtotal, different count
+        $item->price(1.00);
+        $cart->add({
+            sku => 'SKU1234',
+            quantity => 1,
+            price => 1.00
+        });
+        is($cart->count, 2);
+        $order->reconcile({id => $cart->id});
+        is($order->count, 2);
+        $orderitem = $order->items()->first;
         is($item->sku, $orderitem->sku);
         is($item->quantity, $orderitem->quantity);
         is($item->price, $orderitem->price);

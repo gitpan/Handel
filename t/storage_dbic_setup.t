@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: storage_dbic_setup.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_dbic_setup.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use Test::More tests => 15;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 15;
+
     use_ok('Handel::Storage::DBIC');
     use_ok('Handel::Exception', ':try');
     use_ok('Handel::Order::Schema');
@@ -23,14 +25,14 @@ $storage->setup({
     validation_class     => 'Handel::Base'
 });
 
-is_deeply($storage->connection_info, ['mydsn']);
-is($storage->constraints_class, 'Handel::Base');
-is($storage->default_values_class, 'Handel::Base');
-is($storage->item_relationship, 'myitems');
-is($storage->schema_class, 'Handel::Order::Schema');
-is($storage->schema_source, 'Orders');
-is($storage->table_name, 'mytable');
-is($storage->validation_class, 'Handel::Base');
+is_deeply($storage->connection_info, ['mydsn'], 'connection was set');
+is($storage->constraints_class, 'Handel::Base', 'constraints class was set');
+is($storage->default_values_class, 'Handel::Base', 'default values class was set');
+is($storage->item_relationship, 'myitems', 'item relationship was set');
+is($storage->schema_class, 'Handel::Order::Schema', 'schema class was set');
+is($storage->schema_source, 'Orders', 'schema source was set');
+is($storage->table_name, 'mytable', 'table name was set');
+is($storage->validation_class, 'Handel::Base', 'validation class was set');
 
 
 ## throw exception if no result is passed
@@ -40,10 +42,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Argument with {
-    pass;
-    like(shift, qr/not a HASH/i);
+    pass('argument exception caught');
+    like(shift, qr/not a HASH/i, 'not a hash in message');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };
 
 
@@ -54,8 +56,8 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/schema instance/i);
+    pass('storage exception caught');
+    like(shift, qr/schema instance/i, 'existing schema instance in message');
 } otherwise {
-    fail;
+    fail('other exception thrown');
 };

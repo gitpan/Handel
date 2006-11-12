@@ -1,11 +1,13 @@
 #!perl -wT
-# $Id: storage_dbic_schema_class.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_dbic_schema_class.t 1553 2006-11-08 01:40:26Z claco $
 use strict;
 use warnings;
-use Class::Inspector;
-use Test::More tests => 9;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 10;
+    use Class::Inspector;
+
     use_ok('Handel::Storage::DBIC');
     use_ok('Handel::Exception', ':try');
 };
@@ -15,27 +17,29 @@ BEGIN {
     my $storage = Handel::Storage::DBIC->new();
     isa_ok($storage, 'Handel::Storage::DBIC');
 
-    is($storage->schema_class, undef);
+    is($storage->schema_class, undef, 'schema class is undefined');
 
     ## throw exception when setting a bogus schema class
     {
         try {
+            local $ENV{'LANG'} = 'en';
             $storage->schema_class('Funklebean');
 
             fail('no exception thrown');
         } catch Handel::Exception::Storage with {
-            pass;
+            pass('storage exception caught');
+            like(shift, qr/schema_class.*could not be loaded/i, 'schema class in message');
         } otherwise {
-            fail;
+            fail('other exception caught');
         };
     };
 
-    is($storage->schema_class, undef);
+    is($storage->schema_class, undef, 'schema class is still undefined');
 
-    ok(!Class::Inspector->loaded('Handel::Base'));
+    ok(!Class::Inspector->loaded('Handel::Base'), 'schema class is not loaded');
     $storage->schema_class('Handel::Base');
-    ok(Class::Inspector->loaded('Handel::Base'));
+    ok(Class::Inspector->loaded('Handel::Base'), 'schema class is now loaded');
 
     $storage->schema_class(undef);
-    is($storage->schema_class, undef);
+    is($storage->schema_class, undef, 'schema class was unset');
 };

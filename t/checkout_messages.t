@@ -1,17 +1,18 @@
 #!perl -wT
-# $Id: checkout_messages.t 1078 2006-01-19 02:03:42Z claco $
+# $Id: checkout_messages.t 1486 2006-10-18 23:44:59Z claco $
 use strict;
 use warnings;
-use Test::More tests => 131;
-use lib 't/lib';
-use Handel::Checkout::TestMessage;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 174;
+
     use_ok('Handel::Checkout');
     use_ok('Handel::Subclassing::Checkout');
     use_ok('Handel::Subclassing::CheckoutStash');
     use_ok('Handel::Subclassing::Stash');
     use_ok('Handel::Exception', ':try');
+    use_ok('Handel::Checkout::TestMessage');
 };
 
 
@@ -70,6 +71,29 @@ sub run {
     };
 
 
+    ## add a message that isa Apache::AxKit::Exception::Error
+    {
+        my $checkout = $subclass->new({pluginpaths => 'Handel::LOADNOTHING'});
+        my $axkitmessage = bless {text => 'Foo'}, 'Apache::AxKit::Exception::Error';
+
+        $checkout->add_message($axkitmessage);
+
+        my @messages = @{$checkout->messages};
+        is(scalar @messages, 1);
+
+        my $message = $messages[0];
+        isa_ok($message, 'Handel::Checkout::Message');
+        is($messages[0]->text . '', 'Foo');
+
+        ok($message->filename);
+        ok($message->line);
+
+        $checkout->clear_messages;
+        @messages = @{$checkout->messages};
+        is(scalar @messages, 0);
+    };
+
+
     ## add a message using a scalar
     {
         my $checkout = $subclass->new({pluginpaths => 'Handel::LOADNOTHING'});
@@ -93,6 +117,30 @@ sub run {
 
 
     ## add a message using Handel::Checkout::Message object
+    {
+        my $checkout = $subclass->new({pluginpaths => 'Handel::LOADNOTHING'});
+        my $newmessage = Handel::Checkout::Message->new(
+            text => 'This is a new message',
+            package => 'package',
+            filename => 'filename',
+            line => 'line'
+        );
+
+        $checkout->add_message($newmessage);
+
+        my @messages = @{$checkout->messages};
+        is(scalar @messages, 1);
+
+        my $message = $messages[0];
+        isa_ok($message, 'Handel::Checkout::Message');
+        is($messages[0]->text, 'This is a new message');
+        is($messages[0]->package, 'package');
+        is($messages[0]->filename, 'filename');
+        is($messages[0]->line, 'line');
+    };
+
+
+    ## add a message using Handel::Checkout::Message object with existing package/file/line
     {
         my $checkout = $subclass->new({pluginpaths => 'Handel::LOADNOTHING'});
         my $newmessage = Handel::Checkout::Message->new(text => 'This is a new message');
@@ -127,6 +175,11 @@ sub run {
 
         ok($message->filename);
         ok($message->line);
+
+        is("$message", 'This is a new message', 'message stringifies to message text');
+
+        $message->{'text'} = undef;
+        is("$message", ref $message, 'message stringifies to object in lue of text');
     };
 
 
@@ -167,3 +220,13 @@ sub run {
     };
 
 };
+
+
+package Apache::AxKit::Exception::Error;
+use strict;
+use warnings;
+use overload
+    '""' => sub{shift->{'text'}},
+    fallback => 1;
+
+1;

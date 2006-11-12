@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: storage_dbic_delete_items.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_dbic_delete_items.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Test::More;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 17;
+        plan tests => 19;
     };
 
     use_ok('Handel::Storage::DBIC');
@@ -29,26 +29,26 @@ my $storage = Handel::Storage::DBIC->new({
 
 
 ## delete all items from a cart
-is($storage->schema_instance->resultset('Items')->search->count, 5);
+is($storage->schema_instance->resultset('Items')->search->count, 5, 'start with 5 items');
 my $schema = $storage->schema_instance;
 my $cart = $schema->resultset($storage->schema_source)->single({id => '11111111-1111-1111-1111-111111111111'});
 my $result = bless {'storage_result' => $cart}, 'GenericResult';
-ok($storage->delete_items($result));
-is($storage->schema_instance->resultset('Items')->search->count, 3);
+ok($storage->delete_items($result), 'delete items returns');
+is($storage->schema_instance->resultset('Items')->search->count, 3, 'deleted 2 items');
 Handel::Test->populate_schema($testschema, clear => 1);
 
 
 ## delete items using CDBI wildcard
-is($storage->schema_instance->resultset('Items')->search->count, 5);
-ok($storage->delete_items($result, {sku => 'SKU22%'}));
-is($storage->schema_instance->resultset('Items')->search->count, 4);
+is($storage->schema_instance->resultset('Items')->search->count, 5, 'start with 5 items');
+ok($storage->delete_items($result, {sku => 'SKU22%'}), 'delete using CDBI wildcard');
+is($storage->schema_instance->resultset('Items')->search->count, 4, 'have 4 items left');
 Handel::Test->populate_schema($testschema, clear => 1);
 
 
 ## delete items using DBIC wildcard
-is($storage->schema_instance->resultset('Items')->search->count, 5);
-ok($storage->delete_items($result, {sku => {like => 'SKU22%'}}));
-is($storage->schema_instance->resultset('Items')->search->count, 4);
+is($storage->schema_instance->resultset('Items')->search->count, 5, 'start with 5 items');
+ok($storage->delete_items($result, {sku => {like => 'SKU22%'}}), 'delete using DBIC wildcards');
+is($storage->schema_instance->resultset('Items')->search->count, 4, 'have 4 items left');
 
 
 ## throw exception if no result is passed
@@ -58,10 +58,24 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Argument with {
-    pass;
-    like(shift, qr/no result/i);
+    pass('caught argument exception');
+    like(shift, qr/no result/i, 'no result in message');
 } otherwise {
-    fail;
+    fail('other exception caught');
+};
+
+
+## throw exception if data isn't a hashref
+try {
+    local $ENV{'LANG'} = 'en';
+    $storage->delete_items($result, []);
+
+    fail('no exception thrown');
+} catch Handel::Exception::Argument with {
+    pass('caught argument exception');
+    like(shift, qr/not a hash/i, 'not a hash in message');
+} otherwise {
+    fail('other exception caught');
 };
 
 
@@ -78,10 +92,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/no such relationship/i);
+    pass('caught storage exception');
+    like(shift, qr/no such relationship/i, 'no relationship in message');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };
 
 
@@ -98,10 +112,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/no item relationship defined/i);
+    pass('caught storage exception');
+    like(shift, qr/no item relationship defined/i, 'no relationship in message');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };
 
 

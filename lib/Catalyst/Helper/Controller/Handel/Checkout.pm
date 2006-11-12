@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1415 2006-09-14 00:54:13Z claco $
+# $Id: Checkout.pm 1475 2006-10-16 01:03:10Z claco $
 ## no critic (ProhibitCaptureWithoutTest)
 package Catalyst::Helper::Controller::Handel::Checkout;
 use strict;
@@ -8,11 +8,6 @@ BEGIN {
     use Catalyst 5.7001;
     use Catalyst::Utils;
     use Path::Class;
-
-    # check for prereqs as early as possible
-    use FormValidator::Simple 0.17;
-    use HTML::FillInForm;
-    use YAML;
 };
 
 =head1 NAME
@@ -63,23 +58,29 @@ sub mk_compclass {
     $ccontroller ||= 'Cart';
     $ocontroller ||= 'Order';
 
-    $ccontroller = $ccontroller =~ /^(.*::C(ontroller)?::)?(.*)$/i ? $3 : 'Cart';
+    $ccontroller =~ /^(.*::C(ontroller)?::)?(.*)$/i;
+    $ccontroller = $3 ? $3 : 'Cart';
     $helper->{'ccontroller'} = $ccontroller;
 
-    $ocontroller = $ocontroller =~ /^(.*::C(ontroller)?::)?(.*)$/i ? $3 : 'Order';
+    $ocontroller =~ /^(.*::C(ontroller)?::)?(.*)$/i;
+    $ocontroller = $3 ? $3 : 'Order';
     $helper->{'ocontroller'} = $ocontroller;
 
-    $cmodel = $cmodel =~ /^(.*::M(odel)?::)?(.*)$/i ? $3 : 'Cart';
+    $cmodel =~ /^(.*::M(odel)?::)?(.*)$/i;
+    $cmodel = $3 ? $3 : 'Cart';
     $helper->{'cmodel'} = $cmodel;
 
-    $omodel = $omodel =~ /^(.*::M(odel)?::)?(.*)$/i ? $3 : 'Order';
+    $omodel =~ /^(.*::M(odel)?::)?(.*)$/i;
+    $omodel = $3 ? $3 : 'Order';
     $helper->{'omodel'} = $omodel;
 
-    my $curi = $ccontroller =~ /^(.*::C(ontroller)?::)?(.*)$/i ? lc($3) : 'cart';
+    #$ccontroller =~ /^(.*::C(ontroller)?::)?(.*)$/i;
+    my $curi = $ccontroller;
     $curi =~ s/::/\//g;
     $helper->{'curi'} = $curi;
 
-    my $ouri = $ocontroller =~ /^(.*::C(ontroller)?::)?(.*)$/i ? lc($3) : 'orders';
+    #$ocontroller =~ /^(.*::C(ontroller)?::)?(.*)$/i;
+    my $ouri = $ocontroller;
     $ouri =~ s/::/\//g;
     $helper->{'ouri'} = $ouri;
 

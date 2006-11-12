@@ -1,4 +1,4 @@
-# $Id: Schema.pm 1271 2006-06-30 16:11:22Z claco $
+# $Id: Schema.pm 1518 2006-10-30 14:25:14Z claco $
 package Handel::Schema;
 use strict;
 use warnings;
@@ -9,26 +9,37 @@ sub connect {
     my ($self, $dsn, $user, $pass, $opts) = @_;
     my $cfg = Handel::ConfigReader->instance;
 
-    $dsn         ||= $cfg->{'HandelDBIDSN'}      || $cfg->{'db_dsn'};
-    $user        ||= $cfg->{'HandelDBIUser'}     || $cfg->{'db_user'};
-    $pass        ||= $cfg->{'HandelDBIPassword'} || $cfg->{'db_pass'};
-    $opts        ||= {AutoCommit => 1};
-
-    my $db_driver  = $cfg->{'HandelDBIDriver'}   || $cfg->{'db_driver'};
-    my $db_host    = $cfg->{'HandelDBIHost'}     || $cfg->{'db_host'};
-    my $db_port    = $cfg->{'HandelDBIPort'}     || $cfg->{'db_port'};
-    my $db_name    = $cfg->{'HandelDBIName'}     || $cfg->{'db_name'};
-    my $datasource = $dsn || "dbi:$db_driver:dbname=$db_name";
-
-    if ($db_host && !$dsn) {
-        $datasource .= ";host=$db_host";
+    ## I hate this vs. ||=, but it just wouldn't cover on some perl versions
+    if (!$dsn) {
+        $dsn = $cfg->{'HandelDBIDSN'} || $cfg->{'db_dsn'};
+    };
+    if (!$user) {
+        $user = $cfg->{'HandelDBIUser'} || $cfg->{'db_user'};
+    };
+    if (!$pass) {
+        $pass = $cfg->{'HandelDBIPassword'} || $cfg->{'db_pass'};
+    };
+    if (!$opts) {
+        $opts = {AutoCommit => 1};
     };
 
-    if ($db_port && !$dsn) {
-        $datasource .= ";port=$db_port";
-    };
+    my $db_driver = $cfg->{'HandelDBIDriver'} || $cfg->{'db_driver'};
+    my $db_host   = $cfg->{'HandelDBIHost'}   || $cfg->{'db_host'};
+    my $db_port   = $cfg->{'HandelDBIPort'}   || $cfg->{'db_port'};
+    my $db_name   = $cfg->{'HandelDBIName'}   || $cfg->{'db_name'};
 
-    $dsn ||= $datasource;
+
+    if (!$dsn && $db_driver && $db_name) {
+        $dsn = "dbi:$db_driver:dbname=$db_name";
+
+        if ($db_host) {
+            $dsn .= ";host=$db_host";
+        };
+
+        if ($db_host && $db_port) {
+            $dsn .= ";port=$db_port";
+        };
+    };
 
     return $self->next::method($dsn, $user, $pass, $opts);
 };

@@ -4,7 +4,7 @@ Handel::Manual::About - A few words about the Handel Framework.
 
 =head1 DESCRIPTION
 
-Handel is a ecommerce framework with L<AxKit|AxKit> taglib
+Handel is a cart/order/checkout framework with L<AxKit|AxKit> taglib
 support , TT2 (Template Toolkit) support and L<Catalyst::Helper|Catalyst::Helper> support. It was created
 for the conversion of an IIS/ASP based commerce site to Apache/ModPerl, but I decided that it might be
 useful to others so here it is.
@@ -35,6 +35,16 @@ I can be found most nights on IRC in the following channels:
     claco@#handel@irc.perl.org 
     claco@#dbix-class@irc.perl.org 
     claco@#catalyst@irc.perl.org 
+
+=head1 PHILOSOPHY
+
+The Handel philosophy is to provide a framework of reusable parts and not an entire solution. No two shopping
+carts or checkout processes are alike so it's impossible to create The One Great Solution.
+
+Handel is built in layers, each of which should and can be reusable on their own. The storage layer deals
+with mapping generic actions like adding items, creating carts, etc  to specific storage mechanisms like
+DBIC, DBI, XML, etc. The interface classes, like Handel::Cart, take care of providing one possible public
+API for consuming the storage layer classes.
 
 =head1 GOALS
 

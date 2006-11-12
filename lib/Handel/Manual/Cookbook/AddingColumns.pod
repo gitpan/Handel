@@ -138,6 +138,7 @@ First we need to create custom storage classes for the Cart and Item interface c
     # No storage changes in here
     # The storage class takes care of adding the column
     __PACKAGE__->storage_class('My::Storage::Cart');
+    __PACKAGE__->create_accessors;
     
     1;
     
@@ -147,6 +148,7 @@ First we need to create custom storage classes for the Cart and Item interface c
     use base qw/Handel::Cart::Item/;
     
     __PACKAGE__->storage_class('My::Storage::Cart::Item');
+    __PACKAGE__->create_accessors;
     
     1;
 

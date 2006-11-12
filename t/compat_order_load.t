@@ -1,12 +1,12 @@
 #!perl -wT
-# $Id: compat_order_load.t 1357 2006-08-08 01:55:08Z claco $
+# $Id: compat_order_load.t 1470 2006-10-13 15:50:23Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
@@ -28,6 +28,8 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+
 &run('Handel::Order', 'Handel::Order::Item', 1);
 &run('Handel::Subclassing::OrderOnly', 'Handel::Order::Item', 2);
 &run('Handel::Subclassing::Order', 'Handel::Subclassing::OrderItem', 3);
@@ -35,23 +37,16 @@ BEGIN {
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
-    ## Setup SQLite DB for tests
+
     {
-        my $dbfile  = "t/compat_order_load_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/order_create_table.sql';
-        my $data    = 't/sql/order_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-
         no strict 'refs';
         push @{"$subclass\:\:ISA"}, 'Handel::Compat' unless $subclass->isa('Handel::Compat');
         push @{"itemclass\:\:ISA"}, 'Handel::Compat' unless $itemclass->isa('Handel::Compat');
+        $subclass->storage->currency_class('Handel::Compat::Currency');
+        $itemclass->storage->currency_class('Handel::Compat::Currency');
     };
 
 

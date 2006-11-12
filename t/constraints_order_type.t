@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: constraints_order_type.t 837 2005-09-19 22:56:39Z claco $
+# $Id: constraints_order_type.t 1512 2006-10-27 23:25:34Z claco $
 use strict;
 use warnings;
-use Test::More tests => 7;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 9;
+
     use_ok('Handel::Constraints', qw(:all));
     use_ok('Handel::Constants', qw(:order));
 };
@@ -12,5 +14,7 @@ BEGIN {
 ok(!constraint_order_type('junk.foo'),   'alpha gibberish type');
 ok(!constraint_order_type(-14),          'negative number type');
 ok(!constraint_order_type(23),           'out of range type');
+ok(!constraint_order_type(undef),        'undefined value');
+ok(!constraint_order_type(''),            'value is empty string');
 ok(constraint_order_type(ORDER_TYPE_SAVED),   'order type saved');
 ok(constraint_order_type(ORDER_TYPE_TEMP),    'order type temp');

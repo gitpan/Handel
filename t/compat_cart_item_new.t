@@ -1,12 +1,12 @@
 #!perl -wT
-# $Id: compat_cart_item_new.t 1361 2006-08-10 00:45:38Z claco $
+# $Id: compat_cart_item_new.t 1470 2006-10-13 15:50:23Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
@@ -27,28 +27,22 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+
 &run('Handel::Cart::Item', 1);
 &run('Handel::Subclassing::CartItem', 2);
 
 sub run {
     my ($subclass, $dbsuffix) = @_;
 
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
-    ## Setup SQLite DB for tests
+
     {
-        my $dbfile  = "t/compat_cart_item_create_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/cart_create_table.sql';
-        my $data    = 't/sql/cart_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-
         no strict 'refs';
         unshift @{"$subclass\:\:ISA"}, 'Handel::Compat' unless $subclass->isa('Handel::Compat');
+        $subclass->storage->currency_class('Handel::Compat::Currency');
     };
 
 

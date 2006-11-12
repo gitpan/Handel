@@ -1,17 +1,64 @@
 #!perl -wT
-# $Id: checkout_plugins.t 1078 2006-01-19 02:03:42Z claco $
+# $Id: checkout_plugins.t 1483 2006-10-18 20:56:34Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Test::More tests => 1257;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 1268;
+
     use_ok('Handel::Checkout');
+    use_ok('Handel::Checkout::Plugin');
     use_ok('Handel::Subclassing::Checkout');
     use_ok('Handel::Subclassing::CheckoutStash');
     use_ok('Handel::Subclassing::Stash');
     use_ok('Handel::Constants', ':checkout');
     use_ok('Handel::Exception', ':try');
+};
+
+
+## make sure no path returns no path
+is(Handel::Checkout::_path_to_array(''), '', 'path to array returns nothing for nothing');
+
+
+
+## name returns class name, others do nothing
+{
+    my $plugin = Handel::Checkout::Plugin->new;
+    isa_ok($plugin, 'Handel::Checkout::Plugin');
+    is($plugin->name, 'Handel::Checkout::Plugin', 'name returns class name');
+    is(Handel::Checkout::Plugin->name, 'Handel::Checkout::Plugin', 'name returns class name');
+    is(Handel::Checkout::Plugin::name, undef, 'function returns nothing');
+
+    is(Handel::Checkout::Plugin->setup, undef, 'setup does nothing');
+    is(Handel::Checkout::Plugin->teardown, undef, 'teardown does nothing');
+
+    {
+        my $warning;
+        local $SIG{'__WARN__'} = sub {
+            $warning = shift;
+        };
+        is(Handel::Checkout::Plugin->register, undef, 'register does nothing');
+        like($warning, qr/plugin .* defined register/i, 'warning was set');
+    };
+};
+
+
+## test for exception when adding the same phase, preference
+{
+    my $checkout = Handel::Checkout->new({pluginpaths => 'Handel::LOADNOTHING'});
+    $checkout->{'plugins'} = [bless {}, 'main'];
+    $checkout->add_handler(CHECKOUT_PHASE_INITIALIZE, sub{}, 350);
+
+    try {
+        $checkout->add_handler(CHECKOUT_PHASE_INITIALIZE, sub{}, 350);
+
+        fail('no exception thrown');
+    } catch Handel::Exception::Checkout with {
+        pass('caught Handel::Exception::Checkout');
+    } otherwise {
+        fail('other exception thrown');
+    };
 };
 
 
@@ -985,5 +1032,4 @@ sub run {
         isa_ok($plugins, 'ARRAY');
         is(scalar @{$plugins}, 2);
     };
-
 };

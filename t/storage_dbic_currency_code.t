@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: storage_dbic_currency_code.t 1417 2006-09-16 02:19:18Z claco $
+# $Id: storage_dbic_currency_code.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Test::More;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 16;
+        plan tests => 20;
     };
 
     use_ok('Handel::Storage::DBIC');
@@ -31,34 +31,49 @@ my $storage = Handel::Storage::DBIC->new({
 
 my $item = $storage->search->first;
 isa_ok($item->price, 'Handel::Currency');
-is($item->price->code, 'CAD');
-is($item->price->format, '1.11 CAD');
+is($item->price->code, 'CAD', 'got currency code');
+is($item->price->format, '1.11 CAD', 'got default format');
 
 $storage->currency_code('DKK');
 $item = $storage->search->first;
 isa_ok($item->price, 'Handel::Currency');
-is($item->price->code, 'DKK');
-is($item->price->format, '1,11 DKK');
+is($item->price->code, 'DKK', 'code set from storage code');
+is($item->price->format, '1,11 DKK', 'got default format');
 
 
 $storage->currency_code(undef);
 $item = $storage->search->first;
 isa_ok($item->price, 'Handel::Currency');
-is($item->price->code, undef);
+is($item->price->code, undef, 'no code set');
 
 
 {
     local $ENV{'HandelCurrencyCode'} = 'CAD';
     my $item = $storage->search->first;
     isa_ok($item->price, 'Handel::Currency');
-    is($item->price->code, undef);
-    is($item->price->format, '1.11 CAD');
+    is($item->price->code, undef, 'no code set');
+    is($item->price->format, '1.11 CAD', 'got default format');
 };
 
 
 {
     my $item = $storage->search->first;
     isa_ok($item->price, 'Handel::Currency');
-    is($item->price->code, undef);
-    is($item->price->format, '1.11 USD');
+    is($item->price->code, undef, 'no code is set');
+    is($item->price->format, '1.11 USD', 'got default format');
 };
+
+
+$storage->currency_code_column('sku');
+$item = $storage->search->first;
+$item->sku('CAD');
+isa_ok($item->price, 'Handel::Currency');
+is($item->price->code, 'CAD', 'code set from column');
+
+
+$storage->currency_code_column('sku');
+$storage->currency_code('CAD');
+$item = $storage->search->first;
+$item->sku(undef);
+isa_ok($item->price, 'Handel::Currency');
+is($item->price->code, 'CAD', 'code set from env');

@@ -1,5 +1,5 @@
 NAME
-    Handel - Simple commerce framework with AxKit/TT/Catalyst support
+    Handel - A cart/order/checkout framework with AxKit/TT/Catalyst support
 
 SYNOPSIS
         use Handel;

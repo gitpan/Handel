@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1355 2006-08-07 01:51:41Z claco $
+# $Id: Cart.pm 1547 2006-11-06 01:28:18Z claco $
 package Template::Plugin::Handel::Cart;
 use strict;
 use warnings;
@@ -20,7 +20,7 @@ sub new {
 sub load {
     my ($class, $context) = @_;
 
-    return ref $class || $class;
+    return $class;
 };
 
 package Template::Plugin::Handel::Cart::Proxy;

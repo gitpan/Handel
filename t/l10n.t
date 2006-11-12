@@ -1,11 +1,13 @@
 #!perl -wT
-# $Id: l10n.t 1416 2006-09-15 03:45:35Z claco $
+# $Id: l10n.t 1565 2006-11-10 18:26:45Z claco $
 use strict;
 use warnings;
-use Test::More tests => 11;
 use utf8;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 11;
+
     use_ok('Handel::L10N', 'translate');
     use_ok('Handel::Exception', ':try');
 };
@@ -41,7 +43,7 @@ BEGIN {
     } catch Handel::Exception with {
         my $E = shift;
         is($E->text,
-            "Le champ recu n'a pas satisfait aux contraintes de base de données");
+            'Le champ recu ne respecte pas les contraintes de la base de données');
     };
 
     try {
@@ -49,7 +51,7 @@ BEGIN {
     } catch Handel::Exception with {
         my $E = shift;
         is($E->text,
-            "L'argument fourni est invalide ou du type inapproprié");
+            'L\'argument fourni est invalide ou d\'un mauvais type');
     };
 
     ## check translations when -details are included
@@ -66,7 +68,7 @@ BEGIN {
     } catch Handel::Exception with {
         my $E = shift;
         is($E->text,
-            "Le champ recu n'a pas satisfait aux contraintes de base de données: crap happens");
+            'Le champ recu ne respecte pas les contraintes de la base de données: crap happens');
     };
 
     try {
@@ -74,7 +76,7 @@ BEGIN {
     } catch Handel::Exception with {
         my $E = shift;
         is($E->text,
-            "L'argument fourni est invalide ou du type inapproprié: crap happens");
+            'L\'argument fourni est invalide ou d\'un mauvais type: crap happens');
     };
 };
 
@@ -93,7 +95,7 @@ BEGIN {
     } catch Handel::Exception with {
         my $E = shift;
         is ($E->text,
-            "L'argument fourni est invalide ou du type inapproprié: Le parametre 1 n'est pas une reference a un tableau associatif (HASH)");
+            'L\'argument fourni est invalide ou d\'un mauvais type: Le paramètre 1 n\'est pas une référence à un tableau associatif (HASH)');
     } otherwise {
         fail;
     };

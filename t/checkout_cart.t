@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: checkout_cart.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: checkout_cart.t 1481 2006-10-18 02:51:46Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 199;
+        plan tests => 208;
     };
 
     use_ok('Handel::Checkout');
@@ -25,6 +25,8 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+
 &run('Handel::Cart', 'Handel::Cart::Item', 1);
 &run('Handel::Subclassing::CartOnly', 'Handel::Cart::Item', 2);
 &run('Handel::Subclassing::Cart', 'Handel::Subclassing::CartItem', 3);
@@ -32,23 +34,21 @@ BEGIN {
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
+    Handel::Test->clear_schema($schema);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
-    ## Setup SQLite DB for tests
+
+    ## do nothing with nothing
     {
-        my $dbfile  = "t/checkout_cart_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $createcart   = 't/sql/cart_create_table.sql';
-        my $createorder  = 't/sql/order_create_table.sql';
-
-        unlink $dbfile;
-        executesql($db, $createorder);
-        executesql($db, $createcart);
-
-        $ENV{'HandelDBIDSN'} = $db;
+        my $checkout = Handel::Checkout->new;
+        is($checkout->cart, undef, 'has no cart');
+        is($checkout->cart(0), undef, 'do nothing');
+        is($checkout->cart, undef, 'has no cart');
     };
 
 
     ## test for Handel::Exception::Argument where first param is not a hashref
+    ## now tests for order not found since constraint_uuid is gone for subclassing
     {
         try {
             my $checkout = Handel::Checkout->new;
@@ -56,7 +56,7 @@ sub run {
             $checkout->cart('1234');
 
             fail;
-        } catch Handel::Exception::Argument with {
+        } catch Handel::Exception::Order with {
             pass;
         } otherwise {
             fail;
@@ -65,12 +65,13 @@ sub run {
 
 
     ## test for Handel::Exception::Argument where cart option is not a hashref
+    ## now tests for order not found since constraint_uuid is gone for subclassing
     {
         try {
             my $checkout = Handel::Checkout->new({cart => '1234'});
 
             fail;
-        } catch Handel::Exception::Argument with {
+        } catch Handel::Exception::Order with {
             pass;
         } otherwise {
             fail;

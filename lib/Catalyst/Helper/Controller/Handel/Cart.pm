@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1415 2006-09-14 00:54:13Z claco $
+# $Id: Cart.pm 1475 2006-10-16 01:03:10Z claco $
 ## no critic (ProhibitCaptureWithoutTest)
 package Catalyst::Helper::Controller::Handel::Cart;
 use strict;
@@ -8,10 +8,6 @@ BEGIN {
     use Catalyst 5.7001;
     use Catalyst::Utils;
     use Path::Class;
-
-    # check for prereqs as early as possible
-    use FormValidator::Simple 0.17;
-    use YAML;
 };
 
 =head1 NAME
@@ -59,10 +55,12 @@ sub mk_compclass {
     $model     ||= 'Cart';
     $checkout  ||= 'Checkout';
 
-    $model = $model =~ /^(.*::M(odel)?::)?(.*)$/i ? $3 : 'Cart';
+    $model =~ /^(.*::M(odel)?::)?(.*)$/i;
+    $model = $3 ? $3 : 'Cart';
     $helper->{'model'} = $model;
 
-    my $couri = $checkout =~ /^(.*::C(ontroller)?::)?(.*)$/i ? lc($3) : 'checkout';
+    $checkout =~ /^(.*::C(ontroller)?::)?(.*)$/i;
+    my $couri = $3 ? lc($3) : 'checkout';
     $couri =~ s/::/\//g;
     $helper->{'couri'} = $couri;
 

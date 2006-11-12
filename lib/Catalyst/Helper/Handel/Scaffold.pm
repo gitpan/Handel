@@ -1,4 +1,4 @@
-# $Id: Scaffold.pm 1415 2006-09-14 00:54:13Z claco $
+# $Id: Scaffold.pm 1458 2006-10-08 19:38:12Z claco $
 ## no critic (ProhibitCaptureWithoutTest)
 package Catalyst::Helper::Handel::Scaffold;
 use strict;
@@ -17,9 +17,12 @@ sub mk_stuff {
     $order    ||= 'Order';
     $checkout ||= 'Checkout';
 
-    $cart = $cart =~ /^(.*::(Model|M|C|Controller)?::)?(.*)$/i ? $3 : 'Cart';
-    $order = $order =~ /^(.*::(Model|M|C|Controller)?::)?(.*)$/i ? $3 : 'Order';
-    $checkout = $checkout =~ /^(.*::(Model|M|C|Controller)?::)?(.*)$/i ? $3 : 'Checkout';
+    $cart =~ /^(.*::(Model|M|C|Controller)?::)?(.*)$/i;
+    $cart = $3 ? $3 : 'Cart';
+    $order =~ /^(.*::(Model|M|C|Controller)?::)?(.*)$/i;
+    $order = $3 ? $3 : 'Order';
+    $checkout =~ /^(.*::(Model|M|C|Controller)?::)?(.*)$/i;
+    $checkout = $3 ? $3 : 'Checkout';
 
     my $app = $helper->{'app'};
 

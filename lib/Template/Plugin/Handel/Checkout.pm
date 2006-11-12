@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1334 2006-07-14 03:22:20Z claco $
+# $Id: Checkout.pm 1547 2006-11-06 01:28:18Z claco $
 package Template::Plugin::Handel::Checkout;
 use strict;
 use warnings;
@@ -28,6 +28,12 @@ use strict;
 use warnings;
 use Template::Plugin::Handel::Order;
 use base qw/Handel::Checkout/;
+
+sub new {
+    my $class = ref shift;
+
+    return $class->SUPER::new(@_);
+};
 
 sub order {
     my ($self, @args) = @_;

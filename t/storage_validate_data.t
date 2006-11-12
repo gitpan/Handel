@@ -1,10 +1,17 @@
 #!perl -wT
-# $Id: storage_validate_data.t 1420 2006-09-20 02:35:20Z claco $
+# $Id: storage_validate_data.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use Test::More tests => 11;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 16;
+
+    eval 'use Test::MockObject 1.07';
+    if (!$@) {
+        Test::MockObject->fake_module('Data::FormValidator', check => sub{1});
+    };
+
     use_ok('Handel::Storage');
     use_ok('Handel::Exception', ':try');
 };
@@ -14,6 +21,13 @@ my $storage = Handel::Storage->new;
 isa_ok($storage, 'Handel::Storage');
 
 
+## nothing from nothing is nothing
+is($storage->validation_profile, undef, 'no validaiton profile set');
+is($storage->validate_data({}), undef, 'no validation data is set');
+
+
+
+
 ## throw exception if no hash ref is passed
 try {
     local $ENV{'LANG'} = 'en';
@@ -21,11 +35,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Argument with {
-    pass;
-    like(shift, qr/not a HASH/);
+    pass('cauht argument exception');
+    like(shift, qr/not a HASH/i, 'not a hash in message');
 } otherwise {
-    diag shift;
-    fail;
+    fail('caught other exception');
 };
 
 
@@ -37,11 +50,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/requires an ARRAYREF/);
+    pass('caught storage exception');
+    like(shift, qr/requires an ARRAYREF/i, 'requires arrayref in message');
 } otherwise {
-    diag shift;
-    fail;
+    fail('caught other exception');
 };
 
 
@@ -55,7 +67,7 @@ my $results = $storage->validate_data({
     name => 'foo', description => 'bar'
 });
 isa_ok($results, 'FormValidator::Simple::Results');
-ok($results->success);
+ok($results->success, 'validation succeeded');
 
 
 
@@ -64,4 +76,30 @@ $results = $storage->validate_data({
     name => '', description => 'stuffs'
 });
 isa_ok($results, 'FormValidator::Simple::Results');
-ok(!$results->success);
+ok(!$results->success, 'validaiton failed');
+
+
+SKIP: {
+    eval 'use Test::MockObject 1.07';
+    skip 'Test::MockObject 1.07 not installed', 3 if $@;
+
+
+    ## throw exception if not HASHREF for D::FV
+    try {
+        local $ENV{'LANG'} = 'en';
+        $storage->validation_module('Data::FormValidator');
+        $storage->validation_profile([]);
+        $storage->validate_data({});
+
+        fail('no exception thrown');
+    } catch Handel::Exception::Storage with {
+        pass('caught storage exception');
+        like(shift, qr/requires an HASHREF/i, 'requires hashref in message');
+    } otherwise {
+        fail('caught other exception');
+    };
+
+
+    $storage->validation_profile({});
+    ok($storage->validate_data({}), 'unset validation profile');
+};

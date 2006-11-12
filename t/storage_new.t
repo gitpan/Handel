@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: storage_new.t 1409 2006-09-09 21:16:54Z claco $
+# $Id: storage_new.t 1555 2006-11-09 01:46:20Z claco $
 use strict;
 use warnings;
-use Test::More tests => 19;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 45;
+
     use_ok('Handel::Storage');
     use_ok('Handel::Exception', ':try');
 };
@@ -44,34 +46,71 @@ BEGIN {
     isa_ok($storage, 'Handel::Storage');
 
     ## iterator_class
-    is($storage->iterator_class, 'Handel::Base');
-    is(Handel::Storage->iterator_class, 'Handel::Iterator::List');
+    is($storage->iterator_class, 'Handel::Base', 'iterator class is set');
+    is(Handel::Storage->iterator_class, 'Handel::Iterator::List', 'iterator class is set');
 
     ## currency_class
-    is($storage->currency_class, 'Handel::Base');
-    is(Handel::Storage->currency_class, 'Handel::Currency');
+    is($storage->currency_class, 'Handel::Base', 'iterator class is set');
+    is(Handel::Storage->currency_class, 'Handel::Currency', 'currency class is set');
 
     ## autoupdate
-    is($storage->autoupdate, 2);
-    is(Handel::Storage->autoupdate, 1);
+    is($storage->autoupdate, 2, 'autoupdate is set');
+    is(Handel::Storage->autoupdate, 1, 'autoupdate is set');
 
     ## default_values
-    is_deeply($storage->default_values, $default_values);
-    is(Handel::Storage->default_values, undef);
+    is_deeply($storage->default_values, $default_values, 'defalt values are set');
+    is(Handel::Storage->default_values, undef, 'default values are unset');
 
     ## validation_profile
-    is_deeply($storage->validation_profile, $validation_profile);
-    is(Handel::Storage->validation_profile, undef);
+    is_deeply($storage->validation_profile, $validation_profile, 'validation profile is set');
+    is(Handel::Storage->validation_profile, undef, 'validaiton profile is unset');
 
     ## constraints
-    is_deeply($storage->constraints, $constraints);
-    is(Handel::Storage->constraints, undef);
+    is_deeply($storage->constraints, $constraints, 'constraints are set');
+    is(Handel::Storage->constraints, undef, 'constraints are unset');
 
     ## add_columns
-    is_deeply([$storage->columns], [qw/foo baz/]);
-    is(Handel::Storage->columns, 0);
+    is_deeply([$storage->columns], [qw/foo baz/], 'columns are set');
+    is(Handel::Storage->columns, 0, 'columns are unset');
 
     ## currency_columns
-    is_deeply([$storage->currency_columns], $currency_columns);
-    is(Handel::Storage->currency_columns, 0);
+    is_deeply([$storage->currency_columns], $currency_columns, 'currency columns are set');
+    is(Handel::Storage->currency_columns, 0, 'currency columns are unset');
+};
+
+
+## check the virtuals
+{
+    foreach my $method (qw/add_item count_items create delete delete_items search search_items txn_begin txn_commit txn_rollback/) {
+        try {
+            local $ENV{'LANG'} = 'en';
+            Handel::Storage->$method;
+    
+            fail('no exception thrown');
+        } catch Handel::Exception::Virtual with {
+            pass('caught virtual exception');
+            like(shift, qr/virtual/i, 'virtual in message');
+        } otherwise {
+            fail('caught other exception');
+        };
+    };
+};
+
+## check virtuals on result
+{
+    my $result = bless {}, Handel::Storage->result_class;
+
+    foreach my $method (qw/delete discard_changes update/) {
+        try {
+            local $ENV{'LANG'} = 'en';
+            $result->$method;
+    
+            fail('no exception thrown');
+        } catch Handel::Exception::Virtual with {
+            pass('caught virtual exception');
+            like(shift, qr/virtual/i, 'virtual in message');
+        } otherwise {
+            fail('caught other exception');
+        };
+    };
 };

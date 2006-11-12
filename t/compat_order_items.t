@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: compat_order_items.t 1358 2006-08-08 11:45:35Z claco $
+# $Id: compat_order_items.t 1522 2006-10-31 02:33:18Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 206;
+        plan tests => 212;
     };
 
     use_ok('Handel::Order');
@@ -28,6 +28,8 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+
 #&run('Handel::Order', 'Handel::Order::Item', 1);
 &run('Handel::Subclassing::OrderOnly', 'Handel::Order::Item', 2);
 &run('Handel::Subclassing::Order', 'Handel::Subclassing::OrderItem', 3);
@@ -35,23 +37,16 @@ BEGIN {
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
-    ## Setup SQLite DB for tests
+
     {
-        my $dbfile  = "t/compat_order_items_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/order_create_table.sql';
-        my $data    = 't/sql/order_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-
         no strict 'refs';
         unshift @{"$subclass\:\:ISA"}, 'Handel::Compat' unless $subclass->isa('Handel::Compat');
         unshift @{"itemclass\:\:ISA"}, 'Handel::Compat' unless $itemclass->isa('Handel::Compat');
+        $subclass->storage->currency_class('Handel::Compat::Currency');
+        $itemclass->storage->currency_class('Handel::Compat::Currency');
     };
 
 
@@ -97,6 +92,27 @@ sub run {
         is($item2->description, 'Line Item SKU 2');
         if ($itemclass ne 'Handel::Order::Item') {
             is($item2->custom, 'custom');
+        };
+
+
+        ## get single item as item
+        my $single = $order->items({id => '22222222-2222-2222-2222-222222222222'}, 42);
+        isa_ok($single, $itemclass);
+
+
+        ## throw exception when filter isn't a hashref
+        {
+            try {
+                local $ENV{'LANG'} = 'en';
+                $order->items(['foo']);
+
+                fail('no exception thrown');
+            } catch Handel::Exception::Argument with {
+                pass('Argument exception thrown');
+                like(shift, qr/not a hash/i, 'not a hash ref in message');
+            } otherwise {
+                fail('Other exception thrown');
+            };
         };
     };
 

@@ -1,13 +1,13 @@
 #!perl -wT
-# $Id: storage_dbic_clone.t 1379 2006-08-22 02:21:53Z claco $
+# $Id: storage_dbic_clone.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Scalar::Util qw/refaddr/;
-use Test::More;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+    use Scalar::Util qw/refaddr/;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
@@ -36,25 +36,25 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/class method/i);
+    pass('storage exception caught');
+    like(shift, qr/class method/i, 'class method in name');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };
 
 
 ## clone w/ disconnected schema
 my $clone = $storage->clone;
-is_deeply($storage, $clone);
-isnt(refaddr $storage, refaddr $clone);
+is_deeply($storage, $clone, 'storage is a copy of clone');
+isnt(refaddr $storage, refaddr $clone, 'clone is not the original');
 
 
 ## clone w/connected schema
 my $schema = $storage->schema_instance;
-is(refaddr $storage->_schema_instance, refaddr $schema);
+is(refaddr $storage->_schema_instance, refaddr $schema, 'clone is a full copy');
 my $cloned = $storage->clone;
-is($cloned->_schema_instance, undef);
-is(refaddr $storage->schema_instance, refaddr $schema);
+is($cloned->_schema_instance, undef, 'unset clone schema instance');
+is(refaddr $storage->schema_instance, refaddr $schema, 'original schema in tact');
 
 $storage->_schema_instance(undef);
-is_deeply($storage, $cloned);
+is_deeply($storage, $cloned, 'cloned schema a copy when connected');

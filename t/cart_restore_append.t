@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: cart_restore_append.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: cart_restore_append.t 1491 2006-10-22 15:39:53Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 431;
+        plan tests => 437;
     };
 
     use_ok('Handel::Cart');
@@ -23,6 +23,8 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+
 &run('Handel::Cart', 'Handel::Cart::Item', 1);
 &run('Handel::Subclassing::CartOnly', 'Handel::Cart::Item', 2);
 &run('Handel::Subclassing::Cart', 'Handel::Subclassing::CartItem', 3);
@@ -30,19 +32,27 @@ BEGIN {
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
-    ## Setup SQLite DB for tests
+
+    ## test for Handel::Exception::Argument where with unknown restore mode
     {
-        my $dbfile  = "t/cart_restore_append_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/cart_create_table.sql';
-        my $data    = 't/sql/cart_fake_data.sql';
+        my $cart = $subclass->search({
+            id => '11111111-1111-1111-1111-111111111111'
+        })->first;
 
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
+        try {
+            local $ENV{'LANG'} = 'en';
+            $cart->restore({id => '1234'}, 42);
 
-        $ENV{'HandelDBIDSN'} = $db;
+            fail('no exception thrown');
+        } catch Handel::Exception::Argument with {
+            pass('Argument exception thrown');
+            like(shift, qr/unknown restore mode/i, 'unknown restore more in message');
+        } otherwise {
+            fail('Other exception thrown');
+        };
     };
 
 

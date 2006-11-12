@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: basic.t 1409 2006-09-09 21:16:54Z claco $
+# $Id: basic.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use Test::More tests => 60;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 61;
+
     use_ok('Handel');
     use_ok('Handel::Base');
     use_ok('Handel::Cart');
@@ -55,6 +57,13 @@ BEGIN {
         local $SIG{__WARN__} = sub{};
 
         use_ok('Handel::Compat');
+    };
+
+    SKIP: {
+        eval 'use Module::Starter';
+        skip 'Module::Starter not installed', 1 if $@;
+
+        use_ok('Module::Starter::Handel');
     };
 
     SKIP: {

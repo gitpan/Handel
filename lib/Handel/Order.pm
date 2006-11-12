@@ -1,4 +1,4 @@
-# $Id: Order.pm 1427 2006-09-23 23:00:19Z claco $
+# $Id: Order.pm 1505 2006-10-25 23:57:55Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -24,17 +24,21 @@ sub create { ## no critic (ProhibitExcessComplexity)
     my ($self, $data, $opts) = @_;
 
     throw Handel::Exception::Argument(
-        -details => translate('Param 1 is not a HASH reference')
+        -details => translate('PARAM1_NOT_HASHREF')
     ) unless ref($data) eq 'HASH'; ## no critic
 
     no strict 'refs';
-    my $storage = $opts->{'storage'} || $self->storage;
+    my $storage = $opts->{'storage'};
+    if (!$storage) {
+        $storage = $self->storage;
+    };
+
     my $process = $opts->{'process'} || 0;
     my $cart = delete $data->{'cart'};
 
     if (defined $cart) {
         throw Handel::Exception::Argument( -details =>
-          translate('Cart reference is not a HASH reference or Handel::Cart')
+          translate('CARTPARAM_NOT_HASH_CART')
         ) if (
                 (ref($cart) && !blessed($cart) && ref($cart) ne 'HASH') ||
                 (blessed($cart) && !$cart->isa('Handel::Cart'))
@@ -44,7 +48,7 @@ sub create { ## no critic (ProhibitExcessComplexity)
             $cart = $self->cart_class->search($cart)->first;
 
             throw Handel::Exception::Order( -details =>
-                translate('Could not find a cart matching the supplied search criteria')
+                translate('CART_NOT_FOUND')
             ) unless $cart; ## no critic
         } elsif (!blessed($cart)) {
             my ($primary_key) = $self->cart_class->storage->primary_columns;
@@ -52,18 +56,18 @@ sub create { ## no critic (ProhibitExcessComplexity)
             $cart = $self->cart_class->search({$primary_key => $cart})->first;
 
             throw Handel::Exception::Order( -details =>
-                translate('Could not find a cart matching the supplied search criteria')
+                translate('CART_NOT_FOUND')
             ) unless $cart; ## no critic
         };
 
         throw Handel::Exception::Order( -details =>
-            translate('Could not create a new order because the supplied cart is empty')
+            translate('ORDER_CREATE_FAILED_CART_EMPTY')
         ) unless $cart->count > 0; ## no critic
     };
 
     if (defined $cart) {
-        if ($cart->can('shopper')) {
-            $data->{'shopper'} = $cart->shopper unless $data->{'shopper'};
+        if ($cart->can('shopper') && !defined $data->{'shopper'}) {
+            $data->{'shopper'} = $cart->shopper;
         };
     };
 
@@ -96,10 +100,6 @@ sub create { ## no critic (ProhibitExcessComplexity)
 sub copy_cart {
     my ($self, $order, $cart) = @_;
 
-    if ($cart->shopper && !$order->shopper) {
-        $order->shopper($cart->shopper);
-    };
-
     $order->subtotal($cart->subtotal);
     $order->update;
 
@@ -120,7 +120,7 @@ sub add {
     my ($self, $data) = @_;
 
     throw Handel::Exception::Argument( -details =>
-      translate('Param 1 is not a HASH reference, Handel::Cart::Item or Handel::Order::Item')
+      translate('PARAM1_NOT_HASH_CARTITEM_ORDERITEM')
     ) unless (ref($data) eq 'HASH' || $data->isa('Handel::Order::Item') || $data->isa('Handel::Cart::Item')); ## no critic
 
     my $result = $self->result;
@@ -134,10 +134,10 @@ sub add {
         my %copy;
 
         foreach ($storage->copyable_item_columns) {
-            if ($data->result->can($_)) {
-                $copy{$_} = $data->result->$_;
-            } elsif ($data->can($_)) {
+            if ($data->can($_)) {
                 $copy{$_} = $data->$_;
+            } elsif ($data->result->can($_)) {
+                $copy{$_} = $data->result->$_;
             };
         };
 
@@ -163,7 +163,7 @@ sub delete {
     my ($self, $filter) = @_;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference')
+        translate('PARAM1_NOT_HASHREF')
     ) unless ref($filter) eq 'HASH'; ## no critic
 
     return $self->result->delete_items($filter);
@@ -180,16 +180,17 @@ sub destroy {
         return $result;
     } else {
         throw Handel::Exception::Argument( -details =>
-            translate('Param 1 is not a HASH reference')
+            translate('PARAM1_NOT_HASHREF')
         ) unless ref($filter) eq 'HASH'; ## no critic
 
         no strict 'refs';
-        my $storage = $opts->{'storage'} || $self->storage;
+        my $storage = $opts->{'storage'};
+        if (!$storage) {
+            $storage = $self->storage;
+        };
 
         return $storage->delete($filter);
     };
-
-    return;
 };
 
 sub items {
@@ -198,7 +199,7 @@ sub items {
     my $storage = $result->storage;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference')
+        translate('PARAM1_NOT_HASHREF')
     ) unless( ref($filter) eq 'HASH' || !$filter); ## no critic
 
     my $results = $result->search_items($filter);
@@ -212,14 +213,17 @@ sub items {
 
 sub search {
     my ($self, $filter, $opts) = @_;
-    my $class = blessed $self || $self;
+    my $class = blessed $self ? blessed $self : $self;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference')
+        translate('PARAM1_NOT_HASHREF')
     ) unless (ref($filter) eq 'HASH' || !$filter); ## no critic
 
     no strict 'refs';
-    my $storage = $opts->{'storage'} || $self->storage;
+    my $storage = $opts->{'storage'};
+    if (!$storage) {
+        $storage = $self->storage;
+    };
 
     my $results = $storage->search($filter);
     my $iterator = $self->result_iterator_class->new({
@@ -240,34 +244,32 @@ sub save {
 sub reconcile {
     my ($self, $cart) = @_;
 
-    if (defined $cart) {
-        throw Handel::Exception::Argument( -details =>
-          translate('Cart reference is not a HASH reference or Handel::Cart')
-        ) if ( ## no critic
-                (ref($cart) && !blessed($cart) && ref($cart) ne 'HASH') ||
-                (blessed($cart) && !$cart->isa('Handel::Cart'))
-        ); 
+    throw Handel::Exception::Argument( -details =>
+      translate('CARTPARAM_NOT_HASH_CART')
+    ) if ( ## no critic
+            (ref($cart) && !blessed($cart) && ref($cart) ne 'HASH') ||
+            (blessed($cart) && !$cart->isa('Handel::Cart'))
+    ); 
 
-        if (ref $cart eq 'HASH') {
-            $cart = $self->cart_class->search($cart)->first;
-
-            throw Handel::Exception::Order( -details =>
-                translate('Could not find a cart matching the supplied search criteria')
-            ) unless $cart; ## no critic
-        } elsif (!blessed($cart)) {
-            my ($primary_key) = $self->cart_class->storage->primary_columns;
-
-            $cart = $self->cart_class->search({$primary_key => $cart})->first;
-
-            throw Handel::Exception::Order( -details =>
-                translate('Could not find a cart matching the supplied search criteria')
-            ) unless $cart; ## no critic
-        };
+    if (ref $cart eq 'HASH') {
+        $cart = $self->cart_class->search($cart)->first;
 
         throw Handel::Exception::Order( -details =>
-            translate('Could not create a new order because the supplied cart is empty')
-        ) unless $cart->count > 0; ## no critic
+            translate('CART_NOT_FOUND')
+        ) unless $cart; ## no critic
+    } elsif (!blessed($cart)) {
+        my ($primary_key) = $self->cart_class->storage->primary_columns;
+
+        $cart = $self->cart_class->search({$primary_key => $cart})->first;
+
+        throw Handel::Exception::Order( -details =>
+            translate('CART_NOT_FOUND')
+        ) unless $cart; ## no critic
     };
+
+    throw Handel::Exception::Order( -details =>
+        translate('ORDER_CREATE_FAILED_CART_EMPTY')
+    ) unless $cart->count > 0; ## no critic
 
     if ($self->subtotal != $cart->subtotal || $self->count != $cart->count) {
         $self->clear;
@@ -414,6 +416,25 @@ Handel::Order.
     use warnings;
     use base qw/Handel::Order/;
     __PACKAGE__->cart_class('CustomCart');
+
+=head2 checkout_class
+
+=over
+
+=item Arguments: $checkout_class
+
+=back
+
+Gets/sets the name of the checkout class to use when processing the new order
+through the INITIALIZE phase if the C<process> flag is on. By default, it uses
+Handel::Checkout. While you can set this directly in your application, it's best
+to set it in a custom subclass of Handel::Order.
+
+    package CustomOrder;
+    use strict;
+    use warnings;
+    use base qw/Handel::Order/;
+    __PACKAGE__->checkout_class('CustomCheckout');
 
 =head2 clear
 

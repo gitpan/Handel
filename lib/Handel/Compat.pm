@@ -1,8 +1,7 @@
-# $Id: Compat.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Compat.pm 1523 2006-10-31 02:58:19Z claco $
 package Handel::Compat;
 use strict;
 use warnings;
-
 
 BEGIN {
     use Handel::Constants qw/:returnas/;
@@ -10,7 +9,7 @@ BEGIN {
     use Carp qw/cluck/;
     use NEXT;
 
-    cluck 'Handel::Compat is deprecated and will go away one a future release.';
+    cluck translate('COMPAT_DEPRECATED');
 };
 
 sub add_columns {
@@ -69,7 +68,7 @@ sub load {
     my ($self, $filter, $wantiterator) = @_;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference')
+        translate('PARAM1_NOT_HASHREF')
     ) unless (ref($filter) eq 'HASH' || !$filter); ## no critic
 
     $wantiterator ||= RETURNAS_AUTO;
@@ -88,7 +87,7 @@ sub load {
     } else {
         my $iterator = $self->search($filter);
 
-        if ($iterator->count == 1 && $wantiterator != RETURNAS_ITERATOR && $wantiterator != RETURNAS_LIST) {
+        if ($iterator->count == 1) {
             return $iterator->next;
         } else {
             return $iterator;
@@ -100,7 +99,7 @@ sub items {
     my ($self, $filter, $wantiterator) = @_;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference')
+        translate('PARAM1_NOT_HASHREF')
     ) unless (ref($filter) eq 'HASH' || !$filter); ## no critic
 
     $wantiterator ||= RETURNAS_AUTO;
@@ -119,7 +118,7 @@ sub items {
     } else {
         my $iterator = $self->NEXT::items($filter);
 
-        if ($iterator->count == 1 && $wantiterator != RETURNAS_ITERATOR && $wantiterator != RETURNAS_LIST) {
+        if ($iterator->count == 1) {
             return $iterator->next;
         } else {
             return $iterator;
@@ -141,7 +140,7 @@ sub subtotal {
     my $self = shift;
 
     if ($self->isa('Handel::Order')) {
-        return $self->subtotal(@_);
+        return $self->NEXT::subtotal(@_);
     } else {
         my $storage  = $self->result->storage;
         my $items    = $self->items(undef, 1);

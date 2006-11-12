@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: storage_dbic_connection_info.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_dbic_connection_info.t 1553 2006-11-08 01:40:26Z claco $
 use strict;
 use warnings;
-use Test::More tests => 4;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 4;
+
     use_ok('Handel::Storage::DBIC');
 };
 
@@ -18,8 +20,8 @@ BEGIN {
         connection_info => $connection
     });
     isa_ok($storage, 'Handel::Storage');
-    is_deeply($storage->connection_info, $connection);
+    is_deeply($storage->connection_info, $connection, 'connection information was set');
 
     $storage->connection_info(undef);
-    is($storage->connection_info, undef);
+    is($storage->connection_info, undef, 'connection info was unset');
 };

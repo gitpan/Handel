@@ -1,18 +1,18 @@
 #!perl -wT
-# $Id: storage_dbic_search_items.t 1409 2006-09-09 21:16:54Z claco $
+# $Id: storage_dbic_search_items.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Test::More;
-use Scalar::Util qw/refaddr/;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+    use Scalar::Util qw/refaddr/;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 35;
+        plan tests => 47;
     };
 
     use_ok('Handel::Storage::DBIC');
@@ -34,14 +34,37 @@ my $cart = $schema->resultset($storage->schema_source)->single({id => '11111111-
 my $result = bless {'storage_result' => $cart}, 'GenericResult';
 
 
+## get the items via items
+{
+    my @results = $storage->result_class->create_instance($cart, $storage)->items;
+    foreach my $result (@results) {
+        isa_ok($result, $storage->item_storage->result_class);
+        is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage, 'result storage is original storage');
+        like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/, 'class is composed class style');
+    };
+};
+
+
+## get the items via items via instance
+{
+    my $result_class = bless {}, $storage->result_class;
+    my @results = $result_class->create_instance($cart, $storage)->items;
+    foreach my $result (@results) {
+        isa_ok($result, $storage->item_storage->result_class);
+        is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage, 'result storage is original storage');
+        like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/, 'class is composed class style');
+    };
+};
+
+
 ## get all results in list
 {
     my @results = $storage->search_items($result);
-    is(@results, 2);
+    is(@results, 2, 'loaded 2 items');
     foreach my $result (@results) {
         isa_ok($result, $storage->item_storage->result_class);
-        is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage);
-        like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/);
+        is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage, 'result storage is original storage');
+        like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/, 'class is composed class style');
     };
 };
 
@@ -49,12 +72,12 @@ my $result = bless {'storage_result' => $cart}, 'GenericResult';
 ## get all results as an iterator
 {
     my $results = $storage->search_items($result);
-    is($results->count, 2);
+    is($results->count, 2, 'loaded 2 items');
     isa_ok($results, $storage->iterator_class);
     while (my $result = $results->next) {
         isa_ok($result, $storage->item_storage->result_class);
-        is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage);
-        like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/);
+        is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage, 'result storage is original storage');
+        like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/, 'class is composed class style');
     };
 };
 
@@ -62,24 +85,24 @@ my $result = bless {'storage_result' => $cart}, 'GenericResult';
 ## filter results using CDBI wildcards
 {
     my $items = $storage->search_items($result, { id => '1111%'});
-    is($items->count, 1);
+    is($items->count, 1, 'loaded 2 items');
     my $result = $items->first;
     isa_ok($result, $storage->item_storage->result_class);
-    is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage);
-    like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/);
-    is($result->id, '11111111-1111-1111-1111-111111111111');
+    is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage, 'result storage is original storage');
+    like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/, 'class is composed class style');
+    is($result->id, '11111111-1111-1111-1111-111111111111', 'got id');
 };
 
 
 ## filter results using DBIC wildcards
 {
     my $items = $storage->search_items($result, { id => {like => '1111%'}});
-    is($items->count, 1);
+    is($items->count, 1, 'loaded 1 item');
     my $result = $items->first;
     isa_ok($result, $storage->result_class);
-    is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage);
-    like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/);
-    is($result->id, '11111111-1111-1111-1111-111111111111');
+    is(refaddr $result->result_source->{'__handel_storage'}, refaddr $result->storage, 'result storage is original storage');
+    like(ref $result->storage_result, qr/Handel::Storage::DBIC::[A-F0-9]{32}::Items/, 'class is composed class style');
+    is($result->id, '11111111-1111-1111-1111-111111111111', 'got id');
 };
 
 
@@ -90,10 +113,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Argument with {
-    pass;
-    like(shift, qr/no result/i);
+    pass('caught argument exception');
+    like(shift, qr/no result/i, 'no result in message');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };
 
 
@@ -104,11 +127,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Argument with {
-    pass;
-    like(shift, qr/not a HASH/);
+    pass('caught argument exception');
+    like(shift, qr/not a HASH/i, 'not a hash in message');
 } otherwise {
-    diag shift;
-    fail;
+    fail('other exception caught');
 };
 
 
@@ -125,10 +147,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/no such relationship/i);
+    pass('caught storage exception');
+    like(shift, qr/no such relationship/i, 'no relationship in message');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };
 
 
@@ -145,10 +167,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/no item relationship defined/i);
+    pass('caught storage exception');
+    like(shift, qr/no item relationship defined/i, 'no relationship in message');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };
 
 

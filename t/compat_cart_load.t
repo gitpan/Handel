@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: compat_cart_load.t 1356 2006-08-07 22:46:03Z claco $
+# $Id: compat_cart_load.t 1524 2006-10-31 04:02:19Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 350;
+        plan tests => 371;
     };
 
     use_ok('Handel::Cart');
@@ -28,6 +28,8 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+
 &run('Handel::Cart', 'Handel::Cart::Item', 1);
 &run('Handel::Subclassing::CartOnly', 'Handel::Cart::Item', 2);
 &run('Handel::Subclassing::Cart', 'Handel::Subclassing::CartItem', 3);
@@ -35,23 +37,15 @@ BEGIN {
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
-    ## Setup SQLite DB for tests
     {
-        my $dbfile  = "t/compat_cart_load_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/cart_create_table.sql';
-        my $data    = 't/sql/cart_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-
         no strict 'refs';
         push @{"$subclass\:\:ISA"}, 'Handel::Compat' unless $subclass->isa('Handel::Compat');
         push @{"itemclass\:\:ISA"}, 'Handel::Compat' unless $itemclass->isa('Handel::Compat');
+        $subclass->storage->currency_class('Handel::Compat::Currency');
+        $itemclass->storage->currency_class('Handel::Compat::Currency');
     };
 
 
@@ -66,6 +60,33 @@ sub run {
         } otherwise {
             fail;
         };
+    };
+
+
+    ## get single item as item
+    {
+        my $single = $subclass->load({id => '22222222-2222-2222-2222-222222222222'}, 42);
+        isa_ok($single, $subclass);
+    };
+
+
+    ## in list context, and without iterator
+    {
+        my @listcarts = $subclass->load(undef, RETURNAS_ITERATOR);
+        is(scalar @listcarts, 1);
+        isa_ok($listcarts[0], 'Handel::Iterator');
+    };
+
+
+    ## thank god this crap went away :-)
+    {
+        my $list = $subclass->load(undef, RETURNAS_LIST);
+        is($list, 3);
+
+        my ($c1, $c2, $c3) = $subclass->load(undef, RETURNAS_LIST);
+        isa_ok($c1, $subclass);
+        isa_ok($c2, $subclass);
+        isa_ok($c3, $subclass);
     };
 
 

@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: order_destroy.t 1384 2006-08-24 23:20:10Z claco $
+# $Id: order_destroy.t 1498 2006-10-24 00:56:24Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 70;
+        plan tests => 74;
     };
 
     use_ok('Handel::Order');
@@ -23,6 +23,9 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+my $altschema = Handel::Test->init_schema(db_file => 'althandel.db', namespace => 'Handel::AltSchema');
+
 &run('Handel::Order', 'Handel::Order::Item', 1);
 &run('Handel::Subclassing::OrderOnly', 'Handel::Order::Item', 2);
 &run('Handel::Subclassing::Order', 'Handel::Subclassing::OrderItem', 3);
@@ -30,20 +33,8 @@ BEGIN {
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
-
-    ## Setup SQLite DB for tests
-    {
-        my $dbfile  = "t/order_destroy_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/order_create_table.sql';
-        my $data    = 't/sql/order_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-    };
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
 
     ## Test for Handel::Exception::Argument where first param is not a hashref
@@ -132,4 +123,34 @@ sub run {
         is($remaining_items, $total_items - $related_items);
     };
 
+};
+
+
+## pass in storage instead
+{
+    my $storage = Handel::Order->storage_class->new;
+    local $ENV{'HandelDBIDSN'} = $altschema->dsn;
+
+    is($altschema->resultset('Orders')->search({id => '11111111-1111-1111-1111-111111111111'})->count, 1, 'order found in alt storage');
+    Handel::Order->destroy({
+        id => '11111111-1111-1111-1111-111111111111'
+    }, {
+        storage => $storage
+    });
+    is($altschema->resultset('Orders')->search({id => '11111111-1111-1111-1111-111111111111'})->count, 0, 'order removed from alt storage');
+};
+
+
+## don't unset self if no result is returned
+{
+    my $storage = Handel::Order->storage_class->new;
+    local $ENV{'HandelDBIDSN'} = $altschema->dsn;
+
+    my $order = Handel::Order->search({id => '22222222-2222-2222-2222-222222222222'}, {storage => $storage})->first;
+    ok($order);
+
+    no warnings 'redefine';
+    local *Handel::Storage::DBIC::Result::delete = sub {};
+    $order->destroy;
+    ok($order);
 };

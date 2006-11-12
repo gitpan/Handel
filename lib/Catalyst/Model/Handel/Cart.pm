@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1386 2006-08-26 01:46:16Z claco $
+# $Id: Cart.pm 1456 2006-10-08 02:01:24Z claco $
 package Catalyst::Model::Handel::Cart;
 use strict;
 use warnings;
@@ -120,6 +120,16 @@ If no cart_class is specified, Handel::Cart will be used by default.
 
 Once loaded, all method requests to this model are forwarded to the specified
 cart class.
+
+=head2 COMPONENT
+
+See L<Catalyst::Component> for more information.
+
+=head2 new
+
+This is a placeholder to forward calls to C<new> to the cart manager (should it
+actually have it's own new method) rather than exposing C<new> from
+Catalyst::Component.
 
 =head1 SEE ALSO
 

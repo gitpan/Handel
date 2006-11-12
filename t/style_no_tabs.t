@@ -1,8 +1,9 @@
 #!perl -wT
-# $Id: style_no_tabs.t 1389 2006-08-31 02:21:14Z claco $
+# $Id: style_no_tabs.t 1442 2006-09-27 23:35:20Z claco $
 use strict;
 use warnings;
-use Test::More;
+use lib 't/lib';
+use Handel::Test;
 
 plan skip_all => 'set TEST_NOTABS or TEST_PRIVATE to enable this test' unless $ENV{TEST_NOTABS} || $ENV{TEST_PRIVATE};
 

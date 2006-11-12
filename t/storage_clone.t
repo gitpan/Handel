@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: storage_clone.t 1409 2006-09-09 21:16:54Z claco $
+# $Id: storage_clone.t 1555 2006-11-09 01:46:20Z claco $
 use strict;
 use warnings;
-use Test::More tests => 25;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 25;
+
     use_ok('Handel::Storage');
     use_ok('Handel::Exception', ':try');
 };
@@ -28,36 +30,36 @@ BEGIN {
     my $clone = $storage->clone;
     isa_ok($clone, 'Handel::Storage');
     
-    is_deeply($clone, $storage);
+    is_deeply($clone, $storage, 'clone is like original');
     
     ## make them diverge
     $clone->iterator_class('Handel::Base');
-    is($clone->iterator_class, 'Handel::Base');
-    is($storage->iterator_class, 'Handel::Iterator::List');
+    is($clone->iterator_class, 'Handel::Base', 'set clone iterator class');
+    is($storage->iterator_class, 'Handel::Iterator::List', 'original iterator class unchanged');
 
     $clone->currency_class('Handel::Base');
-    is($clone->currency_class, 'Handel::Base');
-    is($storage->currency_class, 'Handel::Currency');
+    is($clone->currency_class, 'Handel::Base', 'set clone currency class');
+    is($storage->currency_class, 'Handel::Currency', 'original currency class unchanged');
     
     $clone->autoupdate(3);
-    is($clone->autoupdate, 3);
-    is($storage->autoupdate, 1);
+    is($clone->autoupdate, 3, 'set autoupdate in clone');
+    is($storage->autoupdate, 1, 'original autoupdate is unchanged');
 
     $clone->default_values->{id} = 2;
-    is_deeply($clone->default_values, {id => 2, name => 'New Cart'});
-    is_deeply($storage->default_values, {id => 1, name => 'New Cart'});
+    is_deeply($clone->default_values, {id => 2, name => 'New Cart'}, 'set clone default values');
+    is_deeply($storage->default_values, {id => 1, name => 'New Cart'}, 'original default values unchanged');
 
     $clone->validation_profile->{'cart'} = [qw/foo/];
-    is_deeply($clone->validation_profile, {cart=>['foo']});
-    is_deeply($storage->validation_profile, {cart => [param1 => [ ['BLANK'], ['ASCII', 2, 12] ]]});
+    is_deeply($clone->validation_profile, {cart=>['foo']}, 'set clone validaiton profile');
+    is_deeply($storage->validation_profile, {cart => [param1 => [ ['BLANK'], ['ASCII', 2, 12] ]]}, 'original validation profile unchanged');
 
     $clone->add_columns('quix');
-    is_deeply($clone->_columns, [qw/one two quix/]);
-    is_deeply($storage->_columns, [qw/one two/]);
+    is_deeply($clone->_columns, [qw/one two quix/], 'set clone columns');
+    is_deeply($storage->_columns, [qw/one two/], 'original columns unchanged');
     
     $clone->remove_columns('two');
-    is_deeply($clone->_columns, [qw/one quix/]);
-    is_deeply($storage->_columns, [qw/one two/]);
+    is_deeply($clone->_columns, [qw/one quix/], 'change clone columns');
+    is_deeply($storage->_columns, [qw/one two/], 'original columns unchanged');
     
     my $foo = sub{};
     $clone->add_constraint('foo', 'check foo', $foo);
@@ -65,15 +67,15 @@ BEGIN {
             id   => {'check_id' => $sub},
             name => {'check_name' => $sub},
             foo  => {'check foo' => $foo}
-    });
+    }, 'set clone constraints');
     is_deeply($storage->constraints, {
             id   => {'check_id' => $sub},
             name => {'check_name' => $sub}
-    });
+    }, 'original constraints unchanged');
 
     push @{$clone->_currency_columns}, 'dongle';
-    is_deeply([sort $clone->currency_columns], [qw/dongle one/]);
-    is_deeply([$storage->currency_columns], [qw/one/]);
+    is_deeply([sort $clone->currency_columns], [qw/dongle one/], 'set clone currency columns');
+    is_deeply([$storage->currency_columns], [qw/one/], 'original currency columns unchanged');
 
     undef $clone;
 
@@ -85,10 +87,10 @@ BEGIN {
 
             fail('no exception thrown');
         } catch Handel::Exception::Storage with {
-            pass;
-            like(shift, qr/not a class/i);
+            pass('caught storage exception');
+            like(shift, qr/not a class/i, 'not a class in message');
         } otherwise {
-            fail;
+            fail('other exception caught');
         };
     };
 };

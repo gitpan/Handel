@@ -1,13 +1,12 @@
 #!perl -wT
-# $Id: base_update.t 1394 2006-09-04 17:54:57Z claco $
+# $Id: base_update.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Test::More;
-use Handel::Test;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
@@ -47,13 +46,13 @@ BEGIN {
 
     my $cart = Handel::Base->create_instance($iterator->next, $storage);
 
-    is($cart->result->id, 1);
-    is($cart->result->shopper, 1);
-    is($cart->result->name, 'Cart1');
-    is($cart->result->description, 'My Cart 1');
+    is($cart->result->id, 1, 'got result id');
+    is($cart->result->shopper, 1, 'got result shopper');
+    is($cart->result->name, 'Cart1', 'ot result name');
+    is($cart->result->description, 'My Cart 1', 'got result description');
 
     $cart->result->set_column('name', 'UpdatedName');
-    is($cart->result->name, 'UpdatedName');
+    is($cart->result->name, 'UpdatedName', 'got result name');
 
     my $reit = $schema->resultset('Carts')->search({id => 1});
     my $reiter = $storage->iterator_class->new({
@@ -63,7 +62,7 @@ BEGIN {
     });
 
     my $recart = Handel::Base->create_instance($reiter->first, $storage);
-    is($recart->result->name, 'Cart1');
+    is($recart->result->name, 'Cart1', 'got result name');
 
     $cart->update;
 
@@ -76,5 +75,5 @@ BEGIN {
 
 
     my $recart2 = Handel::Base->create_instance($reit2->first, $storage);
-    is($recart2->result->name, 'UpdatedName');
+    is($recart2->result->name, 'UpdatedName', 'got updated result name');
 };

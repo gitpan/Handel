@@ -1,19 +1,33 @@
-# $Id: List.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: List.pm 1551 2006-11-07 02:03:05Z claco $
 ## no critic (ProhibitAmbiguousNames)
 package Handel::Iterator::List;
 use strict;
 use warnings;
 use overload
         '0+'     => \&count,
-        'bool'   => sub { 1; },
+        'bool'   => \&count,
+        '=='     => \&count,
         fallback => 1;
 
 BEGIN {
     use base qw/Handel::Iterator/;
     __PACKAGE__->mk_group_accessors('inherited', qw/index/);
+
+    use Handel::L10N qw/translate/;
 };
 
 __PACKAGE__->index(0);
+
+sub new {
+    my $class = shift;
+
+    no strict 'refs';
+    throw Handel::Exception::Argument(
+        -details => translate('ITERATOR_DATA_NOT_ARRAYREF')
+    ) unless ref $_[0]->{'data'} eq 'ARRAY'; ## no critic
+
+    return $class->SUPER::new(@_);
+};
 
 sub all {
     my $self = shift;

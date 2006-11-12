@@ -1,15 +1,41 @@
-# $Id: Results.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Results.pm 1551 2006-11-07 02:03:05Z claco $
 ## no critic (ProhibitAmbiguousNames)
 package Handel::Iterator::Results;
 use strict;
 use warnings;
 use overload
         '0+'     => \&count,
-        'bool'   => sub { 1; },
+        'bool'   => \&count,
+        '=='     => \&count,
         fallback => 1;
 
 BEGIN {
     use base qw/Handel::Iterator/;
+    use Handel::L10N qw/translate/;
+    use Scalar::Util qw/blessed/;
+};
+
+sub new {
+    my ($class, $options) = @_;
+
+    throw Handel::Exception::Argument(
+        -details => translate('PARAM1_NOT_HASHREF')
+    ) unless ref $options eq 'HASH'; ## no critic
+
+    throw Handel::Exception::Argument(
+        -details => translate('NO_ITERATOR_DATA')
+    ) unless defined $options->{'data'}; ## no critic
+
+    my $data = $options->{'data'};
+    throw Handel::Exception::Argument(
+        -details => translate('ITERATOR_DATA_NOT_RESULTS_ITERATOR')
+    ) unless blessed($data) && $data->isa('Handel::Iterator'); ## no critic
+
+    throw Handel::Exception::Argument(
+        -details => translate('NO_RESULT_CLASS')
+    ) unless $options->{'result_class'}; ## no critic
+
+    return bless $options, $class;
 };
 
 sub all {
@@ -46,6 +72,7 @@ sub next {
 sub reset {
     return shift->data->reset;
 };
+
 sub create_result {
     my ($self, $result) = @_;
 

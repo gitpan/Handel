@@ -22,6 +22,7 @@ demo/tt2/style/css/basic.css
 lib/AxKit/XSP/Handel/Cart.pm
 lib/AxKit/XSP/Handel/Checkout.pm
 lib/AxKit/XSP/Handel/Order.pm
+lib/Catalyst/Helper/Handel.pm
 lib/Catalyst/Helper/Handel/Scaffold.pm
 lib/Catalyst/Helper/Controller/Handel/Cart.pm
 lib/Catalyst/Helper/Controller/Handel/Checkout.pm
@@ -33,6 +34,7 @@ lib/Catalyst/Model/Handel/Order.pm
 lib/Handel.pm
 lib/Handel/Base.pm
 lib/Handel/Compat.pm
+lib/Handel/Compat/Currency.pm
 lib/Handel/Cart.pm
 lib/Handel/Cart/Item.pm
 lib/Handel/Cart/Schema.pm
@@ -65,6 +67,7 @@ lib/Handel/Manual/Cookbook.pod
 lib/Handel/Manual/Cookbook/AddingColumns.pod
 lib/Handel/Manual/Cookbook/WritingCustomStorage.pod
 lib/Handel/Manual/Intro.pod
+lib/Handel/Manual/KnownIssues.pod
 lib/Handel/Manual/QuickStart.pod
 lib/Handel/Manual/Schema.pod
 lib/Handel/Manual/Storage.pod
@@ -87,6 +90,7 @@ lib/Handel/Storage/DBIC/Cart/Item.pm
 lib/Handel/Storage/DBIC/Order.pm
 lib/Handel/Storage/DBIC/Order/Item.pm
 lib/Handel/Storage/DBIC/Result.pm
+lib/Module/Starter/Handel.pm
 lib/Template/Plugin/Handel/Cart.pm
 lib/Template/Plugin/Handel/Checkout.pm
 lib/Template/Plugin/Handel/Constants.pm
@@ -97,6 +101,7 @@ MANIFEST
 MANIFEST.SKIP
 META.yml
 README
+script/handel.pl
 sql/handel.sqlite.sql
 t/base_storage.t
 t/base_storage_class.t
@@ -105,6 +110,8 @@ t/base_create_accessors.t
 t/base_create_instance.t
 t/base_cart_class.t
 t/base_item_class.t
+t/base_get_column.t
+t/base_set_column.t
 t/basic.t
 t/cart_add.t
 t/cart_clear.t
@@ -123,11 +130,15 @@ t/cart_restore_merge_filter.t
 t/cart_restore_replace.t
 t/cart_restore_replace_filter.t
 t/cart_save.t
+t/catalyst_helpers_handel.t
+t/catalyst_helpers_scaffold.t
 t/catalyst_helpers_controller_cart.t
 t/catalyst_helpers_controller_checkout.t
 t/catalyst_helpers_controller_order.t
 t/catalyst_helpers_model_cart.t
 t/catalyst_helpers_model_order.t
+t/catalyst_model_cart.t
+t/catalyst_model_order.t
 t/checkout_cart.t
 t/checkout_messages.t
 t/checkout_order.t
@@ -137,6 +148,8 @@ t/checkout_process.t
 t/checkout_stash.t
 t/conf/extra.conf.in
 t/config.t
+t/config_modperl1.t
+t/config_modperl2.t
 t/constants.t
 t/constraints_cart_name.t
 t/constraints_cart_type.t
@@ -156,7 +169,9 @@ t/compat_order_load.t
 t/compat_order_items.t
 t/compat_order_new.t
 t/compat_order_item_new.t
+t/compat_currency.t
 t/exceptions.t
+t/exceptions_axkit.t
 t/htdocs/axkit/cart_cart.xsp
 t/htdocs/axkit/cart_cart_add.xsp
 t/htdocs/axkit/cart_cart_add_filtered.xsp
@@ -375,6 +390,7 @@ t/htdocs/tt2/cart_restore_replace.tt2
 t/htdocs/tt2/cart_save.tt2
 t/htdocs/tt2/cart_update.tt2
 t/htdocs/tt2/cart_uuid.tt2
+t/htdocs/tt2/constants.tt2
 t/htdocs/tt2/checkout_messages.tt2
 t/htdocs/tt2/checkout_order.tt2
 t/htdocs/tt2/checkout_phases.tt2
@@ -420,6 +436,7 @@ t/htdocs/tt2/out/cart_restore_merge.tt2.out
 t/htdocs/tt2/out/cart_restore_replace.tt2.out
 t/htdocs/tt2/out/cart_save.tt2.out
 t/htdocs/tt2/out/cart_update.tt2.out
+t/htdocs/tt2/out/constants.tt2.out
 t/htdocs/tt2/out/checkout_messages.tt2.out
 t/htdocs/tt2/out/checkout_order.tt2.out
 t/htdocs/tt2/out/checkout_phases.tt2.out
@@ -443,9 +460,16 @@ t/htdocs/tt2/out/order_items_filtered.tt2.out
 t/htdocs/tt2/out/order_items_filtered_no_results.tt2.out
 t/htdocs/tt2/out/order_items_update.tt2.out
 t/htdocs/tt2/out/order_update.tt2.out
+t/iterator.t
+t/iterator_list.t
+t/iterator_dbic.t
+t/iterator_results.t
 t/l10n.t
+t/l10n_lexicon_synced.t
 t/lib/Handel/Checkout/Plugin/TestPlugin.pm
 t/lib/Handel/Checkout/Plugin/TestBogusPlugin.pm
+t/lib/Handel/Checkout/Plugin/NotBlessedPlugin.pm
+t/lib/Handel/Checkout/Plugin/NotISAPlugin.pm
 t/lib/Handel/Checkout/TestMessage.pm
 t/lib/Handel/OtherTestPlugins/Second.pm
 t/lib/Handel/Subclassing/Cart.pm
@@ -476,10 +500,12 @@ t/lib/Handel/TestPipeline/ValidateError.pm
 t/lib/Handel/TestPipeline/ReadFromStash.pm
 t/lib/Handel/TestPipeline/WriteToStash.pm
 t/lib/Handel/TestPlugins/First.pm
+t/module_starter.t
 t/order_add.t
 t/order_clear.t
 t/order_delete.t
 t/order_destroy.t
+t/order_save.t
 t/order_item_create.t
 t/order_items.t
 t/order_search.t
@@ -488,8 +514,11 @@ t/order_reconcile.t
 t/pod_coverage.t
 t/pod_spelling.t
 t/pod_syntax.t
-t/style_perl_critic.rc
-t/style_perl_critic.t
+t/schema.t
+t/style_critic_core.rc
+t/style_critic_core.t
+t/style_critic_tests.rc
+t/style_critic_tests.t
 t/style_no_tabs.t
 t/strict.t
 t/SMOKE.PL
@@ -554,6 +583,7 @@ t/subclassing.t
 t/TEST.PL
 t/tt2_cart.t
 t/tt2_checkout.t
+t/tt2_constants.t
 t/tt2_order.t
 t/warnings.t
 t/xsp_cart.t

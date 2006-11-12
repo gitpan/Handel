@@ -1,13 +1,15 @@
 #!perl -w
-# $Id: catalyst_helpers_model_cart.t 1386 2006-08-26 01:46:16Z claco $
+# $Id: catalyst_helpers_model_cart.t 1574 2006-11-12 17:34:59Z claco $
 use strict;
 use warnings;
-use Test::More;
-use Cwd;
-use File::Path;
-use File::Spec::Functions;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+    use Cwd;
+    use File::Path;
+    use File::Spec::Functions;
+
     eval 'use Catalyst 5.7001';
     plan(skip_all =>
         'Catalyst 5.7001 not installed') if $@;
@@ -24,7 +26,7 @@ BEGIN {
     plan(skip_all =>
         'Test::File::Contents 0.02 not installed') if $@;
 
-    plan tests => 6;
+    plan tests => 8;
 
     use_ok('Catalyst::Helper');
 };
@@ -33,11 +35,15 @@ my $helper = Catalyst::Helper->new;
 my $app = 'TestApp';
 
 
+## setup var
+chdir('t');
+mkdir('var') unless -d 'var';
+chdir('var');
+
+
 ## create the test app
 {
-    chdir('t');
     rmtree($app);
-
     $helper->mk_app($app);
     $FindBin::Bin = catdir(cwd, $app, 'lib');
 };
@@ -54,9 +60,18 @@ my $app = 'TestApp';
 };
 
 
+## create the default model without defaults
+{
+    my $module = catfile($app, 'lib', $app, 'Model', 'MyCart.pm');
+    $helper->mk_component($app, 'model', 'MyCart', 'Handel::Cart');
+    file_exists_ok($module);
+    file_contents_like($module, qr/\['', '', ''\]/);
+};
+
+
 ## load it up
 {
     my $lib = catfile(cwd, $app, 'lib');
     eval "use lib '$lib';use $app\:\:Model\:\:Cart";
-    ok(!$@);
+    ok(!$@, 'loaded new class');
 };

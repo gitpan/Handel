@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: storage_add_constraint.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_add_constraint.t 1555 2006-11-09 01:46:20Z claco $
 use strict;
 use warnings;
-use Test::More tests => 14;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 14;
+
     use_ok('Handel::Storage');
     use_ok('Handel::Exception', ':try');
 };
@@ -13,16 +15,18 @@ BEGIN {
 {
     my $storage = Handel::Storage->new;
     isa_ok($storage, 'Handel::Storage');
-    is($storage->constraints, undef);
+    is($storage->constraints, undef, 'no constraints defined');
 
     my $constraint = sub{};
     $storage->add_constraint('id', 'check id' => $constraint);
-    is_deeply($storage->constraints, {id => {'check id' => $constraint}});
+    is_deeply($storage->constraints, {id => {'check id' => $constraint}}, 'added constraints');
 
     my $new_constraint = sub{};
     $storage->add_constraint('name', 'first' => $new_constraint);
+    $storage->add_constraint('name', 'second' => $new_constraint);
 
-    is_deeply($storage->constraints, {'id' => {'check id' => $constraint}, 'name' => {first => $new_constraint}});
+
+    is_deeply($storage->constraints, {'id' => {'check id' => $constraint}, 'name' => {'first' => $new_constraint, 'second' => $new_constraint}}, 'appended constraints');
 
     ## throw exception when no column is passed
     {
@@ -32,10 +36,10 @@ BEGIN {
 
             fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
-            like(shift, qr/no column/i);
+            pass('caught argument exception');
+            like(shift, qr/no column/i, 'no column in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -47,10 +51,10 @@ BEGIN {
 
             fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
-            like(shift, qr/no constraint name/i);
+            pass('caught argument exception');
+            like(shift, qr/no constraint name/i, 'no constraint name in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -62,10 +66,10 @@ BEGIN {
 
             fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
-            like(shift, qr/no constraint/i);
+            pass('caught argument exception');
+            like(shift, qr/no constraint/i, 'no constraint in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -77,10 +81,10 @@ BEGIN {
 
             fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
-            like(shift, qr/no constraint/i);
+            pass('caught argument exception');
+            like(shift, qr/no constraint/i, 'no constraint in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 };

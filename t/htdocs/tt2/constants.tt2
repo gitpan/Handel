@@ -1,0 +1,7 @@
+[%# $Id: constants.tt2 1548 2006-11-06 01:50:49Z claco $ %]
+[% USE Handel.Constants %]
+[% USE hconstants = Handel.Constants %]
+<body>
+	<typesaved>[% hconstants.CART_TYPE_SAVED %]</typesaved>
+	<typesaved>[% Handel.Constants.CART_TYPE_SAVED %]</typesaved>
+</body>

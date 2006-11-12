@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: storage_primary_columns.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_primary_columns.t 1555 2006-11-09 01:46:20Z claco $
 use strict;
 use warnings;
-use Test::More tests => 8;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 8;
+
     use_ok('Handel::Storage');
     use_ok('Handel::Exception', ':try');
 };
@@ -14,14 +16,14 @@ isa_ok($storage, 'Handel::Storage');
 
 
 ## start w/ nothing
-is($storage->_primary_columns, undef);
-is($storage->primary_columns, 0);
+is($storage->_primary_columns, undef, 'no primary columns defined');
+is($storage->primary_columns, 0, 'no primary columns defined');
 
 
 ## add columns, and get them back
 $storage->_columns([qw/foo bar baz fap/]);
 $storage->_primary_columns([qw/foo bar baz/]);
-is_deeply([$storage->primary_columns], [qw/foo bar baz/]);
+is_deeply([$storage->primary_columns], [qw/foo bar baz/], 'added primary columns');
 
 
 ## throw exception when primary column doesn't exists in columns
@@ -31,9 +33,9 @@ is_deeply([$storage->primary_columns], [qw/foo bar baz/]);
 
         fail('no exception thrown');
     } catch Handel::Exception::Storage with {
-        pass;
-        like(shift, qr/does not exist/i);
+        pass('caught storage exception');
+        like(shift, qr/does not exist/i, 'column does not exist in messages');
     } otherwise {
-        fail;
+        fail('caught other exception');
     };
 };

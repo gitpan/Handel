@@ -1,4 +1,4 @@
-# $Id: Constraints.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Constraints.pm 1512 2006-10-27 23:25:34Z claco $
 package Handel::Constraints;
 use strict;
 use warnings;
@@ -10,6 +10,7 @@ BEGIN {
     use Handel::Constants qw/:cart :checkout :order/;
     use Handel::Exception;
     use Handel::L10N qw/translate/;
+    use Locale::Currency;
 };
 
 @EXPORT_OK = qw/&constraint_quantity
@@ -36,7 +37,7 @@ sub constraint_quantity {
 
     if ($action =~ /^exception$/i && $max) {
         throw Handel::Exception::Constraint( -details =>
-            translate('The quantity requested ([_1]) is greater than the maximum quantity allowed ([_2])', $value, $max)
+            translate('QUANTITY_GT_MAX', $value, $max)
         ) if $value > $max; ## no critic
     } elsif ($action =~ /^adjust$/i && $max) {
         if (ref($object) && $value && $value > $max) {
@@ -91,15 +92,10 @@ sub constraint_currency_code {
 
     return unless ($value =~ /^[A-Z]{3}$/); ## no critic
 
-    eval 'use Locale::Currency'; ## no critic
-    if (!$@) {
-        if (! keys %codes) {
-            %codes = map {uc($_) => uc($_)} all_currency_codes();
-        };
-        return exists $codes{$value};
+    if (! keys %codes) {
+        %codes = map {uc($_) => uc($_)} all_currency_codes();
     };
-
-    return 1;
+    return exists $codes{$value};
 };
 
 sub constraint_checkout_phase {

@@ -1,4 +1,4 @@
-# $Id: Order.pm 1415 2006-09-14 00:54:13Z claco $
+# $Id: Order.pm 1475 2006-10-16 01:03:10Z claco $
 ## no critic (ProhibitCaptureWithoutTest)
 package Catalyst::Helper::Controller::Handel::Order;
 use strict;
@@ -8,10 +8,6 @@ BEGIN {
     use Catalyst 5.7001;
     use Catalyst::Utils;
     use Path::Class;
-
-    # check for prereqs as early as possible
-    use FormValidator::Simple 0.17;
-    use YAML;
 };
 
 =head1 NAME
@@ -56,7 +52,8 @@ sub mk_compclass {
     my $dir  = dir($helper->{'base'}, 'root', $helper->{'uri'});
 
     $model ||= 'Order';
-    $model = $model =~ /^(.*::M(odel)?::)?(.*)$/i ? $3 : 'Order';
+    $model =~ /^(.*::M(odel)?::)?(.*)$/i;
+    $model = $3 ? $3 : 'Order';
     $helper->{'model'} = $model;
 
     $helper->{'action'} = Catalyst::Utils::class2prefix($helper->{'class'});

@@ -101,6 +101,36 @@ Version 1.0
         cart => '11111111-1111-1111-1111-111111111111'
     }, {process => 1});
 
+=head3 Currency convert w/ format options is gone
+
+In 0.3x, the C<convert> method of currency objects would return a formatted string if you passed in the
+C<format> parameter, otherwise it would return a currency object containing the newly converted price
+value. Returning two different things form the same method is silly. The formatting part of C<convert> has
+been removed.
+
+Version 0.3x
+
+    my $price = Handel::Currency->new(1.23);
+    
+    # $1.67 Canadian Dollars
+    print $price->convert('USD', 'CAD', 1, 'FMT_COMMON');
+    
+    # Handel::Currency
+    print ref $price->convert('USD', 'CAD');
+
+Version 1.0
+
+    my $price = Handel::Currency->new(1.23);
+    
+    # 1.67
+    print $price->convert('USD', 'CAD');
+    
+    # $1.67 Canadian Dollars
+    print $price->convert('USD', 'CAD')->format('FMT_COMMON');
+
+When upgrading, change all of your calls to convert to also call C<format> afterwords. If C<from> and
+C<to> are the same, convert now returns itself instead of undef.
+
 =head2 Subclassing Changes
 
 The following changes will have to be made to any custom subclasses of the Handel classes:
@@ -264,6 +294,31 @@ L<Handel::Compat|Handel::Compat> in your subclasses:
 Handel::Compat will map most of the common subclass settings like add_constraint, add_columns, and table
 to the new storage layer format. It will also provide the pre 1.0 new/load/items syntax that uses the now dead
 RETURN_AS constants.
+
+If you are using the C<convert> or <format> methods from Handel::Currency objects, you will need to load
+Handel::Compat::Currency in your subclasses as well:
+
+    package MyCustomCart;
+    use strict;
+    use warnings;
+    use base qw/Handel::Compat Handel::Cart/;
+    
+    __PACKAGE__->storage->currency_class('Handel::Compat::Currency');
+
+This tells the storage layer to use Handel::Compat::Currency instead of Handel::Currency when inflating
+currency columns. If you really need to abuse the system, you can also resort to:
+
+    use Handel::Currency;
+    use Handel::Compay::Currency;
+    {
+        no strict;
+        
+        *Handel::Currency::new = Handel::Compat::Currency->can('new');
+        *Handel::Currency::convert = Handel::Compat::Currency->can('convert');
+        *Handel::Currency::format = Handel::Compat::Currency->can('format');
+    };
+
+But don't do that. If you do, kittens will cry.
 
 =head1 SEE ALSO
 

@@ -1,4 +1,4 @@
-# $Id: Order.pm 1389 2006-08-31 02:21:14Z claco $
+# $Id: Order.pm 1570 2006-11-12 03:24:04Z claco $
 package Catalyst::Helper::Model::Handel::Order;
 use strict;
 use warnings;
@@ -31,9 +31,15 @@ Makes a Handel::Order Model class for you.
 sub mk_compclass {
     my ($self, $helper, $dsn, $user, $pass) = @_;
     my $file = $helper->{file};
+    my $app  = $helper->{app};
+
     $helper->{'dsn'}  = $dsn  || '';
     $helper->{'user'} = $user || '';
     $helper->{'pass'} = $pass || '';
+
+    if ($helper->{'handel_auto_wire_models'}) {
+        $helper->{'handel_auto_wireup'} = "order_class => '$app\:\:Order',\n    ";
+    };
 
     return $helper->render_file('model', $file);
 };
@@ -79,7 +85,7 @@ BEGIN {
 };
 
 __PACKAGE__->config(
-    connection_info => ['[% dsn %]', '[% user %]', '[% pass %]']
+    [% handel_auto_wireup %]connection_info => ['[% dsn %]', '[% user %]', '[% pass %]']
 );
 
 =head1 NAME

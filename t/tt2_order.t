@@ -1,17 +1,19 @@
 #!perl -wT
-# $Id: tt2_order.t 1167 2006-05-31 01:50:19Z claco $
+# $Id: tt2_order.t 1563 2006-11-10 16:12:03Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(preparetables comp_to_file);
 
-eval 'use Template 2.07';
+BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+    use Handel::TestHelper qw/comp_to_file/;
+
+    eval 'use Template 2.07';
     plan(skip_all => 'Template Toolkit 2.07 not installed') if $@;
 
-eval 'use DBD::SQLite';
+    eval 'use DBD::SQLite';
     plan(skip_all => 'DBD::SQLite not installed') if $@;
-
+};
 
 ## test new/add first so we can use them to test everything else
 ## convert these to TT2
@@ -37,16 +39,8 @@ my @tests = (
 );
 
 ## Setup SQLite DB for tests
-{
-    my $dbfile  = "t/htdocs/tt2.db";
-    my $db      = "dbi:SQLite:dbname=$dbfile";
-
-    unlink $dbfile;
-    preparetables($db, ['cart'], 1);
-    preparetables($db, ['order']);
-
-    $ENV{'HandelDBIDSN'} = $db;
-};
+my $schema = Handel::Test->init_schema(no_order => 1);
+local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
 plan(tests => (scalar @tests) + 1);
 
@@ -56,7 +50,7 @@ my $output  = '';
 
 ## test uuid ouput format
 $tt->process("$docroot/order_uuid.tt2", undef, \$output);
-ok($output =~ /(.*<p>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}<\/p>.*){1}/is);
+ok($output =~ /(.*<p>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}<\/p>.*){1}/is, 'uuid test generated uuids');
 
 foreach my $test (@tests) {
     my $output = '';
@@ -71,5 +65,5 @@ foreach my $test (@tests) {
         diag("Received:\n", $response);
     };
 
-    ok($ok);
+    ok($ok, "$test was successful");
 };

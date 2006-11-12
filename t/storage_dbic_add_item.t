@@ -1,12 +1,12 @@
 #!perl -wT
-# $Id: storage_dbic_add_item.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_dbic_add_item.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Test::More;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
@@ -39,10 +39,10 @@ my $item = $storage->add_item($result, {
     price    => 2.22
 });
 isa_ok($item, $storage->result_class);
-is($item->id, '99999999-9999-9999-9999-999999999999');
-is($item->sku, 'ABC-123');
-is($item->quantity, 2);
-is($item->price, 2.22);
+is($item->id, '99999999-9999-9999-9999-999999999999', 'got id');
+is($item->sku, 'ABC-123', 'got sku');
+is($item->quantity, 2, 'got quantity');
+is($item->price, 2.22, 'got price');
 
 
 ## throw exception if no result is passed
@@ -52,10 +52,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Argument with {
-    pass;
-    like(shift, qr/no result/i);
+    pass('caught argument exception');
+    like(shift, qr/no result/i, 'no result in message');
 } otherwise {
-    fail;
+    fail('caught other exception');
 };
 
 
@@ -66,10 +66,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Argument with {
-    pass;
-    like(shift, qr/not a HASH/);
+    pass('caught argument exception');
+    like(shift, qr/not a HASH/i, 'not a hash in message');
 } otherwise {
-    fail;
+    fail('caught other exception');
 };
 
 
@@ -85,10 +85,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/no such relationship/i);
+    pass('caught storage exception');
+    like(shift, qr/no such relationship/i, 'no relationship in message');
 } otherwise {
-    fail;
+    fail('caught other exception');
 };
 
 
@@ -105,10 +105,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/no item relationship defined/i);
+    pass('caught storage exception');
+    like(shift, qr/no item relationship defined/i, 'no relationship in message');
 } otherwise {
-    fail;
+    fail('caught other exception');
 };
 
 

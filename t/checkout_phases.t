@@ -1,18 +1,27 @@
 #!perl -wT
-# $Id: checkout_phases.t 1078 2006-01-19 02:03:42Z claco $
+# $Id: checkout_phases.t 1481 2006-10-18 02:51:46Z claco $
 use strict;
 use warnings;
-use Test::More tests => 123;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 126;
+
     use_ok('Handel::Checkout');
     use_ok('Handel::Subclassing::Checkout');
     use_ok('Handel::Subclassing::CheckoutStash');
     use_ok('Handel::Subclassing::Stash');
     use_ok('Handel::Constants', qw(:checkout));
     use_ok('Handel::Exception', ':try');
+};
+
+
+## add a phase and import
+{
+    is(main->can('NEWPHASE'), undef, 'new phase does not exists');
+    Handel::Checkout->add_phase('NEWPHASE', 23, 1);
+    can_ok('main', 'NEWPHASE');
+    is(&main::NEWPHASE, 23, 'new phase in place');
 };
 
 

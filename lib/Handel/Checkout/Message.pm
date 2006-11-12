@@ -1,4 +1,4 @@
-# $Id: Message.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Message.pm 1477 2006-10-17 00:04:00Z claco $
 package Handel::Checkout::Message;
 use strict;
 use warnings;
@@ -6,7 +6,7 @@ use overload '""' => \&stringify, fallback => 1;
 
 sub new {
     my ($class, %args) = @_;
-    my $self = bless \%args, ref $class || $class;
+    my $self = bless \%args, $class;
 
     return $self;
 };
@@ -14,7 +14,11 @@ sub new {
 sub stringify {
     my $self = shift;
 
-    return $self->text || $self;
+    if (my $text = $self->text) {
+        return $text;
+    } else {
+        return ref $self;
+    };
 };
 
 sub AUTOLOAD {
@@ -75,6 +79,13 @@ returns $self.
         text => 'My Message',
         otherproperty => 'some data'
     );
+
+=head1 METHODS
+
+=head2 stringify
+
+Returns C<text> in scalar context. If no text is set, it returns the name of the
+current message object.
 
 =head1 SEE ALSO
 

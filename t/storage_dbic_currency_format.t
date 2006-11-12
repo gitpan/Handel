@@ -1,12 +1,12 @@
 #!perl -wT
-# $Id: storage_dbic_currency_format.t 1417 2006-09-16 02:19:18Z claco $
+# $Id: storage_dbic_currency_format.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Test::More;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
@@ -31,37 +31,37 @@ my $storage = Handel::Storage::DBIC->new({
 
 my $item = $storage->search->first;
 isa_ok($item->price, 'Handel::Currency');
-is($item->price->_format, 'FMT_NAME');
-is($item->price->format, '1.11 US Dollar');
+is($item->price->_format, 'FMT_NAME', 'format was set');
+is($item->price->format, '1.11 US Dollar', 'got long format name');
 
 
 
 $storage->currency_format('FMT_HTML');
 $item = $storage->search->first;
 isa_ok($item->price, 'Handel::Currency');
-is($item->price->_format, 'FMT_HTML');
-is($item->price->format, '&#x0024;1.11');
+is($item->price->_format, 'FMT_HTML', 'format was set');
+is($item->price->format, '&#x0024;1.11', 'got html format');
 
 
 $storage->currency_format(undef);
 $item = $storage->search->first;
 isa_ok($item->price, 'Handel::Currency');
-is($item->price->_format, undef);
-is($item->price->format, '1.11 USD');
+is($item->price->_format, undef, 'format is not set');
+is($item->price->format, '1.11 USD', 'got short format');
 
 
 {
     local $ENV{'HandelCurrencyFormat'} = 'FMT_NAME';
     my $item = $storage->search->first;
     isa_ok($item->price, 'Handel::Currency');
-    is($item->price->_format, undef);
-    is($item->price->format, '1.11 US Dollar');
+    is($item->price->_format, undef, 'no format is set');
+    is($item->price->format, '1.11 US Dollar', 'got long format');
 };
 
 
 {
     my $item = $storage->search->first;
     isa_ok($item->price, 'Handel::Currency');
-    is($item->price->_format, undef);
-    is($item->price->format, '1.11 USD');
+    is($item->price->_format, undef, 'no format is set');
+    is($item->price->format, '1.11 USD', 'for short name format');
 };

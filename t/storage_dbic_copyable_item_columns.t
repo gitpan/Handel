@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: storage_dbic_copyable_item_columns.t 1409 2006-09-09 21:16:54Z claco $
+# $Id: storage_dbic_copyable_item_columns.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Test::More;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 8;
+        plan tests => 9;
     };
 
     use_ok('Handel::Storage::DBIC');
@@ -29,12 +29,18 @@ my $storage = Handel::Storage::DBIC->new({
 
 
 ## get copyable item columns
-is_deeply([sort $storage->copyable_item_columns], [qw/description price quantity sku/]);
+is_deeply([sort $storage->copyable_item_columns], [qw/description price quantity sku/], 'got correct item columns');
 
 
 ## add another primary and make sure it disappears
 $storage->schema_instance->source('Items')->set_primary_key(qw/id sku/);
-is_deeply([sort $storage->copyable_item_columns], [qw/description price quantity/]);
+is_deeply([sort $storage->copyable_item_columns], [qw/description price quantity/], 'new id column removed from list');
+
+
+## get them columns when source isn't found
+$storage->schema_instance->source('Items')->set_primary_key(qw/id/);
+delete $storage->schema_instance->source('Carts')->_relationships->{$storage->item_relationship};
+is_deeply([sort $storage->copyable_item_columns], [qw/cart description price quantity sku/], 'column is returned when no in relationship');
 
 
 ## no item storage
@@ -46,10 +52,10 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/no item storage/i);
+    pass('storage exception caught');
+    like(shift, qr/no item storage/i, 'no item in message');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };
 
 
@@ -61,8 +67,8 @@ try {
 
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
-    pass;
-    like(shift, qr/no item relationship/i);
+    pass('storage exception caught');
+    like(shift, qr/no item relationship/i, 'no relationship in storage');
 } otherwise {
-    fail;
+    fail('other exception caught');
 };

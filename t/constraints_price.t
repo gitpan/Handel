@@ -1,14 +1,18 @@
 #!perl -wT
-# $Id: constraints_price.t 1039 2005-12-24 03:29:34Z claco $
+# $Id: constraints_price.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use Test::More tests => 14;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 16;
+
     use_ok('Handel::Constraints', qw(:all));
 };
 
 ok(!constraint_price('junk.foo'),   'alpha gibberish price');
+ok(!constraint_price(undef),        'value is undefined');
+ok(!constraint_price(''),           'value is empty string');
 ok(!constraint_price(-14),          'negative number price');
 ok(!constraint_price(-25.79),       'negative float price');
 ok(constraint_price(0),             'zero price');

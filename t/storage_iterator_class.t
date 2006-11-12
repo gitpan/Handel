@@ -1,11 +1,13 @@
 #!perl -wT
-# $Id: storage_iterator_class.t 1385 2006-08-25 02:42:03Z claco $
+# $Id: storage_iterator_class.t 1555 2006-11-09 01:46:20Z claco $
 use strict;
 use warnings;
-use Class::Inspector;
-use Test::More tests => 9;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 10;
+    use Class::Inspector;
+
     use_ok('Handel::Storage');
     use_ok('Handel::Exception', ':try');
 };
@@ -15,7 +17,7 @@ BEGIN {
     my $storage = Handel::Storage->new();
     isa_ok($storage, 'Handel::Storage');
 
-    is($storage->iterator_class, 'Handel::Iterator::List');
+    is($storage->iterator_class, 'Handel::Iterator::List', 'set iterator class');
 
     ## throw exception when setting a bogus iterator class
     {
@@ -24,18 +26,19 @@ BEGIN {
 
             fail('no exception thrown');
         } catch Handel::Exception::Storage with {
-            pass;
+            pass('caught storage exception');
+            like(shift, qr/iterator_class.*could not be loaded/i, 'could not be loaded in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
-    is($storage->iterator_class, 'Handel::Iterator::List');
+    is($storage->iterator_class, 'Handel::Iterator::List', 'iterator class unchanged');
 
-    ok(!Class::Inspector->loaded('Handel::Base'));
+    ok(!Class::Inspector->loaded('Handel::Base'), 'iterator class not loaded');
     $storage->iterator_class('Handel::Base');
-    ok(Class::Inspector->loaded('Handel::Base'));
+    ok(Class::Inspector->loaded('Handel::Base'), 'iterator class loaded');
 
     $storage->iterator_class(undef);
-    is($storage->iterator_class, undef);
+    is($storage->iterator_class, undef, 'iterator class unset');
 };

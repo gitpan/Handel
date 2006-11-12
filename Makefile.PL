@@ -1,6 +1,6 @@
-# $Id: Makefile.PL 1420 2006-09-20 02:35:20Z claco $
+# $Id: Makefile.PL 1579 2006-11-12 21:47:22Z claco $
 use ExtUtils::MakeMaker;
-use 5.006001;
+use 5.008001;
 use strict;
 use warnings FATAL => 'all';
 
@@ -59,18 +59,9 @@ if ($ENV{TEST_HTTP}) {
 
 my @clean = qw(
     smoke-report-*
-    t/cart*.db
-    t/order*.db
-    t/checkout*.db
-    t/subclassing.db
-    t/storage*.db
-    t/base*.db
-    t/compat*.db
     t/TEST
     t/SMOKE
     t/logs
-    t/htdocs/*.db
-    t/TestApp
     t/conf/apache_test_config.pm
     t/conf/extra.conf
     t/conf/httpd.conf
@@ -84,18 +75,19 @@ WriteMakefile(
     NAME         => 'Handel',
     VERSION_FROM => 'lib/Handel.pm',
     AUTHOR       => 'Christopher H. Laco <claco@chrislaco.com>',
-    ABSTRACT     => 'Simple ecommerce framework with AxKit support',
+    ABSTRACT     => 'A cart/order/checkout framework with AxKit/TT/Catalyst support',
     PREREQ_PM    => {
         'DBIx::Class'              => '0.08',
         'DBIx::Class::UUIDColumns' => '0',
         'DBIx::Class::Validation'  => '0.01001',
-        'Class::Accessor::Grouped' => '0.02',
+        'Class::Accessor::Grouped' => '0.03',
         'Class::ISA'               => '0',
         'Class::Inspector'         => '0',
         'Clone'                    => '0',
         'Error'                    => '0.14',
         'Locale::Maketext'         => '1.06',
-        'Module::Pluggable'        => '2.95',
+        'Module::Pluggable'        => '3.1',
+        'Module::Starter'          => '1.42',
         'Scalar::Util'             => '0',
         'Tie::Hash'                => '0',
         'DateTime'                 => '0',
@@ -104,11 +96,18 @@ WriteMakefile(
         'Locale::Currency::Format' => '1.22',
         'FormValidator::Simple'    => '0.17',
         'Finance::Currency::Convert::WebserviceX' => '0.03',
-        'NEXT'                     => '0'
+        'NEXT'                     => '0',
+        'FileHandle'               => '0',
+        'File::Spec::Functions'    => '0',
+        'File::Path'               => '0',
+        'SQL::Translator'          => '0.07',
+        'Getopt::Long'             => '0',
+        'Pod::Usage'               => '0'
     },
-    (ExtUtils::MakeMaker->VERSION >= 6.11) ?
-    (NO_META      => 1) : (),
-
+    EXE_FILES => [
+        'script/handel.pl'
+    ],
+    NO_META => 1,
     dist => {
         PREOP => 'pod2text lib/Handel.pm > $(DISTVNAME)/README',
     },

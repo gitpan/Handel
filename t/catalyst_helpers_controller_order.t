@@ -1,13 +1,15 @@
 #!perl -w
-# $Id: catalyst_helpers_controller_order.t 1390 2006-09-04 01:02:49Z claco $
+# $Id: catalyst_helpers_controller_order.t 1574 2006-11-12 17:34:59Z claco $
 use strict;
 use warnings;
-use Test::More;
-use Cwd;
-use File::Path;
-use File::Spec::Functions;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+    use Cwd;
+    use File::Path;
+    use File::Spec::Functions;
+
     eval 'use Catalyst 5.7001';
     plan(skip_all =>
         'Catalyst 5.7001 not installed') if $@;
@@ -24,7 +26,7 @@ BEGIN {
     plan(skip_all =>
         'Test::File::Contents 0.02 not installed') if $@;
 
-    plan tests => 46;
+    plan tests => 58;
 
     use_ok('Catalyst::Helper');
 };
@@ -33,9 +35,14 @@ my $helper = Catalyst::Helper->new;
 my $app = 'TestApp';
 
 
+## setup var
+chdir('t');
+mkdir('var') unless -d 'var';
+chdir('var');
+
+
 ## create test app
 {
-    chdir('t');
     rmtree($app);
     $helper->mk_app($app);
     $FindBin::Bin = catdir(cwd, $app, 'lib');
@@ -70,7 +77,7 @@ my $app = 'TestApp';
 {
     my $lib = catfile(cwd, $app, 'lib');
     eval "use lib '$lib';use $app\:\:Controller\:\:Orders";
-    ok(!$@);
+    ok(!$@, 'loaded new class');
 };
 
 
@@ -143,4 +150,34 @@ my $app = 'TestApp';
     file_contents_like($module, qr/= 'mythirdorder\/default'/);
     file_contents_like($view,   qr/INCLUDE mythirdorder\/errors/);
     file_contents_like($list,   qr/\[% c.uri_for\('\/mythirdorder\/view'/);
+};
+
+
+## create the default order controller with bogus order model
+{
+    my $module   = catfile($app, 'lib', $app, 'Controller', 'Orders.pm');
+    my $list     = catfile($app, 'root', 'orders', 'default');
+    my $view     = catfile($app, 'root', 'orders', 'view');
+    my $messages = catfile($app, 'root', 'orders', 'messages.yml');
+    my $profiles = catfile($app, 'root', 'orders', 'profiles.yml');
+
+    unlink $module;
+    unlink $list;
+    unlink $view;
+    unlink $messages;
+    unlink $profiles;
+
+    $helper->mk_component($app, 'controller', 'Orders', 'Handel::Order', 'TestApp::Model::');
+    file_exists_ok($module);
+    file_exists_ok($list);
+    file_exists_ok($view);
+    file_exists_ok($messages);
+    file_exists_ok($profiles);
+    file_contents_like($module,   qr/->model\('Order'\)/);
+    file_contents_like($module,   qr/= 'orders\/view'/);
+    file_contents_like($module,   qr/= 'orders\/default'/);
+    file_contents_like($view,     qr/INCLUDE orders\/errors/);
+    file_contents_like($list,     qr/\[% c.uri_for\('\/orders\/view'/);
+    file_contents_like($messages, qr/^orders\/view:/);
+    file_contents_like($profiles, qr/^orders\/view:/);
 };

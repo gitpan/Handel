@@ -1,17 +1,18 @@
 #!perl -wT
-# $Id: order_create.t 1425 2006-09-23 19:31:16Z claco $
+# $Id: order_create.t 1504 2006-10-25 14:55:49Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+    use Scalar::Util qw/refaddr/;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 569;
+        plan tests => 656;
     };
 
     use_ok('Handel::Constants', qw(:order :checkout));
@@ -19,10 +20,6 @@ BEGIN {
     use_ok('Handel::Constraints', 'constraint_uuid');
     use_ok('Handel::Exception', ':try');
 };
-
-my $haslcf;
-eval 'use Locale::Currency::Format';
-if (!$@) {$haslcf = 1};
 
 
 eval 'use Test::MockObject 0.07';
@@ -51,6 +48,9 @@ use_ok('Handel::Subclassing::Cart');
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+my $altschema = Handel::Test->init_schema(no_populate => 1, db_file => 'althandel.db', namespace => 'Handel::AltSchema');
+
 &run('Handel::Order', 'Handel::Order::Item', 1);
 &run('Handel::Subclassing::OrderOnly', 'Handel::Order::Item', 2);
 &run('Handel::Subclassing::Order', 'Handel::Subclassing::OrderItem', 3);
@@ -58,20 +58,8 @@ use_ok('Handel::Subclassing::Cart');
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
-
-    ## Setup SQLite DB for tests
-    {
-        my $dbfile       = "t/order_create_$dbsuffix.db";
-        my $db           = "dbi:SQLite:dbname=$dbfile";
-        my $createcart   = 't/sql/cart_create_table.sql';
-        my $createorder  = 't/sql/order_create_table.sql';
-
-        unlink $dbfile;
-        executesql($db, $createorder);
-        executesql($db, $createcart);
-
-        $ENV{'HandelDBIDSN'} = $db;
-    };
+    Handel::Test->clear_schema($schema);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
 
     ## test for Handel::Exception::Argument where first param is not a hashref
@@ -102,7 +90,21 @@ sub run {
     };
 
 
-    ## test for Handel::Exception::Argument where cart key is not a Handel::Cart object
+    ## test for Handel::Exception::Argument where cart key is not a hashref
+    {
+        try {
+            my $order = $subclass->create({cart => []});
+
+            fail;
+        } catch Handel::Exception::Argument with {
+            pass;
+        } otherwise {
+            fail;
+        };
+    };
+
+
+    ## test for Handel::Exception::Argument where cart is
     {
         try {
             my $fake = bless {}, 'MyObject::Foo';
@@ -240,16 +242,14 @@ sub run {
         if ($subclass ne 'Handel::Order') {
             is($order->custom, undef);
         };
-        if ($haslcf) {
-            is($order->subtotal->format, '0.00 USD');
-            is($order->subtotal->format('CAD'), '0.00 CAD');
-            is($order->subtotal->format(undef, 'FMT_NAME'), '0.00 US Dollar');
-            is($order->subtotal->format('CAD', 'FMT_NAME'), '0.00 Canadian Dollar');
-        } else {
-            is($order->subtotal->format, 0);
-            is($order->subtotal->format('CAD'), 0);
-            is($order->subtotal->format(undef, 'FMT_NAME'), 0);
-            is($order->subtotal->format('CAD', 'FMT_NAME'), 0);
+
+        is($order->subtotal->format, '0.00 USD');
+        is($order->subtotal->format('FMT_NAME'), '0.00 US Dollar');
+        
+        {
+            local $ENV{'HandelCurrencyCode'} = 'CAD';
+            is($order->subtotal->format, '0.00 CAD');
+            is($order->subtotal->format('FMT_NAME'), '0.00 Canadian Dollar');
         };
     };
 
@@ -324,68 +324,34 @@ sub run {
         if ($subclass ne 'Handel::Order') {
             is($order->custom, 'custom');
         };
-        if ($haslcf) {
-            is($order->shipping->format, '1.23 USD');
-            is($order->shipping->format('CAD'), '1.23 CAD');
-            is($order->shipping->format(undef, 'FMT_NAME'), '1.23 US Dollar');
-            is($order->shipping->format('CAD', 'FMT_NAME'), '1.23 Canadian Dollar');
-        } else {
-            is($order->shipping->format, 1.23);
-            is($order->shipping->format('CAD'), 1.23);
-            is($order->shipping->format(undef, 'FMT_NAME'), 1.23);
-            is($order->shipping->format('CAD', 'FMT_NAME'), 1.23);
-        };
 
+
+        is($order->shipping->format, '1.23 USD');
+        is($order->shipping->format('FMT_NAME'), '1.23 US Dollar');
         is($order->handling, 4.56);
-        if ($haslcf) {
-            is($order->handling->format, '4.56 USD');
-            is($order->handling->format('CAD'), '4.56 CAD');
-            is($order->handling->format(undef, 'FMT_NAME'), '4.56 US Dollar');
-            is($order->handling->format('CAD', 'FMT_NAME'), '4.56 Canadian Dollar');
-        } else {
-            is($order->handling->format, 4.56);
-            is($order->handling->format('CAD'), 4.56);
-            is($order->handling->format(undef, 'FMT_NAME'), 4.56);
-            is($order->handling->format('CAD', 'FMT_NAME'), 4.56);
-        };
-
+        is($order->handling->format, '4.56 USD');
+        is($order->handling->format('FMT_NAME'), '4.56 US Dollar');
         is($order->tax, 7.89);
-        if ($haslcf) {
-            is($order->tax->format, '7.89 USD');
-            is($order->tax->format('CAD'), '7.89 CAD');
-            is($order->tax->format(undef, 'FMT_NAME'), '7.89 US Dollar');
-            is($order->tax->format('CAD', 'FMT_NAME'), '7.89 Canadian Dollar');
-        } else {
-            is($order->tax->format, 7.89);
-            is($order->tax->format('CAD'), 7.89);
-            is($order->tax->format(undef, 'FMT_NAME'), 7.89);
-            is($order->tax->format('CAD', 'FMT_NAME'), 7.89);
-        };
-
+        is($order->tax->format, '7.89 USD');
+        is($order->tax->format('FMT_NAME'), '7.89 US Dollar');
         is($order->subtotal, 10.11);
-        if ($haslcf) {
-            is($order->subtotal->format, '10.11 USD');
-            is($order->subtotal->format('CAD'), '10.11 CAD');
-            is($order->subtotal->format(undef, 'FMT_NAME'), '10.11 US Dollar');
-            is($order->subtotal->format('CAD', 'FMT_NAME'), '10.11 Canadian Dollar');
-        } else {
-            is($order->subtotal->format, 10.11);
-            is($order->subtotal->format('CAD'), 10.11);
-            is($order->subtotal->format(undef, 'FMT_NAME'), 10.11);
-            is($order->subtotal->format('CAD', 'FMT_NAME'), 10.11);
-        };
-
+        is($order->subtotal->format, '10.11 USD');
+        is($order->subtotal->format('FMT_NAME'), '10.11 US Dollar');
         is($order->total, 12.13);
-        if ($haslcf) {
-            is($order->total->format, '12.13 USD');
-            is($order->total->format('CAD'), '12.13 CAD');
-            is($order->total->format(undef, 'FMT_NAME'), '12.13 US Dollar');
-            is($order->total->format('CAD', 'FMT_NAME'), '12.13 Canadian Dollar');
-        } else {
-            is($order->total->format, 12.13);
-            is($order->total->format('CAD'), 12.13);
-            is($order->total->format(undef, 'FMT_NAME'), 12.13);
-            is($order->total->format('CAD', 'FMT_NAME'), 12.13);
+        is($order->total->format, '12.13 USD');
+        is($order->total->format('FMT_NAME'), '12.13 US Dollar');
+        {
+            local $ENV{'HandelCurrencyCode'} = 'CAD';
+            is($order->shipping->format, '1.23 CAD');
+            is($order->shipping->format('FMT_NAME'), '1.23 Canadian Dollar');
+            is($order->handling->format, '4.56 CAD');
+            is($order->handling->format('FMT_NAME'), '4.56 Canadian Dollar');
+            is($order->tax->format, '7.89 CAD');
+            is($order->tax->format('FMT_NAME'), '7.89 Canadian Dollar');
+            is($order->subtotal->format, '10.11 CAD');
+            is($order->subtotal->format('FMT_NAME'), '10.11 Canadian Dollar');
+            is($order->total->format, '12.13 CAD');
+            is($order->total->format('FMT_NAME'), '12.13 Canadian Dollar');
         };
 
         is($order->billtofirstname, 'Christopher');
@@ -444,16 +410,12 @@ sub run {
             is($order->custom, undef);
         };
 
-        if ($haslcf) {
-            is($order->subtotal->format, '2.22 USD');
-            is($order->subtotal->format('CAD'), '2.22 CAD');
-            is($order->subtotal->format(undef, 'FMT_NAME'), '2.22 US Dollar');
-            is($order->subtotal->format('CAD', 'FMT_NAME'), '2.22 Canadian Dollar');
-        } else {
-            is($order->subtotal->format, 2.22);
-            is($order->subtotal->format('CAD'), 2.22);
-            is($order->subtotal->format(undef, 'FMT_NAME'), 2.22);
-            is($order->subtotal->format('CAD', 'FMT_NAME'), 2.22);
+        is($order->subtotal->format, '2.22 USD');
+        is($order->subtotal->format('FMT_NAME'), '2.22 US Dollar');
+        {
+            local $ENV{'HandelCurrencyCode'} = 'CAD';
+            is($order->subtotal->format, '2.22 CAD');
+            is($order->subtotal->format('FMT_NAME'), '2.22 Canadian Dollar');
         };
 
         my $orderitem = $order->items->first;
@@ -469,24 +431,16 @@ sub run {
             is($orderitem->custom, undef);
         };
 
-        if ($haslcf) {
-            is($orderitem->price->format, '1.11 USD');
-            is($orderitem->price->format('CAD'), '1.11 CAD');
-            is($orderitem->price->format(undef, 'FMT_NAME'), '1.11 US Dollar');
-            is($orderitem->price->format('CAD', 'FMT_NAME'), '1.11 Canadian Dollar');
-            is($orderitem->total->format, '2.22 USD');
-            is($orderitem->total->format('CAD'), '2.22 CAD');
-            is($orderitem->total->format(undef, 'FMT_NAME'), '2.22 US Dollar');
-            is($orderitem->total->format('CAD', 'FMT_NAME'), '2.22 Canadian Dollar');
-        } else {
-            is($orderitem->price->format, 1.11);
-            is($orderitem->price->format('CAD'), 1.11);
-            is($orderitem->price->format(undef, 'FMT_NAME'), 1.11);
-            is($orderitem->price->format('CAD', 'FMT_NAME'), 1.11);
-            is($orderitem->total->format, 2.22);
-            is($orderitem->total->format('CAD'), 2.22);
-            is($orderitem->total->format(undef, 'FMT_NAME'), 2.22);
-            is($orderitem->total->format('CAD', 'FMT_NAME'), 2.22);
+        is($orderitem->price->format, '1.11 USD');
+        is($orderitem->price->format('FMT_NAME'), '1.11 US Dollar');
+        is($orderitem->total->format, '2.22 USD');
+        is($orderitem->total->format('FMT_NAME'), '2.22 US Dollar');
+        {
+            local $ENV{'HandelCurrencyCode'} = 'CAD';
+            is($orderitem->price->format, '1.11 CAD');
+            is($orderitem->price->format('FMT_NAME'), '1.11 Canadian Dollar');
+            is($orderitem->total->format, '2.22 CAD');
+            is($orderitem->total->format('FMT_NAME'), '2.22 Canadian Dollar');
         };
     };
 
@@ -520,16 +474,13 @@ sub run {
             is($order->custom, undef);
         };
 
-        if ($haslcf) {
-            is($order->subtotal->format, '2.22 USD');
-            is($order->subtotal->format('CAD'), '2.22 CAD');
-            is($order->subtotal->format(undef, 'FMT_NAME'), '2.22 US Dollar');
-            is($order->subtotal->format('CAD', 'FMT_NAME'), '2.22 Canadian Dollar');
-        } else {
-            is($order->subtotal->format, 2.22);
-            is($order->subtotal->format('CAD'), 2.22);
-            is($order->subtotal->format(undef, 'FMT_NAME'), 2.22);
-            is($order->subtotal->format('CAD', 'FMT_NAME'), 2.22);
+
+        is($order->subtotal->format, '2.22 USD');
+        is($order->subtotal->format('FMT_NAME'), '2.22 US Dollar');
+        {
+            local $ENV{'HandelCurrencyCode'} = 'CAD';
+            is($order->subtotal->format, '2.22 CAD');
+            is($order->subtotal->format('FMT_NAME'), '2.22 Canadian Dollar');
         };
 
         my $orderitem = $order->items->first;
@@ -545,24 +496,16 @@ sub run {
             is($orderitem->custom, undef);
         };
 
-        if ($haslcf) {
-            is($orderitem->price->format, '1.11 USD');
-            is($orderitem->price->format('CAD'), '1.11 CAD');
-            is($orderitem->price->format(undef, 'FMT_NAME'), '1.11 US Dollar');
-            is($orderitem->price->format('CAD', 'FMT_NAME'), '1.11 Canadian Dollar');
-            is($orderitem->total->format, '2.22 USD');
-            is($orderitem->total->format('CAD'), '2.22 CAD');
-            is($orderitem->total->format(undef, 'FMT_NAME'), '2.22 US Dollar');
-            is($orderitem->total->format('CAD', 'FMT_NAME'), '2.22 Canadian Dollar');
-        } else {
-            is($orderitem->price->format, 1.11);
-            is($orderitem->price->format('CAD'), 1.11);
-            is($orderitem->price->format(undef, 'FMT_NAME'), 1.11);
-            is($orderitem->price->format('CAD', 'FMT_NAME'), 1.11);
-            is($orderitem->total->format, 2.22);
-            is($orderitem->total->format('CAD'), 2.22);
-            is($orderitem->total->format(undef, 'FMT_NAME'), 2.22);
-            is($orderitem->total->format('CAD', 'FMT_NAME'), 2.22);
+        is($orderitem->price->format, '1.11 USD');
+        is($orderitem->price->format('FMT_NAME'), '1.11 US Dollar');
+        is($orderitem->total->format, '2.22 USD');
+        is($orderitem->total->format('FMT_NAME'), '2.22 US Dollar');
+        {
+            local $ENV{'HandelCurrencyCode'} = 'CAD';
+            is($orderitem->price->format, '1.11 CAD');
+            is($orderitem->price->format('FMT_NAME'), '1.11 Canadian Dollar');
+            is($orderitem->total->format, '2.22 CAD');
+            is($orderitem->total->format('FMT_NAME'), '2.22 Canadian Dollar');
         };
     };
 
@@ -620,6 +563,79 @@ sub run {
 
         my $order = $subclass->create({
             cart => '99BE4783-2A16-4172-A5A8-415A7D984BC'.$dbsuffix,
+            shopper=>'99BE4783-2A16-4172-A5A8-415A7D984BCA'
+        });
+        isa_ok($order, 'Handel::Order');
+        isa_ok($order, $subclass);
+        is($order->count, $cart->count);
+        is($order->subtotal, $cart->subtotal);
+
+        my $orderitem = $order->items->first;
+        isa_ok($orderitem, 'Handel::Order::Item');
+        isa_ok($orderitem, $itemclass);
+        is($orderitem->sku, $item->sku);
+        is($orderitem->quantity, $item->quantity);
+        is($orderitem->price, $item->price);
+        is($orderitem->description, $item->description);
+        is($orderitem->total, $item->total);
+        is($orderitem->orderid, $order->id);
+    };
+
+
+    {
+        ## create and order from a cart id and inherit shopper id
+        my $cart = Handel::Cart->create({
+            id=>'29BE4783-2A16-4172-A5A8-415A7D984BC'.$dbsuffix,
+            shopper=>'99BE4783-2A16-4172-A5A8-415A7D984BCA',
+            name=>'My Other Third Cart'
+        });
+        my $item = $cart->add({
+            id => '299E1E68-0DCE-43d5-A747-F380769DDCF'.$dbsuffix,
+            sku => 'sku3',
+            quantity => 2,
+            price => 1.23,
+            description => 'My Third Item'
+        });
+
+        my $order = $subclass->create({
+            cart => '29BE4783-2A16-4172-A5A8-415A7D984BC'.$dbsuffix
+        });
+        isa_ok($order, 'Handel::Order');
+        isa_ok($order, $subclass);
+        is($order->count, $cart->count);
+        is($order->subtotal, $cart->subtotal);
+        is($order->shopper, $cart->shopper, 'shopper id was copied');
+
+        my $orderitem = $order->items->first;
+        isa_ok($orderitem, 'Handel::Order::Item');
+        isa_ok($orderitem, $itemclass);
+        is($orderitem->sku, $item->sku);
+        is($orderitem->quantity, $item->quantity);
+        is($orderitem->price, $item->price);
+        is($orderitem->description, $item->description);
+        is($orderitem->total, $item->total);
+        is($orderitem->orderid, $order->id);
+    };
+
+
+    {
+        ## create and order from a cart object without a shopper accessor
+        my $cart = Handel::Cart->create({
+            id=>'19BE4783-2A16-4172-A5A8-415A7D984BC'.$dbsuffix,
+            shopper=>'99BE4783-2A16-4172-A5A8-415A7D984BCA',
+            name=>'My Other Third Cart'
+        });
+        my $item = $cart->add({
+            id => '199E1E68-0DCE-43d5-A747-F380769DDCF'.$dbsuffix,
+            sku => 'sku3',
+            quantity => 2,
+            price => 1.23,
+            description => 'My Third Item'
+        });
+
+        local *Handel::Cart::can = sub {};
+        my $order = $subclass->create({
+            cart => $cart,
             shopper=>'99BE4783-2A16-4172-A5A8-415A7D984BCA'
         });
         isa_ok($order, 'Handel::Order');
@@ -702,4 +718,27 @@ sub run {
         };
     };
 
+};
+
+
+## pass in storage instead
+{
+    my $storage = Handel::Order->storage_class->new;
+    local $ENV{'HandelDBIDSN'} = $altschema->dsn;
+
+    my $order = Handel::Order->create({
+        shopper => '88888888-8888-8888-8888-888888888888',
+        type    => ORDER_TYPE_SAVED
+    }, {
+        storage => $storage
+    });
+    isa_ok($order, 'Handel::Order');
+    ok(constraint_uuid($order->id));
+    is($order->shopper, '88888888-8888-8888-8888-888888888888');
+    is($order->type, ORDER_TYPE_SAVED);
+    is($order->count, 0);
+    is($order->subtotal, 0);
+    is(refaddr $order->result->storage, refaddr $storage, 'storage option used');
+    is($altschema->resultset('Orders')->search({id => $order->id})->count, 1, 'order found in alt storage');
+    is($schema->resultset('Orders')->search({id => $order->id})->count, 0, 'alt order not in class storage');
 };

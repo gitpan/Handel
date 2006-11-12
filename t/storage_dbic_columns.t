@@ -1,12 +1,12 @@
 #!perl -wT
-# $Id: storage_dbic_columns.t 1379 2006-08-22 02:21:53Z claco $
+# $Id: storage_dbic_columns.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Test::More;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
@@ -27,9 +27,9 @@ my $storage = Handel::Storage::DBIC->new({
 
 
 ## get columns from unconnected schema (really column accessors keys
-is_deeply([sort $storage->columns], [qw/description id name shopper type/]);
+is_deeply([sort $storage->columns], [qw/description id name shopper type/], 'received expected columns');
 
 
 ## get columns from connected schema
 my $schema = $storage->schema_instance;
-is_deeply([sort $storage->columns], [sort $schema->source($storage->schema_source)->columns]);
+is_deeply([sort $storage->columns], [sort $schema->source($storage->schema_source)->columns], 'received expected columns from schema instance');

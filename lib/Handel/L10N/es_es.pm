@@ -1,5 +1,5 @@
 ## no critic
-# $Id: es_es.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: es_es.pm 1444 2006-09-30 00:39:14Z claco $
 package Handel::L10N::es_es;
 use strict;
 use warnings;
@@ -8,95 +8,151 @@ use vars qw/%Lexicon/;
 
 BEGIN {
     use base qw/Handel::L10N/;
-};
+}
 
 %Lexicon = (
-    "Language" =>
-        "Español",
+    Language => 'Spanish',
 
-    ## Base exceptions
-    "An unspecified error has occurred" =>
-        "Un error no especificado ha ocurrido",
+    COMPAT_DEPRECATED =>
+      'Handel::Compat esta obsoleta y dejará de existir en futuras versiones.',
 
-    "The supplied field(s) failed database constraints" =>
-        "El/Los campo/s provisto/s no coinciden con los definidos en la base de datos",
+    COMPCLASS_NOT_LOADED =>
+      'El componente de clase [_1] [_2] no se ha podido cargar',
 
-    "The argument supplied is invalid or of the wrong type" =>
-        "El argumento provisto es invalido o del tipo equivocado",
+    PARAM1_NOT_HASHREF => 'El parámetro 1 no es una referencia a un HASH',
 
-    "Required modules not found" =>
-        "Modulos necesarios no encontrados",
+    PARAM1_NOT_HASHREF_CARTITEM =>
+      'El parámetro 1 no es una referencia a un HASH ni un Handel::Cart::Item',
 
-    "The quantity requested ([_1]) is greater than the maximum quantity allowed ([_2])" =>
-        "La cantidad solicitada ([_1]) es mayor que la cantidad maxima permitida ([_2])",
+    PARAM1_NOT_HASHREF_CART =>
+      'El parámetro 1 no es una referencia a un HASH ni un Handel::Cart',
 
-    "An error occurred while while creating or validating the current order" =>
-        "Un error a ocurrido mientras se creaba o validaba la orden actual",
+    PARAM1_NOT_HASHREF_ORDER =>
+      'El parámetro 1 no es una referencia a un HASH ni un Handel::Order',
 
-    "An error occurred during the checkout process" =>
-        "Un error a ocurrido durante el proceso de verificación (checkout)",
+    PARAM1_NOT_CHECKOUT_PHASE =>
+      'El parámetro 1 no contiene un valor válido para CHECKOUT_PHASE_*',
 
-    ## param 1 violations
-    "Param 1 is not a HASH reference" =>
-        "El parametro 1 no es una referencia a un HASH",
+    PARAM1_NOT_CODEREF =>
+      'El parámetro 1 no es una referencia a CODE (código)',
 
-    "Cart reference is not a HASH reference or Handel::Cart" =>
-        "La referencia al Cart no es una referencia a un HASH o un Handel::Cart",
+    PARAM1_NOT_CHECKOUT_MESSAGE =>
+      'El parámetro 1 no es un objeto Handel::Checkout::Message ni un mensaje de texto',
 
-    "Param 1 is not a HASH reference or Handel::Cart::Item" =>
-        "El parametro 1 no es una referencia a un HASH ni un Handel::Cart::Item",
+    PARAM1_NOT_HASH_CARTITEM_ORDERITEM =>
+'El parámetro 1 no es una referencia a un HASH, un Handel::Cart::Item ni un Handel::Order::Item',
 
-    "Param 1 is not a HASH reference, Handel::Order::Item or Handel::Cart::Item" =>
-        "El parametro 1 no es una referencia a un HASH, un Handel::Order::Item o un Handel::Cart::Item",
+    PARAM1_NOT_ARRAYREF_STRING => 'El parámetro 1 no es una referencia a un ARRAY ni una cadena',
 
-    "Unknown restore mode" =>
-        "Modo de recuperacion desconocido",
+    PARAM2_NOT_HASHREF => 'El parámetro 2 no es una referencia a un HASH',
 
-    "Currency code '[_1]' is invalid or malformed" =>
-        "El codigo monetario '[_1]' es invalido o está mal formado",
+    CARTPARAM_NOT_HASH_CART =>
+      'La referencia al carro(Cart) no es una referencia a un HASH ni un Handel::Cart',
 
-    "Param 1 is not a a valid CHECKOUT_PHASE_* value" =>
-        "El parametro 1 no es un valor CHECKOUT_PHASE_* valido",
+    COLUMN_NOT_SPECIFIED => 'No se ha especificado ninguna columna',
 
-    "Param 1 is not a CODE reference" =>
-        "El parametro 1 no es una referencia a un CODE",
+    COLUMN_NOT_FOUND => 'La columna [_1] no existe',
 
-    "Param 1 is not an ARRAY reference" =>
-        "El parametro 1 no es una referencia a un ARRAY",
+    COLUMN_VALUE_EXISTS => 'El valor [_1] ya existe',
 
-    "Param 1 is not an ARRAY reference or string" =>
-        "El parametro 1 no es un string ni una referencia a un ARRAY",
+    CONSTRAINT_NAME_NOT_SPECIFIED => 'El nombre de la condición(constraint) no ha sido especificado',
 
-    "Param 1 is not a HASH reference, Handel::Order object, or order id" =>
-        "El parametro 1 no es una referencia a un ARRAY, un Handel::Order ni un id de orden",
+    CONSTRAINT_NOT_SPECIFIED => 'La condición no ha sido especificada',
 
-    "Param 1 is not a Handel::Checkout::Message object or text message" =>
-        "El parametro 1 no es un Handel::Checkout::Message ni el texto del mensaje",
+    UNKNOWN_RESTORE_MODE => 'Modo de recuperación(restore) desconocido',
 
-    ## Taglib exceptions
-    "Tag '[_1]' not valid inside of other Handel tags" =>
-        "El tag '[_1]' no es valido dentro de otros tags de Handel",
+    HANDLER_EXISTS_IN_PHASE =>
+'Ya existe un manejador(handler) en la fase ([_1]) para la preferencia ([_2]) desde el plugin ([_3])',
 
-    "Tag '[_1]' not valid here" =>
-        "El tag '[_1]' no es valido aquí",
+    CONSTANT_NAME_ALREADY_EXISTS =>
+      'La constante llamada [_1] ya existe en Handel::Constants',
 
-    ## naughty bits
-    "has invalid value" =>
-        "tiene un valor invalido",
+    CONSTANT_VALUE_ALREADY_EXISTS =>
+      'Ya existe el valor [_1] como valor constante de fase',
 
-    "[_1] value already exists" =>
-        "el valor [_1] ya existe",
+    CONSTANT_EXISTS_IN_CALLER =>
+      'La constante llamada [_1] ya existe en [_2]',
 
-    ## Order exceptions
-    "Could not find a cart matching the supplid search criteria" =>
-        "No es posible encontrar un carro con el criterio de búsqueda suministrado",
+    NO_ORDER_LOADED => 'No hay ninguna orden asociada con este proceso de checkout',
 
-    "Could not create a new order because the supplied cart is empty" =>
-        "No es posible crear una nueva orden de compra porque el carro suministrado esta vacio",
+    CART_NOT_FOUND =>
+      'No he podido encontrar ningún carro con el criterio de búsqueda provisto',
 
-    ## Checkout exception
-    "No order is assocated with this checkout process" =>
-        "Ninguna orden está asociada a este proceso de verificación (checkout)",
+    ORDER_CREATE_FAILED_CART_EMPTY =>
+      'No he podido crear una nueva orden porque el carro provisto está vacio',
+
+    ROLLBACK_FAILED => 'Transacción abortada. El rollback ha fallado: [_1]',
+
+    QUANTITY_GT_MAX =>
+'La cantidad solicitada ([_1]) es mayor que la máxima permitida ([_2])',
+
+    CURRENCY_CODE_INVALID => 'El código monetario [_1] es invalido o está mal formado',
+
+    UNHANDLED_EXCEPTION => 'Ha ocurrido un error desconocido',
+
+    CONSTRAINT_EXCEPTION => 'Los campos provistos no cumplen una condición de la base de datos',
+
+    ARGUMENT_EXCEPTION =>
+      'El argumento provisto es invalido o de un tipo incorrecto',
+
+    XSP_TAG_EXCEPTION =>
+      'El tag está fuera de ámbito o falta un tag hijo solicitado',
+
+    ORDER_EXCEPTION =>
+      'Ha ocurrido un error validando la orden actual',
+
+    CHECKOUT_EXCEPTION => 'Ha ocurrido un error durante el proceso de checkout',
+
+    STORAGE_EXCEPTION => 'Ha ocurriodo un error cargando el storage',
+
+    VALIDATION_EXCEPTION =>
+      'No se han podido escribir los datos porque no satisfasen la validación',
+
+    VIRTUAL_METHOD => 'Metodo virtual no implementado',
+
+    NO_STORAGE => 'No se ha suministrado el storage',
+
+    NO_RESULT => 'No existe o no ha sido suministrado el resultado',
+
+    NOT_CLASS_METHOD => 'No es un metodo de clase',
+
+    FVS_REQUIRES_ARRAYREF =>
+      'FormValidator::Simple requiere un perfil basado en un ARRAYREF',
+
+    DFV_REQUIRES_HASHREF =>
+      'Data::FormValidator requiere un perfil basado en un HASHREF',
+
+    PLUGIN_HAS_NO_REGISTER =>
+      'Se ha intentado registrar un plugin que no define register',
+
+    ADD_CONSTRAINT_EXISTING_SCHEMA =>
+      'No se puede agregar condiciones a una instancia de schema ya existente',
+
+    REMOVE_CONSTRAINT_EXISTING_SCHEMA =>
+      'No se puede quitar condiciones a una instancia de schema ya existente',
+
+    SETUP_EXISTING_SCHEMA => 'Una instancia del schema ya ha sido inicializada',
+
+    COMPDATA_EXISTING_SCHEMA =>
+      'No se puede asignar [_1] a una instancia de schema ya existente',
+
+    ITEM_RELATIONSHIP_NOT_SPECIFIED => 'No se ha definido ninguna relacion para el item',
+
+    ITEM_STORAGE_NOT_DEFINED => 'No se ha definido item storage o item storage class',
+
+    SCHEMA_SOURCE_NOT_SPECIFIED => 'No se ha especificado ningún schema_source',
+
+    SCHEMA_CLASS_NOT_SPECIFIED => 'No se ha especificado ningún schema_class',
+
+    SCHEMA_SOURCE_NO_RELATIONSHIP =>
+      'El origen [_1] no tiene ninguna relación llamada [_2]',
+
+    TAG_NOT_ALLOWED_IN_OTHERS =>
+      'El tag [_1] no es valido dentro de otros Handel tags',
+
+    TAG_NOT_ALLOWED_HERE => 'El tag [_1] no es valido aquí',
+
+    TAG_NOT_ALLOWED_IN_TAG => 'El tag [_1] no es valido dentro del tag [_2]'
 );
 
 1;

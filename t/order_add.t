@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: order_add.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: order_add.t 1500 2006-10-24 02:49:21Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 290;
+        plan tests => 342;
     };
 
     use_ok('Handel::Order');
@@ -26,6 +26,8 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+
 &run('Handel::Order', 'Handel::Order::Item', 1);
 &run('Handel::Subclassing::OrderOnly', 'Handel::Order::Item', 2);
 &run('Handel::Subclassing::Order', 'Handel::Subclassing::OrderItem', 3);
@@ -33,24 +35,8 @@ BEGIN {
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
-
-    ## Setup SQLite DB for tests
-    {
-        my $dbfile  = "t/order_add_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $cartcreate   = 't/sql/order_create_table.sql';
-        my $cartdata     = 't/sql/order_fake_data.sql';
-        my $ordercreate  = 't/sql/cart_create_table.sql';
-        my $orderdata    = 't/sql/cart_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $cartcreate);
-        executesql($db, $cartdata);
-        executesql($db, $ordercreate);
-        executesql($db, $orderdata);
-
-        $ENV{'HandelDBIDSN'} = $db;
-    };
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
 
     ## test for Handel::Exception::Argument where first param is not a hashref
@@ -293,4 +279,134 @@ sub run {
         };
     };
 
+};
+
+
+## add a new item by passing a Handel::Order::Item where object has no column
+## accessor methods, but the result does
+{
+    local *Handel::Order::Item::can = sub {};
+
+    my $data = {
+        sku         => 'SKU8989',
+        quantity    => 1,
+        price       => 1.11,
+        description => 'Line Item SKU 8',
+        orderid     => '00000000-0000-0000-0000-000000000001'
+    };
+
+    my $newitem = Handel::Order::Item->create($data);
+    isa_ok($newitem, 'Handel::Order::Item');
+
+    my $it = Handel::Order->search({
+        id => '22222222-2222-2222-2222-222222222222'
+    });
+    isa_ok($it, 'Handel::Iterator');
+    is($it, 1);
+
+    my $order = $it->first;
+    isa_ok($order, 'Handel::Order');
+
+
+    my $item = $order->add($newitem);
+    isa_ok($item, 'Handel::Order::Item');
+    is($item->orderid, $order->id);
+    is($item->sku, 'SKU8989');
+    is($item->quantity, 1);
+    is($item->price, 1.11);
+    is($item->description, 'Line Item SKU 8');
+    is($item->total, 0);
+
+    is($order->count, 4);
+    is($order->subtotal, 5.55);
+
+    my $reorderit = Handel::Order->search({
+        id => '22222222-2222-2222-2222-222222222222'
+    });
+    isa_ok($reorderit, 'Handel::Iterator');
+    is($reorderit, 1);
+
+    my $reorder = $reorderit->first;
+    isa_ok($reorder, 'Handel::Order');
+    is($reorder->count, 4);
+
+    my $reitemit = $order->items({sku => 'SKU8989'});
+    isa_ok($reitemit, 'Handel::Iterator');
+    is($reitemit, 1);
+
+    my $reitem = $reitemit->first;
+    isa_ok($reitem, 'Handel::Order::Item');
+    is($reitem->orderid, $order->id);
+    is($reitem->sku, 'SKU8989');
+    is($reitem->quantity, 1);
+    is($reitem->price, 1.11);
+    is($reitem->description, 'Line Item SKU 8');
+    is($reitem->total, 0);
+};
+
+
+## add a new item by passing a Handel::Order::Item where object has no column
+## accessor methods and no result accessor methods
+{
+    no warnings 'once';
+    no warnings 'redefine';
+
+    local *Handel::Order::Item::can = sub {};
+    local *Handel::Storage::DBIC::Result::can = sub {return 1 if $_[1] eq 'sku'};
+
+    my $data = {
+        sku         => 'SKU9898',
+        quantity    => 1,
+        price       => 1.11,
+        description => 'Line Item SKU 8',
+        orderid     => '00000000-0000-0000-0000-000000000002'
+    };
+
+    my $newitem = Handel::Order::Item->create($data);
+    isa_ok($newitem, 'Handel::Order::Item');
+
+    my $it = Handel::Order->search({
+        id => '22222222-2222-2222-2222-222222222222'
+    });
+    isa_ok($it, 'Handel::Iterator');
+    is($it, 1);
+
+    my $order = $it->first;
+    isa_ok($order, 'Handel::Order');
+
+
+    my $item = $order->add($newitem);
+    isa_ok($item, 'Handel::Order::Item');
+    is($item->orderid, $order->id);
+    is($item->sku, 'SKU9898');
+    is($item->quantity, 1);
+    is($item->price, 0);
+    is($item->description, undef);
+    is($item->total, 0);
+
+    is($order->count, 5);
+    is($order->subtotal, 5.55);
+
+    my $reorderit = Handel::Order->search({
+        id => '22222222-2222-2222-2222-222222222222'
+    });
+    isa_ok($reorderit, 'Handel::Iterator');
+    is($reorderit, 1);
+
+    my $reorder = $reorderit->first;
+    isa_ok($reorder, 'Handel::Order');
+    is($reorder->count, 5);
+
+    my $reitemit = $order->items();
+    isa_ok($reitemit, 'Handel::Iterator');
+    is($reitemit, 5);
+
+    my $reitem = $reitemit->last;
+    isa_ok($reitem, 'Handel::Order::Item');
+    is($reitem->orderid, $order->id);
+    is($reitem->sku, 'SKU9898');
+    is($reitem->quantity, 1);
+    is($reitem->price, 0);
+    is($reitem->description, undef);
+    is($reitem->total, 0);
 };

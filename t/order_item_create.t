@@ -1,13 +1,19 @@
 #!perl -wT
-# $Id: order_item_create.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: order_item_create.t 1495 2006-10-24 00:06:19Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
-    plan tests => 38;
+    use lib 't/lib';
+    use Handel::Test;
+    use Scalar::Util qw/refaddr/;
+
+    eval 'require DBD::SQLite';
+    if($@) {
+        plan skip_all => 'DBD::SQLite not installed';
+    } else {
+        plan tests => 48;
+    };
 
     use_ok('Handel::Order::Item');
     use_ok('Handel::Subclassing::OrderItem');
@@ -31,26 +37,17 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+my $altschema = Handel::Test->init_schema(no_populate => 1, db_file => 'althandel.db', namespace => 'Handel::AltSchema');
+
 &run('Handel::Order::Item', 1);
 &run('Handel::Subclassing::OrderItem', 2);
 
 sub run {
     my ($subclass, $dbsuffix) = @_;
 
-
-    ## Setup SQLite DB for tests
-    {
-        my $dbfile  = "t/order_item_create_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/order_create_table.sql';
-        my $data    = 't/sql/order_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-    };
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
 
     ## create a new order item object
@@ -80,26 +77,45 @@ sub run {
             is($item->custom, 'custom');
         };
 
-        eval 'use Locale::Currency::Format';
-        if ($@) {
-            is($item->price->format, 1.23);
-            is($item->price->format('CAD'), 1.23);
-            is($item->price->format(undef, 'FMT_NAME'), 1.23);
-            is($item->price->format('CAD', 'FMT_NAME'), 1.23);
-            is($item->total->format, 2.46);
-            is($item->total->format('CAD'), 2.46);
-            is($item->total->format(undef, 'FMT_NAME'), 2.46);
-            is($item->total->format('CAD', 'FMT_NAME'), 2.46);
-        } else {
-            is($item->price->format, '1.23 USD');
-            is($item->price->format('CAD'), '1.23 CAD');
-            is($item->price->format(undef, 'FMT_NAME'), '1.23 US Dollar');
-            is($item->price->format('CAD', 'FMT_NAME'), '1.23 Canadian Dollar');
-            is($item->total->format, '2.46 USD');
-            is($item->total->format('CAD'), '2.46 CAD');
-            is($item->total->format(undef, 'FMT_NAME'), '2.46 US Dollar');
-            is($item->total->format('CAD', 'FMT_NAME'), '2.46 Canadian Dollar');
+
+        is($item->price->format, '1.23 USD');
+        is($item->price->format('FMT_NAME'), '1.23 US Dollar');
+        is($item->total->format, '2.46 USD');
+        is($item->total->format('FMT_NAME'), '2.46 US Dollar');
+        {
+            local $ENV{'HandelCurrencyCode'} = 'CAD';
+            is($item->price->format, '1.23 CAD');
+            is($item->price->format('FMT_NAME'), '1.23 Canadian Dollar');
+            is($item->total->format, '2.46 CAD');
+            is($item->total->format('FMT_NAME'), '2.46 Canadian Dollar');
         };
     };
 
+};
+
+
+## pass in storage instead
+{
+    my $storage = Handel::Order::Item->storage_class->new;
+    local $ENV{'HandelDBIDSN'} = $altschema->dsn;
+
+    my $item = Handel::Order::Item->create({
+        sku         => 'sku1234',
+        price       => 1.23,
+        quantity    => 2,
+        description => 'My Alt SKU',
+        orderid     => '00000000-0000-0000-0000-000000000000'
+    }, {
+        storage => $storage
+    });
+    isa_ok($item, 'Handel::Order::Item');
+    ok(constraint_uuid($item->id));
+    is($item->sku, 'sku1234');
+    is($item->price, 1.23);
+    is($item->quantity, 2);
+    is($item->description, 'My Alt SKU');
+    is($item->total, 0);
+    is(refaddr $item->result->storage, refaddr $storage, 'storage option used');
+    is($altschema->resultset('OrderItems')->search({description => 'My Alt SKU'})->count, 1, 'sku found in alt storage');
+    is($schema->resultset('OrderItems')->search({description => 'My Alt SKU'})->count, 0, 'sku not in class storage');
 };

@@ -1,13 +1,15 @@
 #!perl -w
-# $Id: catalyst_helpers_controller_cart.t 1390 2006-09-04 01:02:49Z claco $
+# $Id: catalyst_helpers_controller_cart.t 1574 2006-11-12 17:34:59Z claco $
 use strict;
 use warnings;
-use Test::More;
-use Cwd;
-use File::Path;
-use File::Spec::Functions;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+    use Cwd;
+    use File::Path;
+    use File::Spec::Functions;
+
     eval 'use Catalyst 5.7001';
     plan(skip_all =>
         'Catalyst 5.7001 not installed') if $@;
@@ -24,7 +26,7 @@ BEGIN {
     plan(skip_all =>
         'Test::File::Contents 0.02 not installed') if $@;
 
-    plan tests => 106;
+    plan tests => 126;
 
     use_ok('Catalyst::Helper');
 };
@@ -33,9 +35,14 @@ my $helper = Catalyst::Helper->new;
 my $app = 'TestApp';
 
 
+## setup var
+chdir('t');
+mkdir('var') unless -d 'var';
+chdir('var');
+
+
 ## create test app
 {
-    chdir('t');
     rmtree($app);
     $helper->mk_app($app);
     $FindBin::Bin = catdir(cwd, $app, 'lib');
@@ -72,7 +79,7 @@ my $app = 'TestApp';
 {
     my $lib = catfile(cwd, $app, 'lib');
     eval "use lib '$lib';use $app\:\:Controller\:\:Cart";
-    ok(!$@);
+    ok(!$@, 'loaded new class');
 };
 
 
@@ -253,4 +260,52 @@ my $app = 'TestApp';
     file_contents_like($module, qr/\$c->res->redirect\(\$c->uri_for\('\/myfqcart\/list\/'\)\);/);
     file_contents_like($view, qr/\[% c.uri_for\('\/myfqcart\/save\/'\) %\]/);
     file_contents_like($view, qr/\[% c.uri_for\('\/my\/checkout\/'\) %\]/);
+};
+
+
+## create a controller with a faulty model
+{
+    my $module = catfile($app, 'lib', $app, 'Controller', 'My', 'Cart.pm');
+    my $list   = catfile($app, 'root', 'my', 'cart', 'list');
+    my $view   = catfile($app, 'root', 'my', 'cart', 'default');
+
+    unlink $module;
+    unlink $list;
+    unlink $view;
+
+    $helper->mk_component($app, 'controller', 'My::Cart', 'Handel::Cart', 'TestApp::Model::');
+    file_exists_ok($module);
+    file_exists_ok($list);
+    file_exists_ok($view);
+    file_contents_like($module, qr/->model\('Cart'\)->storage->new_uuid/);
+    file_contents_like($module, qr/\$c->stash->{'template'} = 'my\/cart\/default';/);
+    file_contents_like($module, qr/\$c->res->redirect\(\$c->uri_for\('\/my\/cart\/'\)\);/);
+    file_contents_like($module, qr/\$c->stash->{'template'} = 'my\/cart\/list';/);
+    file_contents_like($module, qr/\$c->res->redirect\(\$c->uri_for\('\/my\/cart\/list\/'\)\);/);
+    file_contents_like($view, qr/\[% c.uri_for\('\/my\/cart\/save\/'\) %\]/);
+    file_contents_like($view, qr/\[% c.uri_for\('\/checkout\/'\) %\]/);
+};
+
+
+## create a controller with a faulty checkout
+{
+    my $module = catfile($app, 'lib', $app, 'Controller', 'My', 'Cart.pm');
+    my $list   = catfile($app, 'root', 'my', 'cart', 'list');
+    my $view   = catfile($app, 'root', 'my', 'cart', 'default');
+
+    unlink $module;
+    unlink $list;
+    unlink $view;
+
+    $helper->mk_component($app, 'controller', 'My::Cart', 'Handel::Cart', 'Cart', 'TestApp::Controller::');
+    file_exists_ok($module);
+    file_exists_ok($list);
+    file_exists_ok($view);
+    file_contents_like($module, qr/->model\('Cart'\)->storage->new_uuid/);
+    file_contents_like($module, qr/\$c->stash->{'template'} = 'my\/cart\/default';/);
+    file_contents_like($module, qr/\$c->res->redirect\(\$c->uri_for\('\/my\/cart\/'\)\);/);
+    file_contents_like($module, qr/\$c->stash->{'template'} = 'my\/cart\/list';/);
+    file_contents_like($module, qr/\$c->res->redirect\(\$c->uri_for\('\/my\/cart\/list\/'\)\);/);
+    file_contents_like($view, qr/\[% c.uri_for\('\/my\/cart\/save\/'\) %\]/);
+    file_contents_like($view, qr/\[% c.uri_for\('\/checkout\/'\) %\]/);
 };

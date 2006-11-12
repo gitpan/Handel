@@ -1,23 +1,17 @@
 #!perl -wT
-# $Id: checkout_stash.t 1077 2006-01-19 02:02:53Z claco $
+# $Id: checkout_stash.t 1476 2006-10-16 20:41:50Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
-    eval 'require DBD::SQLite';
-    if($@) {
-        plan skip_all => 'DBD::SQLite not installed';
-    } else {
-        plan tests => 19;
-    };
+    use lib 't/lib';
+    use Handel::Test tests => 31;
 
     use_ok('Handel::Checkout');
     use_ok('Handel::Subclassing::Checkout');
     use_ok('Handel::Subclassing::CheckoutStash');
     use_ok('Handel::Subclassing::Stash');
+    use_ok('Handel::Exception', ':try');
 };
 
 
@@ -32,20 +26,29 @@ sub run {
 
     ## Check the default stash creation
     {
-        my $checkout = $subclass->new;
+        my $checkout = $subclass->new({
+            stash => {foo => 'bar'}
+        });
         isa_ok($checkout->stash, $stashclass);
+        is($checkout->stash->{'foo'}, 'bar', 'stash item is set');
     };
 
 
     ## Check the stash parameter
     {
-        my $stash = CustomStash->new;
+        my $stash = CustomStash->new({
+            foo => 'bar'
+        });
         my $checkout = Handel::Checkout->new({
             stash => $stash
         });
 
         isa_ok($checkout->stash, 'CustomStash');
         isa_ok($checkout->stash, 'Handel::Checkout::Stash');
+        is($checkout->stash->{'foo'}, 'bar', 'stash item is set');
+
+        $checkout->stash->clear;
+        is_deeply($checkout->stash, {}, 'stash is now clear')
     };
 
 
@@ -58,7 +61,22 @@ sub run {
         isa_ok($checkout->stash, 'CustomStash');
         isa_ok($checkout->stash, 'Handel::Checkout::Stash');
     };
+};
 
+
+## test for exception when non-hashref is given
+{
+    try {
+        local $ENV{'LANG'} = 'en';
+        my $stash = Handel::Checkout::Stash->new([]);
+
+        fail('no exception thrown');
+    } catch Handel::Exception::Argument with {
+        pass('Argument exception caught');
+        like(shift, qr/not a hash ref/i, 'message contains not a hashref');
+    } otherwise {
+        fail('Other exception caught');
+    };
 };
 
 

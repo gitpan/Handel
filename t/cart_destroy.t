@@ -1,17 +1,17 @@
 #!perl -wT
-# $Id: cart_destroy.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: cart_destroy.t 1492 2006-10-22 23:52:28Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 68;
+        plan tests => 84;
     };
 
     use_ok('Handel::Cart');
@@ -23,6 +23,9 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+my $altschema = Handel::Test->init_schema(db_file => 'althandel.db', namespace => 'Handel::AltSchema');
+
 &run('Handel::Cart', 'Handel::Cart::Item', 1);
 &run('Handel::Subclassing::CartOnly', 'Handel::Cart::Item', 2);
 &run('Handel::Subclassing::Cart', 'Handel::Subclassing::CartItem', 3);
@@ -30,20 +33,8 @@ BEGIN {
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
-
-    ## Setup SQLite DB for tests
-    {
-        my $dbfile  = "t/cart_destroy_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/cart_create_table.sql';
-        my $data    = 't/sql/cart_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-    };
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
 
     ## Test for Handel::Exception::Argument where first param is not a hashref
@@ -129,4 +120,51 @@ sub run {
         is($remaining_items, $total_items - $related_items);
     };
 
+
+    ## Destroy carts on an instance
+    {
+        my $instance = bless {}, $subclass;
+        my $carts = $subclass->search;
+        isa_ok($carts, 'Handel::Iterator');
+        is($carts, 1);
+
+        $instance->destroy({
+            description => {like => '%'}
+        });
+
+        $carts = $subclass->search;
+        isa_ok($carts, 'Handel::Iterator');
+        is($carts, 0);
+    };
+};
+
+
+
+## pass in storage instead
+{
+    my $storage = Handel::Cart->storage_class->new;
+    local $ENV{'HandelDBIDSN'} = $altschema->dsn;
+
+    is($altschema->resultset('Carts')->search({id => '11111111-1111-1111-1111-111111111111'})->count, 1, 'cart found in alt storage');
+    Handel::Cart->destroy({
+        id => '11111111-1111-1111-1111-111111111111'
+    }, {
+        storage => $storage
+    });
+    is($altschema->resultset('Carts')->search({id => '11111111-1111-1111-1111-111111111111'})->count, 0, 'cart removed from alt storage');
+};
+
+
+## don't unset self if no result is returned
+{
+    my $storage = Handel::Cart->storage_class->new;
+    local $ENV{'HandelDBIDSN'} = $altschema->dsn;
+
+    my $cart = Handel::Cart->search({id => '22222222-2222-2222-2222-222222222222'}, {storage => $storage})->first;
+    ok($cart);
+
+    no warnings 'redefine';
+    local *Handel::Storage::DBIC::Result::delete = sub {};
+    $cart->destroy;
+    ok($cart);
 };

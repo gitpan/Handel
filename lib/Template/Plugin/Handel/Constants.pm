@@ -1,4 +1,4 @@
-# $Id: Constants.pm 1334 2006-07-14 03:22:20Z claco $
+# $Id: Constants.pm 1548 2006-11-06 01:50:49Z claco $
 package Template::Plugin::Handel::Constants;
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ use Handel::Constants ();
 
 sub new {
     my ($class, $context, @params) = @_;
-    my $self = bless {_CONTEXT => $context}, ref($class) || $class;
+    my $self = bless {_CONTEXT => $context}, $class;
 
     foreach my $const (@Handel::Constants::EXPORT_OK) {
         if ($const =~ /^[A-Z]{1}/) {

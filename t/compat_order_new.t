@@ -1,12 +1,12 @@
 #!perl -wT
-# $Id: compat_order_new.t 1425 2006-09-23 19:31:16Z claco $
+# $Id: compat_order_new.t 1517 2006-10-30 01:26:12Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
@@ -44,6 +44,12 @@ if (!$@) {
         return $self->{'order'};
     });
 };
+
+## make cart happy before clones...
+Handel::Cart->storage->currency_class('Handel::Compat::Currency');
+Handel::Cart::Item->storage->currency_class('Handel::Compat::Currency');
+
+
 use_ok('Handel::Order');
 use_ok('Handel::Subclassing::Order');
 use_ok('Handel::Subclassing::OrderOnly');
@@ -58,31 +64,28 @@ unshift @Handel::Subclassing::CartItem::ISA, 'Handel::Compat';
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+
 &run('Handel::Subclassing::OrderOnly', 'Handel::Order::Item', 2);
 &run('Handel::Subclassing::Order', 'Handel::Subclassing::OrderItem', 3);
-
 
 
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
+    Handel::Test->clear_schema($schema);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
-    ## Setup SQLite DB for tests
+
     {
-        my $dbfile       = "t/compat_order_new_$dbsuffix.db";
-        my $db           = "dbi:SQLite:dbname=$dbfile";
-        my $createcart   = 't/sql/cart_create_table.sql';
-        my $createorder  = 't/sql/order_create_table.sql';
-
-        unlink $dbfile;
-        executesql($db, $createorder);
-        executesql($db, $createcart);
-
-        $ENV{'HandelDBIDSN'} = $db;
-
         no strict 'refs';
         unshift @{"$subclass\:\:ISA"}, 'Handel::Compat' unless $subclass->isa('Handel::Compat');
         unshift @{"itemclass\:\:ISA"}, 'Handel::Compat' unless $itemclass->isa('Handel::Compat');
+        $subclass->storage->currency_class('Handel::Compat::Currency');
+        $itemclass->storage->currency_class('Handel::Compat::Currency');
+
+        ## remove the accessor and expose the compat version instead
+        undef *{"$subclass\:\:subtotal"};
     };
 
 

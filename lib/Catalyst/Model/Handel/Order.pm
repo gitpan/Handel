@@ -1,4 +1,4 @@
-# $Id: Order.pm 1386 2006-08-26 01:46:16Z claco $
+# $Id: Order.pm 1457 2006-10-08 02:23:13Z claco $
 package Catalyst::Model::Handel::Order;
 use strict;
 use warnings;
@@ -120,6 +120,16 @@ If no order_class is specified, Handel::Order will be used by default.
 
 Once loaded, all method requests to this model are forwarded to the specified
 cart class.
+
+=head2 COMPONENT
+
+See L<Catalyst::Component> for more information.
+
+=head2 new
+
+This is a placeholder to forward calls to C<new> to the order manager (should it
+actually have it's own new method) rather than exposing C<new> from
+Catalyst::Component.
 
 =head1 SEE ALSO
 

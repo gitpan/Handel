@@ -1,4 +1,4 @@
-# $Id: AssignOrderNumber.pm 1415 2006-09-14 00:54:13Z claco $
+# $Id: AssignOrderNumber.pm 1480 2006-10-17 23:58:11Z claco $
 package Handel::Checkout::Plugin::AssignOrderNumber;
 use strict;
 use warnings;
@@ -47,6 +47,16 @@ Handel::Checkout::Plugin::AssignOrderNumber - Checkout plugin to assign order nu
 
 This checkout plugin simply assigns a number to $order->number during the
 CHECKOUT_PHASE_FINALIZE phase.
+
+=head1 METHODS
+
+=head2 register
+
+Registers this plugin for the CHECKOUT_PHASE_FINALIZE phase.
+
+=head2 handler
+
+Assigns a number to the current order.
 
 =head1 SEE ALSO
 

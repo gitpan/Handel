@@ -1,4 +1,4 @@
-# $Id: Base.pm 1425 2006-09-23 19:31:16Z claco $
+# $Id: Base.pm 1547 2006-11-06 01:28:18Z claco $
 package Handel::Base;
 use strict;
 use warnings;
@@ -32,31 +32,58 @@ sub import {
 };
 
 sub create_accessors {
-    my ($self, $map) = @_;
-    my $class = ref $self || $self;
-    my $accessors;
+    my ($class, $map) = @_;
 
-    if ($accessors = $self->storage->column_accessors) {
-        foreach my $column (keys %{$accessors}) {
-            $self->mk_group_accessors('column', [$accessors->{$column}, $column]);
-        };
+    throw Handel::Exception(
+        -details => translate('NOT_OBJECT_METHOD')
+    ) if blessed($class); ## no critic
+
+    my $accessors = $class->storage->column_accessors || {};
+    if (!scalar keys %{$accessors}) {
+        throw Handel::Exception(
+            -details => translate('NO_COLUMN_ACCESSORS')
+        );
     };
 
-    $self->accessor_map($accessors);
+    foreach my $column (keys %{$accessors}) {
+        $class->mk_group_accessors('column', [$accessors->{$column}, $column]);
+    };
+
+    $class->accessor_map($accessors);
 
     return;
 };
 
 sub get_column {
-    my ($self, $column) = @_;
-    my $accessor = $self->accessor_map->{$column} || $column;
+    my $self = shift;
+
+    throw Handel::Exception(
+        -details => translate('NOT_CLASS_METHOD')
+    ) unless blessed($self); ## no critic
+
+    my $column = shift;
+    my $accessor = $self->accessor_map->{$column || ''} || $column;
+
+    throw Handel::Exception::Argument(
+        -details => translate('COLUMN_NOT_SPECIFIED')
+    ) unless $column; ## no critic
 
     return $self->result->$accessor;
 };
 
 sub set_column {
-    my ($self, $column, $value) = @_;
-    my $accessor = $self->accessor_map->{$column} || $column;
+    my $self = shift;
+
+    throw Handel::Exception(
+        -details => translate('NOT_CLASS_METHOD')
+    ) unless blessed($self); ## no critic
+
+    my ($column, $value) = @_;
+    my $accessor = $self->accessor_map->{$column || ''} || $column;
+
+    throw Handel::Exception::Argument(
+        -details => translate('COLUMN_NOT_SPECIFIED')
+    ) unless $column; ## no critic
 
     $self->result->$accessor($value);
     if ($self->autoupdate) {
@@ -68,9 +95,15 @@ sub set_column {
 
 sub create_instance {
     my ($self, $result) = @_;
-    my $class = blessed $self || $self;
+    my $class = blessed $self ? blessed $self : $self;
 
-    return unless $result; ## no critic
+    #throw Handel::Exception(
+    #    -details => translate('NOT_OBJECT_METHOD')
+    #) if blessed($class); ## no critic
+
+    throw Handel::Exception::Argument(
+        -details => translate('NO_RESULT')
+    ) unless $result; ## no critic
 
     my $storage = $result->storage;
 
@@ -83,7 +116,8 @@ sub create_instance {
 
 sub storage {
     my $self = shift;
-    my $class = blessed $self || $self;
+    my $class = blessed $self ? blessed $self : $self;
+
     my $args = ref($_[0]) eq 'HASH' ? $_[0] : undef;
     my $storage = blessed($_[0]) && $_[0]->isa('Handel::Storage') ? $_[0] : undef;
 
@@ -106,7 +140,7 @@ sub storage {
 
 sub has_storage {
     my $self = shift;
-    my $class = blessed $self || $self;
+    my $class = blessed $self ? blessed $self : $self;
 
     no strict 'refs';
 
@@ -136,9 +170,11 @@ sub set_component_class {
         if (!Class::Inspector->loaded($value)) {
             eval "use $value"; ## no critic
 
-            throw Handel::Exception::Storage(
-                -details => translate('The [_1] [_2] could not be loaded', $field, $value)
-            ) if $@; ## no critic
+            if ($@) {
+                throw Handel::Exception::Storage(
+                    -details => translate('COMPCLASS_NOT_LOADED', $field, $value)
+                );
+            };
         };
     };
 
@@ -149,7 +185,7 @@ sub set_component_class {
 
 sub _get_storage {
     my $self = shift;
-    my $class = blessed $self || $self;
+    my $class = blessed $self ? blessed $self : $self;
 
     no strict 'refs';
     no warnings 'once';
@@ -158,10 +194,10 @@ sub _get_storage {
     if (!$storage) {
         my ($super) = (Class::ISA::super_path($class));
 
-        if ($super &&  ${"$super\:\:_storage"}) {
+        if (${"$super\:\:_storage"}) {
             $storage = ${"$super\:\:_storage"};
 
-            if ($storage && blessed($storage) eq $self->storage_class) {
+            if (blessed($storage) eq $self->storage_class) {
                 $storage = $storage->clone;
 
                 # we want our own, not da clones item storage
@@ -183,7 +219,7 @@ sub _get_storage {
 
 sub _set_storage {
     my ($self, $storage) = @_;
-    my $class = blessed $self || $self;
+    my $class = blessed $self ? blessed $self : $self;
 
     if (blessed $self) {
         $self->{'storage'} = $storage;
@@ -327,6 +363,9 @@ inside, and does any configuration on the new object before returning it.
 This is used internally by C<inflate_result> and C<storage>. There's probably
 no good reason to use this yourself.
 
+A L<Handel::Exception|Handel::Exception> exception will be
+thrown if this method is called on an object. It is a class method only.
+
 =head2 get_column
 
 =over
@@ -341,6 +380,12 @@ against the result instead.
 
     my $cart = Handel::Cart->create({name => 'My Cart'});
     print $cart->get_column('name');
+
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception will be
+thrown if no column is specified.
+
+A L<Handel::Exception|Handel::Exception> exception will be
+thrown if this method is called on an class. It is an object method only.
 
 =head2 has_storage
 
@@ -422,6 +467,12 @@ to save change to the database.
     if (!$cart->autoupdate) {
         $cart->update;
     };
+
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception will be
+thrown if no column is specified.
+
+A L<Handel::Exception|Handel::Exception> exception will be
+thrown if this method is called on an class. It is an object method only.
 
 =head2 storage
 
@@ -505,6 +556,37 @@ You may also pass a hash reference containing name/value pairs to be applied:
     });
 
 Be careful to always use the column name, not its accessor alias if it has one.
+
+=head2 get_component_class
+
+=over
+
+=item Arguments: $name
+
+=back
+
+Gets the current class for the specified component name.
+
+    my $class = $self->get_component_class('item_class');
+
+There is no good reason to use this. Use the specific class accessors instead.
+
+=head2 set_component_class
+
+=over
+
+=item Arguments: $name, $value
+
+=back
+
+Sets the current class for the specified component name.
+
+    $self->set_component_class('item_class', 'MyItemClass');
+
+A L<Handel::Exception|Handel::Exception> exception will be thrown if the
+specified class can not be loaded.
+
+There is no good reason to use this. Use the specific class accessors instead.
 
 =head1 SEE ALSO
 

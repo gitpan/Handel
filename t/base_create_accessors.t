@@ -1,35 +1,93 @@
 #!perl -wT
-# $Id: base_create_accessors.t 1386 2006-08-26 01:46:16Z claco $
+# $Id: base_create_accessors.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Test::More tests => 10;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
+    eval 'use Test::MockObject 0.07';
+    if (!$@) {
+        plan tests => 16;
+    } else {
+        plan skip_all => 'Test::MockObject 0.07 not installed';
+    };
+
     use_ok('Handel::Base');
+    use_ok('Handel::Exception', ':try');
 };
 
-no warnings 'redefine';
-my $accessors = {a => 'a', b => 'b', c => 'd'};
 
-sub Handel::Storage::column_accessors {
-    return $accessors;
+## fake storage object
+my $storage = Test::MockObject->new;
+$storage->set_series('column_accessors' =>
+    {col1 => 'foo', col2 => 'col2'}, undef, {}
+);
+$storage->set_false('_item_storage');
+$Handel::Base::_storage = $storage;
+
+
+## create accessors
+{
+    is(Handel::Base->accessor_map, undef, 'no accessor map defined');
+    ok(!Handel::Base->can('foo'), 'can not yet do foo');
+    ok(!Handel::Base->can('col1'), 'can not yet do col1');
+    ok(!Handel::Base->can('col2'), 'can not yet do col2');
+
+    Handel::Base->create_accessors;
+
+    can_ok('Handel::Base', 'foo');
+    can_ok('Handel::Base', 'col2');
+    ok(!Handel::Base->can('col1'), 'still no col1 method');
+    is_deeply(Handel::Base->accessor_map, {col1 => 'foo', col2 => 'col2'}, 'accessor map set after create');
 };
 
-sub Handel::Base::get_column {
-    pass;
+
+## throw exception when storage returns no column accessors
+{
+    try {
+        local $ENV{'LANG'} = 'en';
+        Handel::Base->create_accessors;
+
+        fail('no exception thrown');
+    } catch Handel::Exception with {
+        pass('Argument exception thrown');
+        like(shift, qr/column accessors/i, 'no column accessors in message');
+    } otherwise {
+        fail('Other exception thrown');
+    };
 };
 
-Handel::Base->storage_class('Handel::Subclassing::Storage');
-is(Handel::Base->accessor_map, undef);
 
-Handel::Base->create_accessors;
-can_ok('Handel::Base', 'a');
-can_ok('Handel::Base', 'b');
-can_ok('Handel::Base', 'd');
-ok(!Handel::Base->can('c'));
-is_deeply(Handel::Base->accessor_map, $accessors);
+## throw exception when storage returns no column accessors
+{
+    try {
+        local $ENV{'LANG'} = 'en';
+        Handel::Base->create_accessors;
 
-Handel::Base->a;
-Handel::Base->b;
-Handel::Base->d;
+        fail('no exception thrown');
+    } catch Handel::Exception with {
+        pass('Argument exception thrown');
+        like(shift, qr/column accessors/i, 'no column accessors in message');
+    } otherwise {
+        fail('Other exception thrown');
+    };
+};
+
+
+## throw exception as an object method
+{
+    try {
+        local $ENV{'LANG'} = 'en';
+        my $base = bless {}, 'Handel::Base';
+        $base->create_accessors;
+
+        fail('no exception thrown');
+    } catch Handel::Exception with {
+        pass('Argument exception thrown');
+        like(shift, qr/not an object method/i, 'not an object method in message');
+    } otherwise {
+        fail('Other exception thrown');
+    };
+};

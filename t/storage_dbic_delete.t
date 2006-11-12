@@ -1,12 +1,12 @@
 #!perl -wT
-# $Id: storage_dbic_delete.t 1380 2006-08-23 01:57:36Z claco $
+# $Id: storage_dbic_delete.t 1560 2006-11-10 02:36:54Z claco $
 use strict;
 use warnings;
-use lib 't/lib';
-use Handel::Test;
-use Test::More;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
@@ -29,26 +29,26 @@ my $storage = Handel::Storage::DBIC->new({
 
 
 ## delete all items w/ no params
-is($storage->schema_instance->resultset($storage->schema_source)->search->count, 3);
-is($storage->schema_instance->resultset('Items')->search->count, 5);
-ok($storage->delete);
-is($storage->schema_instance->resultset($storage->schema_source)->search->count, 0);
-is($storage->schema_instance->resultset($storage->schema_source)->search->count, 0);
+is($storage->schema_instance->resultset($storage->schema_source)->search->count, 3, 'start with 3 carts');
+is($storage->schema_instance->resultset('Items')->search->count, 5, 'start with 5 items');
+ok($storage->delete, 'delete all');
+is($storage->schema_instance->resultset($storage->schema_source)->search->count, 0, 'no carts');
+is($storage->schema_instance->resultset($storage->schema_source)->search->count, 0, 'no items');
 
 
 ## delete all items w/ CDBI wildcards
 Handel::Test->populate_schema($schema, clear => 1);
-is($storage->schema_instance->resultset($storage->schema_source)->search->count, 3);
-is($storage->schema_instance->resultset('Items')->search->count, 5);
-ok($storage->delete({ description => 'Test%'}));
-is($storage->schema_instance->resultset($storage->schema_source)->search->count, 1);
-is($storage->schema_instance->resultset('Items')->search->count, 2);
+is($storage->schema_instance->resultset($storage->schema_source)->search->count, 3, 'start with 3 carts');
+is($storage->schema_instance->resultset('Items')->search->count, 5, 'start with 5 items');
+ok($storage->delete({ description => 'Test%'}), 'delete using CDBI wildcards');
+is($storage->schema_instance->resultset($storage->schema_source)->search->count, 1, '1 cart left');
+is($storage->schema_instance->resultset('Items')->search->count, 2, '2 items left');
 
 
 ## delete all items w/ DBIC wildcards
 Handel::Test->populate_schema($schema, clear => 1);
-is($storage->schema_instance->resultset($storage->schema_source)->search->count, 3);
-is($storage->schema_instance->resultset('Items')->search->count, 5);
-ok($storage->delete({ description => {like => 'Test%'}}));
-is($storage->schema_instance->resultset($storage->schema_source)->search->count, 1);
-is($storage->schema_instance->resultset('Items')->search->count, 2);
+is($storage->schema_instance->resultset($storage->schema_source)->search->count, 3, 'start with 3 carts');
+is($storage->schema_instance->resultset('Items')->search->count, 5, 'start with 5 items');
+ok($storage->delete({ description => {like => 'Test%'}}), 'delete using DBIC wildcards');
+is($storage->schema_instance->resultset($storage->schema_source)->search->count, 1, '1 cart left');
+is($storage->schema_instance->resultset('Items')->search->count, 2, '2 items left');

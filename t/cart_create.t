@@ -1,17 +1,18 @@
 #!perl -wT
-# $Id: cart_create.t 1355 2006-08-07 01:51:41Z claco $
+# $Id: cart_create.t 1490 2006-10-22 01:56:21Z claco $
 use strict;
 use warnings;
-use Test::More;
-use lib 't/lib';
-use Handel::TestHelper qw(executesql);
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test;
+    use Scalar::Util qw/refaddr/;
+
     eval 'require DBD::SQLite';
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 158;
+        plan tests => 169;
     };
 
     use_ok('Handel::Cart');
@@ -24,6 +25,9 @@ BEGIN {
 
 
 ## This is a hack, but it works. :-)
+my $schema = Handel::Test->init_schema(no_populate => 1);
+my $altschema = Handel::Test->init_schema(no_populate => 1, db_file => 'althandel.db', namespace => 'Handel::AltSchema');
+
 &run('Handel::Cart', 'Handel::Cart::Item', 1);
 &run('Handel::Subclassing::CartOnly', 'Handel::Cart::Item', 2);
 &run('Handel::Subclassing::Cart', 'Handel::Subclassing::CartItem', 3);
@@ -31,20 +35,8 @@ BEGIN {
 sub run {
     my ($subclass, $itemclass, $dbsuffix) = @_;
 
-
-    ## Setup SQLite DB for tests
-    {
-        my $dbfile  = "t/cart_create_$dbsuffix.db";
-        my $db      = "dbi:SQLite:dbname=$dbfile";
-        my $create  = 't/sql/cart_create_table.sql';
-        my $data    = 't/sql/cart_fake_data.sql';
-
-        unlink $dbfile;
-        executesql($db, $create);
-        executesql($db, $data);
-
-        $ENV{'HandelDBIDSN'} = $db;
-    };
+    Handel::Test->populate_schema($schema, clear => 1);
+    local $ENV{'HandelDBIDSN'} = $schema->dsn;
 
 
     ## test for Handel::Exception::Argument where first param is not a hashref
@@ -167,17 +159,13 @@ sub run {
             is($cart->custom, undef);
         };
 
-        eval 'use Locale::Currency::Format';
-        if ($@) {
-            is($cart->subtotal->format, 0);
-            is($cart->subtotal->format('CAD'), 0);
-            is($cart->subtotal->format(undef, 'FMT_NAME'), 0);
-            is($cart->subtotal->format('CAD', 'FMT_NAME'), 0);
-        } else {
-            is($cart->subtotal->format, '0.00 USD');
-            is($cart->subtotal->format('CAD'), '0.00 CAD');
-            is($cart->subtotal->format(undef, 'FMT_NAME'), '0.00 US Dollar');
-            is($cart->subtotal->format('CAD', 'FMT_NAME'), '0.00 Canadian Dollar');
+
+        is($cart->subtotal->format, '0.00 USD');
+        is($cart->subtotal->format('FMT_NAME'), '0.00 US Dollar');
+        {
+            local $ENV{'HandelCurrencyCode'} = 'CAD';
+            is($cart->subtotal->format, '0.00 CAD');
+            is($cart->subtotal->format('FMT_NAME'), '0.00 Canadian Dollar');
         };
     };
 
@@ -250,5 +238,31 @@ sub run {
             is($cart->custom, undef);
         };
     };
+};
 
+
+## pass in storage instead
+{
+    my $storage = Handel::Cart->storage_class->new;
+    local $ENV{'HandelDBIDSN'} = $altschema->dsn;
+
+    my $cart = Handel::Cart->create({
+        shopper => '88888888-8888-8888-8888-888888888888',
+        type    => CART_TYPE_SAVED,
+        name    => 'My Alt Cart',
+        description => 'My Alt Cart Description'
+    }, {
+        storage => $storage
+    });
+    isa_ok($cart, 'Handel::Cart');
+    ok(constraint_uuid($cart->id));
+    is($cart->shopper, '88888888-8888-8888-8888-888888888888');
+    is($cart->type, CART_TYPE_SAVED);
+    is($cart->name, 'My Alt Cart');
+    is($cart->description, 'My Alt Cart Description');
+    is($cart->count, 0);
+    is($cart->subtotal, 0);
+    is(refaddr $cart->result->storage, refaddr $storage, 'storage option used');
+    is($altschema->resultset('Carts')->search({name => 'My Alt Cart'})->count, 1, 'cart found in alt storage');
+    is($schema->resultset('Carts')->search({name => 'My Alt Cart'})->count, 0, 'alt cart not in class storage');
 };

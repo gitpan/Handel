@@ -1,15 +1,31 @@
-# $Id: DBIC.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: DBIC.pm 1551 2006-11-07 02:03:05Z claco $
 ## no critic (ProhibitAmbiguousNames)
 package Handel::Iterator::DBIC;
 use strict;
 use warnings;
 use overload
         '0+'     => \&count,
-        'bool'   => sub { 1; },
+        'bool'   => \&count,
+        '=='     => \&count,
         fallback => 1;
 
 BEGIN {
     use base qw/Handel::Iterator/;
+    use Handel::L10N qw/translate/;
+    use Scalar::Util qw/blessed/;
+};
+
+sub new {
+    my $class = shift;
+
+    no strict 'refs';
+    my $resultset = $_[0]->{'data'};
+
+    throw Handel::Exception::Argument(
+        -details => translate('ITERATOR_DATA_NOT_RESULTSET')
+    ) unless blessed($resultset) && $resultset->isa('DBIx::Class::ResultSet'); ## no critic
+
+    return $class->SUPER::new(@_);
 };
 
 sub all {
@@ -24,7 +40,7 @@ sub count {
 
 sub first {
     my $self = shift;
-    my $result = $self->data->first;
+    my $result = $self->data->slice(0, 0)->first;
 
     return $result ? $self->create_result($result) : undef;
 };

@@ -58,6 +58,13 @@ Version 1.06 or greater.
 
 Version 2.95 or greater.
 
+=head3 Module::Starter
+
+Version 1.42 or greater.
+
+This is only used for the quick start module creation. IF you don't plan on using that, you can ignore this
+requirement.
+
 =head3 Scalar::Util
 
 Version 0.13 or greater with weaken support.
@@ -81,6 +88,38 @@ you should install the appropriate module for that database.
 
 This is only used in Handel::Compat.
 
+=head3 SQL::Translator
+
+Version 0.07 or greater. This is used by DBIC and the quick start code to install the schema to a db. You can
+ignore this requirement if you are not going to use the quick start.
+
+=head3 Locale::Currency::Format
+
+Version 1.22 or greater.
+
+This module allows all prices to be formatted to specific currency codes and formats.
+
+=head3 Finance::Currency::Convert::WebserviceX
+
+Version 0.03 or greater.
+
+This module allows all prices to be converted from one currency to another.
+
+=head3 Locale::Currency
+
+Version 2.07 or greater.
+
+This module allows all conversion and currency codes to be verified as real 3 letter ISO
+currency codes.
+
+=head3 Getopt::Long
+
+This is included in perl 5.8. It is used by the quick start code.
+
+=head3 Pod::Usage
+
+This is included in perl 5.8. It is used by the quick start code.
+
 =head2 Optional Modules
 
 The following modules are not required for Handel to run, although some features may be unavailable
@@ -91,29 +130,6 @@ without them.
 Version 1.61 or greater.
 
 AxKit is only required if you plan on using Handel within XSP pages using the supplied taglibs.
-
-=head3 Locale::Currency::Format
-
-Version 1.22 or greater.
-
-When present, this module allows all prices to be formatted to specific currency codes and formats. When
-this module is not installed, all calls to Handel::Currency-E<gt>format will return the original value and carp a
-warning.
-
-=head3 Finance::Currency::Convert::WebserviceX
-
-Version 0.03 or greater.
-
-When present, this module allows all prices to be converted from one currency to another. When this module
-is not installed, all calls to Handel::Currency-E<gt>convert will return undef and carp a warning.
-
-=head3 Locale::Currency
-
-Version 2.07 or greater.
-
-When present, this module allows all conversion and currency codes to be verified as real 3 letter ISO
-currency codes. If this module is not installed, the to and from parameters to Handel::Currency-E<gt>convert
-ca not be validated, possibly resulting in unpredictable conversion results.
 
 =head3 Template Toolkit
 
@@ -221,7 +237,7 @@ Tabs are bad, m'kay? This keeps me honest.
 
 =head3 Test::Perl::Critic
 
-Version 0.07 or greater.
+Version 0.08 or greater.
 
 Yet another test to keep my code somewhat honest.
 

@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: storage_has_column.t 1413 2006-09-10 18:34:58Z claco $
+# $Id: storage_has_column.t 1555 2006-11-09 01:46:20Z claco $
 use strict;
 use warnings;
-use Test::More tests => 4;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 4;
+
     use_ok('Handel::Storage');
 };
 
@@ -13,5 +15,5 @@ isa_ok($storage, 'Handel::Storage');
 
 $storage->_columns([qw/foo bar baz/]);
 
-ok($storage->has_column('bar'));
-ok(!$storage->has_column('quix'));
+ok($storage->has_column('bar'), 'added bar column');
+ok(!$storage->has_column('quix'), 'added quix column');

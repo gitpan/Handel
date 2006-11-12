@@ -1,4 +1,4 @@
-# $Id: DBIC.pm 1417 2006-09-16 02:19:18Z claco $
+# $Id: DBIC.pm 1551 2006-11-07 02:03:05Z claco $
 ## no critic (ProhibitExcessComplexity)
 package Handel::Storage::DBIC;
 use strict;
@@ -57,7 +57,7 @@ sub add_constraint {
     my $self = shift;
 
     throw Handel::Exception::Storage(
-        -details => translate('Can not add constraints to an existing schema instance')
+        -details => translate('ADD_CONSTRAINT_EXISTING_SCHEMA')
     ) if $self->_schema_instance; ## no critic
 
     return $self->SUPER::add_constraint(@_);
@@ -67,18 +67,18 @@ sub add_item {
     my ($self, $result) = (shift, shift);
 
     throw Handel::Exception::Argument(
-        -details => translate('No result specified')
+        -details => translate('NO_RESULT')
     ) unless $result; ## no critic
 
     my $storage_result = $result->storage_result;
     my $result_class = $self->result_class;
 
     throw Handel::Exception::Argument(
-        -details => translate('Param 2 is not a HASH reference')
+        -details => translate('PARAM2_NOT_HASHREF')
     ) unless ref($_[0]) eq 'HASH'; ## no critic
 
     throw Handel::Exception::Storage(
-        -details => translate('No item relationship defined')
+        -details => translate('ITEM_RELATIONSHIP_NOT_SPECIFIED')
     ) unless $self->item_relationship; ## no critic
 
     my $item = $storage_result->create_related($self->item_relationship, @_);
@@ -93,7 +93,7 @@ sub clone {
     my $self = shift;
 
     throw Handel::Exception::Storage(
-        -details => translate('Not a class method')
+        -details => translate('NOT_CLASS_METHOD')
     ) unless blessed($self); ## no critic
 
     # a hack indeed. clone barfs on some DBI inards, so lets move out the
@@ -121,7 +121,10 @@ sub column_accessors {
 
         my @columns = $source->columns;
         foreach my $column (@columns) {
-            my $accessor = $source->column_info($column)->{'accessor'} || $column;
+            my $accessor = $source->column_info($column)->{'accessor'};
+            if (!$accessor) {
+                $accessor = $column;
+            };
             $accessors->{$column} = $accessor;
         };
     } else {
@@ -129,7 +132,10 @@ sub column_accessors {
 
         my @columns = $source->columns;
         foreach my $column (@columns) {
-            my $accessor = $source->column_info($column)->{'accessor'} || $column;
+            my $accessor = $source->column_info($column)->{'accessor'};
+            if (!$accessor) {
+                $accessor = $column;
+            };
             $accessors->{$column} = $accessor;
         };
 
@@ -139,8 +145,10 @@ sub column_accessors {
 
             while (my $column = shift @{$adding}) {
                 my $column_info = ref $adding->[0] ? shift(@{$adding}) : {};
-                my $accessor = $column_info->{'accessor'} || $column;
-
+                my $accessor = $column_info->{'accessor'};
+                if (!$accessor) {
+                    $accessor = $column;
+                };
                 $accessors->{$column} = $accessor;
             };
         };
@@ -169,11 +177,11 @@ sub copyable_item_columns {
     my $self = shift;
 
     throw Handel::Exception::Storage(
-        -details => translate('No item relationship defined')
+        -details => translate('ITEM_RELATIONSHIP_NOT_SPECIFIED')
     ) unless $self->item_relationship; ## no critic
 
     throw Handel::Exception::Storage(
-        -details => translate('No item storage or item storage class defined')
+        -details => translate('ITEM_STORAGE_NOT_DEFINED')
     ) unless $self->item_storage; ## no critic
 
     my $schema_instance = $self->schema_instance;
@@ -206,13 +214,13 @@ sub count_items {
     my ($self, $result) = (shift, shift);
 
     throw Handel::Exception::Argument(
-        -details => translate('No result specified')
+        -details => translate('NO_RESULT')
     ) unless $result; ## no critic
 
     my $storage_result = $result->storage_result;
 
     throw Handel::Exception::Storage(
-        -details => translate('No item relationship defined')
+        -details => translate('ITEM_RELATIONSHIP_NOT_SPECIFIED')
     ) unless $self->item_relationship; ## no critic
 
     return $storage_result->count_related($self->item_relationship, @_);
@@ -225,7 +233,7 @@ sub create {
     my $result_class = $self->result_class;
 
     throw Handel::Exception::Argument(
-        -details => translate('Param 1 is not a HASH reference')
+        -details => translate('PARAM1_NOT_HASHREF')
     ) unless ref($_[0]) eq 'HASH'; ## no critic
 
     return $result_class->create_instance(
@@ -249,15 +257,15 @@ sub delete_items {
     my ($self, $result, $filter) = (shift, shift, shift);
 
     throw Handel::Exception::Argument(
-        -details => translate('No result specified')
+        -details => translate('NO_RESULT')
     ) unless $result; ## no critic
 
     throw Handel::Exception::Argument(
-        -details => translate('Param 2 is not a HASH reference')
-    ) unless !$_[0] || ref($_[0]) eq 'HASH'; ## no critic
+        -details => translate('PARAM2_NOT_HASHREF')
+    ) unless !$filter || ref $filter eq 'HASH'; ## no critic
 
     throw Handel::Exception::Storage(
-        -details => translate('No item relationship defined')
+        -details => translate('ITEM_RELATIONSHIP_NOT_SPECIFIED')
     ) unless $self->item_relationship; ## no critic
 
     my $storage_result = $result->storage_result;
@@ -284,11 +292,9 @@ sub primary_columns {
             @{$self->_primary_columns} :
             $self->schema_class->source($self->schema_source)->primary_columns;
     };
-
-    return;
 };
 
-sub process_error {
+sub process_error { ## no critic (RequireFinalReturn)
     my ($message) = @_;
 
     if (blessed $message) {
@@ -296,14 +302,12 @@ sub process_error {
     };
 
     if ($message =~ /column\s+(.*)\s+is not unique/) {
-        my $details = translate('[_1] value already exists', $1); ## no critic
+        my $details = translate('COLUMN_VALUE_EXISTS', $1); ## no critic
 
         throw Handel::Exception::Constraint(-text => $details);
     } else {
         throw Handel::Exception::Storage(-text => $message);
     };
-
-    return;
 };
 
 sub remove_columns {
@@ -327,7 +331,7 @@ sub remove_constraint {
     my $self = shift;
 
     throw Handel::Exception::Storage(
-        -details => translate('Can not remove constraints to an existing schema instance')
+        -details => translate('REMOVE_CONSTRAINT_EXISTING_SCHEMA')
     ) if $self->_schema_instance; ## no critic
 
     return $self->SUPER::remove_constraint(@_);
@@ -337,7 +341,7 @@ sub remove_constraints {
     my $self = shift;
 
     throw Handel::Exception::Storage(
-        -details => translate('Can not remove constraints to an existing schema instance')
+        -details => translate('REMOVE_CONSTRAINT_EXISTING_SCHEMA')
     ) if $self->_schema_instance; ## no critic
 
     return $self->SUPER::remove_constraints(@_);
@@ -346,12 +350,12 @@ sub remove_constraints {
 sub schema_instance {
     my $self = shift;
     my $schema_instance = $_[0];
-    my $package = ref $self || $self;
+    my $package = ref $self ? ref $self : $self;
 
     no strict 'refs';
 
     throw Handel::Exception::Storage(
-        -details => translate('No schema_source is specified')
+        -details => translate('SCHEMA_SOURCE_NOT_SPECIFIED')
     ) unless $self->schema_source; ## no critic
 
     # allow unsetting
@@ -378,7 +382,7 @@ sub schema_instance {
 
     if (!$self->_schema_instance) {
         throw Handel::Exception::Storage(
-            -details => translate('No schema_class is specified')
+            -details => translate('SCHEMA_CLASS_NOT_SPECIFIED')
         ) unless $self->schema_class; ## no critic
 
         {
@@ -424,18 +428,18 @@ sub search_items {
     my ($self, $result, $filter) = (shift, shift, shift);
 
     throw Handel::Exception::Argument(
-        -details => translate('No result specified')
+        -details => translate('NO_RESULT')
     ) unless $result; ## no critic
 
     my $storage_result = $result->storage_result;
     my $result_class = $self->result_class;
 
     throw Handel::Exception::Argument(
-        -details => translate('Param 2 is not a HASH reference')
+        -details => translate('PARAM2_NOT_HASHREF')
     ) if defined $filter && ref $filter ne 'HASH'; ## no critic
 
     throw Handel::Exception::Storage(
-        -details => translate('No item relationship defined')
+        -details => translate('ITEM_RELATIONSHIP_NOT_SPECIFIED')
     ) unless $self->item_relationship; ## no critic
 
 
@@ -459,11 +463,11 @@ sub setup {
     my ($self, $options) = @_;
 
     throw Handel::Exception::Argument(
-        -details => translate('Param 1 is not a HASH reference')
+        -details => translate('PARAM1_NOT_HASHREF')
     ) unless ref($options) eq 'HASH'; ## no critic
 
     throw Handel::Exception::Storage(
-        -details => translate('A schema instance has already been initialized')
+        -details => translate('SETUP_EXISTING_SCHEMA')
     ) if $self->_schema_instance; ## no critic
 
     my $schema_instance = delete $options->{'schema_instance'};
@@ -515,8 +519,10 @@ sub _configure_schema_instance {
     ## no critic (ProhibitNoisyQuotes)
 
     # make this source aware of this storage to make inflate_result happier
-    $source->{'__handel_storage'} = $self;
-    weaken $self;
+    if (blessed $self) {
+        $source->{'__handel_storage'} = $self;
+        weaken $self;
+    };
 
     # change the table name
     if ($self->table_name) {
@@ -543,15 +549,26 @@ sub _configure_schema_instance {
     # add currency inflate/deflators
     if ($self->currency_columns) {
         my $currency_class = $self->currency_class;
-        my $currency_code_sub = $self->can('currency_code');
-
         foreach my $column ($self->currency_columns) {
             next unless $source_class->has_column($column); ## no critic
             $source_class->inflate_column($column, {
                 inflate => sub {
+                    my ($value, $row) = @_;
+                    my $codecolumn = $self->can('currency_code_column')->($self);
+                    my $storagecode = $self->can('currency_code')->($self);
+                    my $code;
+                    if ($codecolumn) {
+                        $code = $row->$codecolumn;
+                        if (!$code) {
+                            $code = $storagecode;
+                        };
+                    } else {
+                        $code = $storagecode;
+                    };
+
                     $currency_class->new(
-                        shift,
-                        $self->can('currency_code')->($self) || undef,
+                        $value,
+                        $code,
                         $self->can('currency_format')->($self)
                     );
                 },
@@ -564,7 +581,7 @@ sub _configure_schema_instance {
         $item_source_class = $schema_instance->class($item_storage->schema_source);
 
         throw Handel::Exception::Storage(-text =>
-            translate('The source [_1] has no relationship named [_2].', $schema_source, $item_relationship)
+            translate('SCHEMA_SOURCE_NO_RELATIONSHIP', $schema_source, $item_relationship)
         ) unless $source->has_relationship($item_relationship); ## no critic
 
 
@@ -599,9 +616,22 @@ sub _configure_schema_instance {
             foreach my $column ($item_storage->currency_columns) {
                 $item_source_class->inflate_column($column, {
                     inflate => sub {
+                        my ($value, $row) = @_;
+                        my $codecolumn = $item_storage->can('currency_code_column')->($item_storage);
+                        my $storagecode = $item_storage->can('currency_code')->($item_storage);
+                        my $code;
+                        if ($codecolumn) {
+                            $code = $row->$codecolumn;
+                            if (!$code) {
+                                $code = $storagecode;
+                            };
+                        } else {
+                            $code = $storagecode;
+                        };
+
                         $currency_class->new(
-                            shift,
-                            $item_storage->can('currency_code')->($item_storage) || undef,
+                            $value,
+                            $code,
                             $item_storage->can('currency_format')->($item_storage)
                         );
                     },
@@ -709,7 +739,7 @@ sub set_component_class {
 
     $self->SUPER::set_component_class($field, $value);
 
-    if ($field eq 'schema_class' && scalar @_ > 2) {
+    if ($field eq 'schema_class') {
         $self->_schema_instance(undef);
     };
 
@@ -721,8 +751,8 @@ sub set_component_data {
 
     if ($self->_schema_instance) {
         throw Handel::Exception::Storage(
-            -details => translate('Can not assign [_1] to an existing schema instance', $field)
-        ) if $self->_schema_instance; ## no critic
+            -details => translate('COMPDATA_EXISTING_SCHEMA', $field)
+        );
     } else {
         $self->SUPER::set_component_data($field, $value);
     };

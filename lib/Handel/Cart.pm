@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: Cart.pm 1498 2006-10-24 00:56:24Z claco $
 package Handel::Cart;
 use strict;
 use warnings;
@@ -18,12 +18,17 @@ BEGIN {
 sub create {
     my ($self, $data, $opts) = @_;
 
-    throw Handel::Exception::Argument(
-        -details => translate('Param 1 is not a HASH reference')
-    ) unless ref($data) eq 'HASH'; ## no critic
+    if (ref $data ne 'HASH') {
+        throw Handel::Exception::Argument(
+            -details => translate('PARAM1_NOT_HASHREF')
+        );
+    };
 
     no strict 'refs';
-    my $storage = $opts->{'storage'} || $self->storage;
+    my $storage = $opts->{'storage'};
+    if (!$storage) {
+        $storage = $self->storage;
+    };
 
     return $self->create_instance(
         $storage->create($data)
@@ -34,7 +39,7 @@ sub add {
     my ($self, $data) = @_;
 
     throw Handel::Exception::Argument( -details =>
-      translate('Param 1 is not a HASH reference or Handel::Cart::Item')
+      translate('PARAM1_NOT_HASHREF_CARTITEM')
     ) unless (ref($data) eq 'HASH' or $data->isa('Handel::Cart::Item')); ## no critic
 
     my $result = $self->result;
@@ -48,10 +53,10 @@ sub add {
         my %copy;
 
         foreach ($storage->copyable_item_columns) {
-            if ($data->result->can($_)) {
-                $copy{$_} = $data->result->$_;
-            } elsif ($data->can($_)) {
+            if ($data->can($_)) {
                 $copy{$_} = $data->$_;
+            } elsif ($data->result->can($_)) {
+                $copy{$_} = $data->result->$_;
             };
         };
 
@@ -76,9 +81,11 @@ sub count {
 sub delete {
     my ($self, $filter) = @_;
 
-    throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference')
-    ) unless ref($filter) eq 'HASH'; ## no critic
+    if (ref $filter ne 'HASH') {
+        throw Handel::Exception::Argument(
+            -details => translate('PARAM1_NOT_HASHREF')
+        );
+    };
 
     return $self->result->delete_items($filter);
 };
@@ -94,16 +101,17 @@ sub destroy {
         return $result;
     } else {
         throw Handel::Exception::Argument( -details =>
-            translate('Param 1 is not a HASH reference')
+            translate('PARAM1_NOT_HASHREF')
         ) unless ref($filter) eq 'HASH'; ## no critic
 
         no strict 'refs';
-        my $storage = $opts->{'storage'} || $self->storage;
+        my $storage = $opts->{'storage'};
+        if (!$storage) {
+            $storage = $self->storage;
+        };
 
         return $storage->delete($filter);
     };
-
-    return;
 };
 
 sub items {
@@ -112,7 +120,7 @@ sub items {
     my $storage = $result->storage;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference')
+        translate('PARAM1_NOT_HASHREF')
     ) unless (ref($filter) eq 'HASH' || !$filter); ## no critic
 
     my $results = $result->search_items($filter);
@@ -126,14 +134,17 @@ sub items {
 
 sub search {
     my ($self, $filter, $opts) = @_;
-    my $class = blessed $self || $self;
+    my $class = blessed $self ? blessed $self : $self;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference')
+        translate('PARAM1_NOT_HASHREF')
     ) unless(ref($filter) eq 'HASH' || !$filter); ## no critic
 
     no strict 'refs';
-    my $storage = $opts->{'storage'} || $self->storage;
+    my $storage = $opts->{'storage'};
+    if (!$storage) {
+        $storage = $self->storage;
+    };
 
     my $results = $storage->search($filter);
     my $iterator = $self->result_iterator_class->new({
@@ -150,7 +161,7 @@ sub restore {
     $mode ||= CART_MODE_REPLACE;
 
     throw Handel::Exception::Argument( -details =>
-        translate('Param 1 is not a HASH reference or Handel::Cart')
+        translate('PARAM1_NOT_HASHREF_CART')
     ) unless (ref($data) eq 'HASH' || $data->isa('Handel::Cart')); ## no critic
 
     my @carts = (ref($data) eq 'HASH') ?
@@ -188,8 +199,8 @@ sub restore {
             };
         };
     } else {
-        return new Handel::Exception::Argument(-text =>
-            translate('Unknown restore mode')
+        throw Handel::Exception::Argument(-text =>
+            translate('UNKNOWN_RESTORE_MODE')
         );
     };
 

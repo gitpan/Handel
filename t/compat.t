@@ -1,10 +1,12 @@
 #!perl -w
-# $Id: compat.t 1409 2006-09-09 21:16:54Z claco $
+# $Id: compat.t 1520 2006-10-31 00:31:58Z claco $
 use strict;
 use warnings;
-use Test::More tests => 12;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 15;
+
     local $SIG{__WARN__} = sub {
         like(shift, qr/deprecated/);
     };
@@ -13,6 +15,7 @@ BEGIN {
     ## load Handel::Base for tests.
     ## in the wild, the superclasses already have it
     use_ok('Handel::Base');
+    use_ok('Handel::Constraints', 'constraint_uuid');
     push @Handel::Compat::ISA, 'Handel::Base';
 };
 
@@ -40,3 +43,5 @@ Handel::Compat->table('foo');
 is(Handel::Compat->table, 'foo');
 is(Handel::Compat->storage->table_name, 'foo');
 
+ok(constraint_uuid(Handel::Compat::uuid));
+ok(constraint_uuid(Handel::Compat->uuid));

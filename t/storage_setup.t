@@ -1,10 +1,12 @@
 #!perl -wT
-# $Id: storage_setup.t 1409 2006-09-09 21:16:54Z claco $
+# $Id: storage_setup.t 1555 2006-11-09 01:46:20Z claco $
 use strict;
 use warnings;
-use Test::More tests => 21;
 
 BEGIN {
+    use lib 't/lib';
+    use Handel::Test tests => 21;
+
     use_ok('Handel::Storage');
     use_ok('Handel::Exception', ':try');
 };
@@ -61,36 +63,36 @@ BEGIN {
     });
 
     ## iterator_class
-    is($storage->iterator_class, 'Handel::Iterator');
-    is(Handel::Storage->iterator_class, 'Handel::Iterator::List');
+    is($storage->iterator_class, 'Handel::Iterator', 'iterator class is set');
+    is(Handel::Storage->iterator_class, 'Handel::Iterator::List', 'iterator class is set');
 
     ## currency_class
-    is($storage->currency_class, 'Handel::Currency');
-    is(Handel::Storage->currency_class, 'Handel::Currency');
+    is($storage->currency_class, 'Handel::Currency', 'iterator class is set');
+    is(Handel::Storage->currency_class, 'Handel::Currency', 'iterator class is set');
 
     ## autoupdate
-    is($storage->autoupdate, 3);
-    is(Handel::Storage->autoupdate, 1);
+    is($storage->autoupdate, 3, 'autoupdate is set');
+    is(Handel::Storage->autoupdate, 1, 'autoupdate is set');
 
     ## default_values
-    is_deeply($storage->default_values, $default_values);
-    is(Handel::Storage->default_values, undef);
+    is_deeply($storage->default_values, $default_values, 'default values are set');
+    is(Handel::Storage->default_values, undef, 'default values are unset');
 
     ## validation_profile
-    is_deeply($storage->validation_profile, $validation_profile);
-    is(Handel::Storage->validation_profile, undef);
+    is_deeply($storage->validation_profile, $validation_profile, 'validation profile is set');
+    is(Handel::Storage->validation_profile, undef, 'validation profile is unset');
 
     ## constraints
-    is_deeply($storage->constraints, $constraints);
-    is(Handel::Storage->constraints, undef);
+    is_deeply($storage->constraints, $constraints, 'constraints were set');
+    is(Handel::Storage->constraints, undef, 'constraints are unset');
 
     ## add_columns
-    is_deeply([sort $storage->columns], [qw/bar baz foo one three two/]);
-    is(Handel::Storage->columns, 0);
+    is_deeply([sort $storage->columns], [qw/bar baz foo one three two/], 'columns are set');
+    is(Handel::Storage->columns, 0, 'no columns are set');
 
     ## currency_columns
-    is_deeply([$storage->currency_columns], $currency_columns);
-    is(Handel::Storage->currency_columns, 0);
+    is_deeply([$storage->currency_columns], $currency_columns, 'currency columns are set');
+    is(Handel::Storage->currency_columns, 0, 'no currency columns are set');
 
 
     ## throw exception if setup gets no $args
@@ -102,10 +104,10 @@ BEGIN {
 
             fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
-            like(shift, qr/not a HASH/);
+            pass('caught argument exception');
+            like(shift, qr/not a HASH/i, 'not a hash in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 };

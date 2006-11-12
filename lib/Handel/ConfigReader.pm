@@ -1,4 +1,4 @@
-# $Id: ConfigReader.pm 1416 2006-09-15 03:45:35Z claco $
+# $Id: ConfigReader.pm 1551 2006-11-07 02:03:05Z claco $
 package Handel::ConfigReader;
 use strict;
 use warnings;
@@ -41,22 +41,25 @@ sub new {
 };
 
 sub instance {
-    $instance ||= shift->new(@_);
+    if (!$instance) {
+        $instance = shift->new(@_);
+    };
 
     return $instance;
 };
 
 sub get {
     my ($self, $key) = (shift, shift);
-    my $default = shift || $Defaults{$key} || '';
+    my $default = defined $_[0] ? shift : $Defaults{$key};
+    my $value = $self->{$key} || undef;
 
-    return $self->{$key} || $default;
+    return defined $value ? $value : $default;
 };
 
 sub FETCH {
     my ($self, $key) = @_;
-    my $default = $Defaults{$key} || '';
-    my $value   = '';
+    my $default = $Defaults{$key};
+    my $value;
 
     if ($MOD_PERL == 2) {
         my $c = eval {
@@ -81,7 +84,9 @@ sub FETCH {
     };
 
     # quick untaint for now. Assuming we'll mever get a ref from system os ENV
-    if (! ref $value && $value =~ /^(.*)$/g) {
+    if ($value &&  !ref $value) {
+        ## no critic
+        $value =~ /^(.*)$/g;
         $value = $1;
     };
 
@@ -91,7 +96,11 @@ sub FETCH {
 sub EXISTS {
     my ($self, $key) = @_;
 
-    return 1 if ($self->FETCH($key));
+    if (defined $self->FETCH($key)) {
+        return 1;
+    };
+
+    return;
 };
 
 sub STORE {};
@@ -168,6 +177,46 @@ for the key specified, the default value will be returned instead.
     my $cfg = Handel::ConfigReader->instance();
     my $setting = $cfg->get('DoesNotExist', 'foo');
     print $setting; # foo
+
+=head2 FETCH
+
+=over
+
+=item Arguments: $key
+
+=back
+
+Returns an item form the configuration via tied hash.
+
+    my $cfg = Handel::ConfigReader->new;
+    my $setting = $cfg->{'MySetting'};
+
+=head2 EXISTS
+
+=over
+
+=item Arguments: $key
+
+=back
+
+Returns true if the specified setting returns a defined value.
+
+    my $cfg = Handel::ConfigReader->new;
+    if (exists $cfg->{'MySetting'}) {
+        ...
+    };
+
+=head2 CLEAR
+
+Does nothing.
+
+=head2 DELETE
+
+Does nothing.
+
+=head2 STORE
+
+Does nothing.
 
 =head1 CONFIGURATION
 
