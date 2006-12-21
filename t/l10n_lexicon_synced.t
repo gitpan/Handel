@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: l10n_lexicon_synced.t 1552 2006-11-07 03:31:50Z claco $
+# $Id: l10n_lexicon_synced.t 1597 2006-11-19 03:26:12Z claco $
 use strict;
 use warnings;
 
@@ -24,8 +24,15 @@ no warnings 'once';
 
 my $primary = \%Handel::L10N::en_us::Lexicon;
 
-my @lexicons = useall('Handel::L10N');
+my @lexicons = findallmod('Handel::L10N');
 foreach my $lex (@lexicons) {
+    if ($lex =~ /^(Handel::L10N::.*)$/) {
+        $lex = $1;
+    } else {
+        next;
+    };
+
+    eval "require $lex";
     my $entries = \%{"$lex\:\:Lexicon"};
 
     ## make sure our counts match

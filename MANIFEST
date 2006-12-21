@@ -78,10 +78,10 @@ lib/Handel/Order.pm
 lib/Handel/Order/Item.pm
 lib/Handel/Order/Schema.pm
 lib/Handel/Schema.pm
-lib/Handel/Schema/Cart.pm
-lib/Handel/Schema/Cart/Item.pm
-lib/Handel/Schema/Order.pm
-lib/Handel/Schema/Order/Item.pm
+lib/Handel/Schema/DBIC/Cart.pm
+lib/Handel/Schema/DBIC/Cart/Item.pm
+lib/Handel/Schema/DBIC/Order.pm
+lib/Handel/Schema/DBIC/Order/Item.pm
 lib/Handel/Storage.pm
 lib/Handel/Storage/Result.pm
 lib/Handel/Storage/DBIC.pm
@@ -500,6 +500,7 @@ t/lib/Handel/TestPipeline/ValidateError.pm
 t/lib/Handel/TestPipeline/ReadFromStash.pm
 t/lib/Handel/TestPipeline/WriteToStash.pm
 t/lib/Handel/TestPlugins/First.pm
+t/manifest.t
 t/module_starter.t
 t/order_add.t
 t/order_clear.t
@@ -544,6 +545,7 @@ t/storage_has_column.t
 t/storage_remove_constraints.t
 t/storage_column_accessors.t
 t/storage_clone.t
+t/storage_dbic_has_column.t
 t/storage_dbic_schema_class.t
 t/storage_dbic_connection_info.t
 t/storage_dbic_add_columns.t

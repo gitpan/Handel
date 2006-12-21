@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: handel.pl 1575 2006-11-12 18:03:50Z claco $
+# $Id: handel.pl 1600 2006-11-22 01:42:06Z claco $
 use strict;
 use warnings;
 
@@ -48,7 +48,7 @@ Module::Starter::Handel->create_distro(
     dir     => $directory,
 );
 
-print "Created starter directories and files";
+print "Created starter directories and files\n";
 
 1;
 __END__
@@ -106,9 +106,9 @@ application using the recommend style of subclassing for easy customization.
     Created MyProject\.cvsignore
     Created MyProject\Makefile.PL
     Created MyProject\MANIFEST
-    Created MyProject\script\myapp_setup.pl
+    Created MyProject\script\myapp_handel.pl
 
-See L<Handel::Manual::QuickStart> for mo information on creating your first
+See L<Handel::Manual::QuickStart> for more information on creating your first
 Handel based application.
 
 =head1 SEE ALSO

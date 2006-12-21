@@ -19,14 +19,14 @@ common, or necessary for almost every cart/order process.
 =head2 L<Handel::Cart::Schema|Handel::Cart::Schema>
 
 Handel::Cart::Schema is a subclass of DBIx::Class::Schema that takes care of preloading
-Handel::Schema::Cart and Handel::Schema::Cart::Item for you.
+Handel::Schema::DBIC::Cart and Handel::Schema::DBIC::Cart::Item for you.
 
-=head2 L<Handel::Schema::Cart|Handel::Schema::Cart>
+=head2 L<Handel::Schema::DBIC::Cart|Handel::Schema::DBIC::Cart>
 
 Handel::Schema::Cart is a schema class for the main cart table that holds basic information about each cart like
 its name, description and the shopper id it belongs to.
 
-=head2 L<Handel::Schema::Cart::Item|Handel::Schema::Cart::Item>
+=head2 L<Handel::Schema::DBIC::Cart::Item|Handel::Schema::DBIC::Cart::Item>
 
 Handel::Schema::Cart::Item is a schema class for the table that holds the contents, or 'items' for each cart
 in the carts table above. This includes fields like sku, quantity and price.
@@ -34,14 +34,14 @@ in the carts table above. This includes fields like sku, quantity and price.
 =head2 L<Handel::Order::Schema|Handel::Order::Schema>
 
 Handel::Order::Schema is a subclass of DBIx::Class::Schema that takes care of preloading
-Handel::Schema::Order and Handel::Schema::Order::Item for you.
+Handel::Schema::DBIC::Order and Handel::Schema::DBIC::Order::Item for you.
 
-=head2 L<Handel::Schema::Order|Handel::Schema::Order>
+=head2 L<Handel::Schema::DBIC::Order|Handel::Schema::DBIC::Order>
 
 Handel::Schema::Order is a schema class for the main order table that holds basic information about each
 order like the billing and shipping information, the order totals, etc.
 
-=head2 L<Handel::Schema::Order::Item|Handel::Schema::Order::Item>
+=head2 L<Handel::Schema::DBIC::Order::Item|Handel::Schema::DBIC::Order::Item>
 
 Handel::Schema::Order::Item is a schema class for the table that holds the contents, or 'items' for each order
 in the carts table above. This includes fields like sku, quantity and price.

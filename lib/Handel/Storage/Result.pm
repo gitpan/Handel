@@ -1,4 +1,4 @@
-# $Id: Result.pm 1551 2006-11-07 02:03:05Z claco $
+# $Id: Result.pm 1593 2006-11-15 02:10:36Z claco $
 ## no critic (RequireFinalReturn)
 package Handel::Storage::Result;
 use strict;
@@ -19,6 +19,15 @@ sub delete {
 
 sub discard_changes {
     throw Handel::Exception::Virtual;
+};
+
+sub has_column {
+    my ($self, $column) = @_;
+    if ($self->can($column)) {
+        return 1;
+    } else {
+        return;
+    };
 };
 
 sub update {
@@ -244,6 +253,16 @@ the current storage object. See L<Handel::Storage/delete_items> for more details
 Discards all changes made since the last successful update.
 
 B<This method must be implemented in custom subclasses.>
+
+=head2 has_column
+
+=over
+
+=item Arguments: $column
+
+=back
+
+Returns true if the column exists in the current result object.
 
 =head2 items
 

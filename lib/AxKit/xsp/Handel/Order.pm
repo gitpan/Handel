@@ -1,4 +1,4 @@
-# $Id: Order.pm 1552 2006-11-07 03:31:50Z claco $
+# $Id: Order.pm 1595 2006-11-16 02:06:31Z claco $
 ## no critic
 package AxKit::XSP::Handel::Order;
 use strict;
@@ -407,7 +407,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                 return '
                     if (!$_xsp_handel_order_called_load) {
                         $_xsp_handel_order_order = (scalar keys %_xsp_handel_order_load_filter) ?
-                            Handel::Order->search(\%_xsp_handel_order_load_filter, 1)->next :
+                            Handel::Order->search(\%_xsp_handel_order_load_filter)->next :
                             Handel::Order->search->next;
                             $_xsp_handel_order_called_load = 1;
                     };
@@ -419,7 +419,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                     if (!$_xsp_handel_orders_called_load) {
                         @_xsp_handel_order_orders = (scalar keys %_xsp_handel_orders_load_filter) ?
                             Handel::Order->search(\%_xsp_handel_orders_load_filter) :
-                            Handel::Order->search();
+                            Handel::Order->search;
                             $_xsp_handel_orders_called_load = 1;
                     };
                     foreach my $_xsp_handel_order_order (@_xsp_handel_order_orders) {
@@ -429,8 +429,8 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                 return '
                     if (!$_xsp_handel_order_called_item) {
                         $_xsp_handel_order_item = (scalar keys %_xsp_handel_order_item_filter) ?
-                            $_xsp_handel_order_order->items(\%_xsp_handel_order_item_filter, 1)->next :
-                            $_xsp_handel_order_order->items(undef, 1)->next;
+                            $_xsp_handel_order_order->items(\%_xsp_handel_order_item_filter)->next :
+                            $_xsp_handel_order_order->items->next;
                             $_xsp_handel_order_called_item = 1;
                     };
                     if ($_xsp_handel_order_item) {
@@ -441,7 +441,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                     if (!$_xsp_handel_order_called_items) {
                         @_xsp_handel_order_items = (scalar keys %_xsp_handel_order_items_filter) ?
                             $_xsp_handel_order_order->items(\%_xsp_handel_order_items_filter) :
-                            $_xsp_handel_order_order->items();
+                            $_xsp_handel_order_order->items;
                             $_xsp_handel_order_called_items = 1;
                     };
                     foreach my $_xsp_handel_order_item (@_xsp_handel_order_items) {
@@ -479,7 +479,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                 return '
                     if (!$_xsp_handel_order_called_load) {
                         $_xsp_handel_order_order = (scalar keys %_xsp_handel_order_load_filter) ?
-                            Handel::Order->search(\%_xsp_handel_order_load_filter, 1)->next :
+                            Handel::Order->search(\%_xsp_handel_order_load_filter)->next :
                             Handel::Order->search->next;
                             $_xsp_handel_order_called_load = 1;
                     };
@@ -490,7 +490,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                     if (!$_xsp_handel_orders_called_load) {
                         @_xsp_handel_order_orders = (scalar keys %_xsp_handel_orders_load_filter) ?
                             Handel::Order->search(\%_xsp_handel_orders_load_filter) :
-                            Handel::Order->search();
+                            Handel::Order->search;
                             $_xsp_handel_orders_called_load = 1;
                     };
                     if (!scalar @_xsp_handel_order_orders) {
@@ -499,8 +499,8 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                 return '
                     if (!$_xsp_handel_order_called_item) {
                         $_xsp_handel_order_item = (scalar keys %_xsp_handel_order_item_filter) ?
-                            $_xsp_handel_order_order->items(\%_xsp_handel_order_item_filter, 1)->next :
-                            $_xsp_handel_order_order->items(undef, 1)->next;
+                            $_xsp_handel_order_order->items(\%_xsp_handel_order_item_filter)->next :
+                            $_xsp_handel_order_order->items->next;
                             $_xsp_handel_order_called_item = 1;
                     };
                     if (!$_xsp_handel_order_item) {
@@ -510,7 +510,7 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                     if (!$_xsp_handel_order_called_items) {
                         @_xsp_handel_order_items = (scalar keys %_xsp_handel_order_items_filter) ?
                             $_xsp_handel_order_order->items(\%_xsp_handel_order_items_filter) :
-                            $_xsp_handel_order_order->items();
+                            $_xsp_handel_order_order->items;
                             $_xsp_handel_order_called_items = 1;
                     };
                     if (!scalar @_xsp_handel_order_items) {

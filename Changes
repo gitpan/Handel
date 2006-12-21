@@ -1,6 +1,19 @@
 Revision history for Perl module Handel
 
-0.99_15
+0.99_16 Thur Dec 21 16:21:15 2006
+    - Added \%options/order_by to search/items in Cart/Order
+    - Added has_column to DBIC Storage to use ResultSource->has_column
+    - Added has_column to Result/DBIC Result
+    - Fixed TT demo code. Maybe that will die some day.
+        Seriously. Two words: Catalyst Helpers. :-)
+    - Fixed issue where Compat Currency convert failed with converter returns 0
+    - Changed quickstart setup script to *_handel.pl
+    - Added 0700 perms to handel.pl app script
+    - Storage::process_error now only dies Handel::Exception subclasses instead of
+        all blessed objects
+    - Renamed DBIC schema classes into Schema::DBIC space, like their RDBO cousins
+
+0.99_15 Sun Nov 12 17:50:52 2006
     - L10N files now use constant-like keys rather than english errors
     - L10N::es_es.pm reworked by Diego Kuperman
     - L10N::fr reworked by Pierrick DINTRAT
@@ -627,6 +640,7 @@ Revision history for Perl module Handel
 
 0.01_01 Mon Dec 27 21:47:04 2004
     - Initial alpha release
+
 
 
 

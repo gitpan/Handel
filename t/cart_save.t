@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_save.t 1442 2006-09-27 23:35:20Z claco $
+# $Id: cart_save.t 1590 2006-11-14 02:55:04Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 65;
+        plan tests => 71;
     };
 
     use_ok('Handel::Cart');
@@ -42,20 +42,22 @@ sub run {
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'got 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
 
         try {
+            local $ENV{'LANG'} = 'en';
             $cart->type('abc');
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Constraint with {
-            pass;
+            pass('caught constraint exception');
+            like(shift, qr/failed database constraint/i, 'failed constraint in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -66,21 +68,23 @@ sub run {
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'got 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
 
         try {
+            local $ENV{'LANG'} = 'en';
             $cart->name(undef);
             $cart->save;
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Constraint with {
-            pass;
+            pass('caught constraint exception');
+	    like(shift, qr/failed database constraint/i, 'failed constraint in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -90,12 +94,12 @@ sub run {
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'got 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        is($cart->type, CART_TYPE_TEMP);
+        is($cart->type, CART_TYPE_TEMP, 'got temp type');
 
         $cart->save;
 
@@ -103,12 +107,12 @@ sub run {
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($reit, 'Handel::Iterator');
-        is($reit, 1);
+        is($reit, 1, 'got 1 cart');
 
         my $recart = $reit->first;
         isa_ok($recart, 'Handel::Cart');
         isa_ok($recart, $subclass);
-        is($cart->type, CART_TYPE_SAVED);
+        is($cart->type, CART_TYPE_SAVED, 'got saved type');
     };
 
 };

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_items.t 1492 2006-10-22 23:52:28Z claco $
+# $Id: cart_items.t 1603 2006-11-22 21:17:25Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 473;
+        plan tests => 491;
     };
 
     use_ok('Handel::Cart');
@@ -42,55 +42,55 @@ sub run {
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'loaded 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        is($cart->id, '11111111-1111-1111-1111-111111111111');
-        is($cart->shopper, '11111111-1111-1111-1111-111111111111');
-        is($cart->type, CART_TYPE_TEMP);
-        is($cart->name, 'Cart 1');
-        is($cart->description, 'Test Temp Cart 1');
-        is($cart->count, 2);
-        is($cart->subtotal, 5.55);
+        is($cart->id, '11111111-1111-1111-1111-111111111111', 'got cart id');
+        is($cart->shopper, '11111111-1111-1111-1111-111111111111', 'got shopper id');
+        is($cart->type, CART_TYPE_TEMP, 'got temp type');
+        is($cart->name, 'Cart 1', 'got name');
+        is($cart->description, 'Test Temp Cart 1', 'got description');
+        is($cart->count, 2, 'has 2 items');
+        is($cart->subtotal, 5.55, 'subtotal is 5.55');
         if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, 'custom');
+            is($cart->custom, 'custom', 'got custom field');
         };
 
         my @items = $cart->items;
-        is(scalar @items, $cart->count);
+        is(scalar @items, $cart->count, 'loaded all items');
 
         my $item1 = $items[0];
         isa_ok($item1, 'Handel::Cart::Item');
         isa_ok($item1, $itemclass);
-        is($item1->id, '11111111-1111-1111-1111-111111111111');
-        is($item1->cart, $cart->id);
-        is($item1->sku, 'SKU1111');
-        is($item1->quantity, 1);
-        is($item1->price, 1.11);
-        is($item1->description, 'Line Item SKU 1');
-        is($item1->total, 1.11);
+        is($item1->id, '11111111-1111-1111-1111-111111111111', 'got item id');
+        is($item1->cart, $cart->id, 'cart id is set');
+        is($item1->sku, 'SKU1111', 'got sku');
+        is($item1->quantity, 1, 'quantity is 1');
+        is($item1->price, 1.11, 'price is 1.11');
+        is($item1->description, 'Line Item SKU 1', 'got description');
+        is($item1->total, 1.11, 'total is 1.11');
         if ($itemclass ne 'Handel::Cart::Item') {
-            is($item1->custom, 'custom');
+            is($item1->custom, 'custom', 'got custom field');
         };
 
         my $item2 = $items[1];
         isa_ok($item2, 'Handel::Cart::Item');
         isa_ok($item2, $itemclass);
-        is($item2->id, '22222222-2222-2222-2222-222222222222');
-        is($item2->cart, $cart->id);
-        is($item2->sku, 'SKU2222');
-        is($item2->quantity, 2);
-        is($item2->price, 2.22);
-        is($item2->description, 'Line Item SKU 2');
-        is($item2->total, 4.44);
+        is($item2->id, '22222222-2222-2222-2222-222222222222', 'got item id');
+        is($item2->cart, $cart->id, 'cart id is set');
+        is($item2->sku, 'SKU2222', 'got sku');
+        is($item2->quantity, 2, 'quantity is 2');
+        is($item2->price, 2.22, 'price is 2.22');
+        is($item2->description, 'Line Item SKU 2', 'got description');
+        is($item2->total, 4.44, 'total is 4.44');
         if ($itemclass ne 'Handel::Cart::Item') {
-            is($item2->custom, 'custom');
+            is($item2->custom, 'custom', 'got custom field');
         };
 
         ## While we are here, lets poop out a max quantity exception
-        ## THere should be a better place for this, but I haven't found it yet. :-)
+        ## There should be a better place for this, but I haven't found it yet. :-)
         {
             local $ENV{'HandelMaxQuantity'} = 5;
             local $ENV{'HandelMaxQuantityAction'} = 'Exception';
@@ -98,11 +98,12 @@ sub run {
             try {
                 $item2->quantity(6);
 
-                fail;
+                fail('no exception thrown');
             } catch Handel::Exception::Constraint with {
-                pass;
+                pass('caught constraint exception');
+                like(shift, qr/failed database constraint/i, 'failed constraint in message');
             } otherwise {
-                fail;
+                fail('caught other exception');
             };
         };
 
@@ -113,7 +114,7 @@ sub run {
             local $ENV{'HandelMaxQuantity'} = 2;
 
             $item2->quantity(6);
-            is($item2->quantity, 2);
+            is($item2->quantity, 2, 'quantity is 2');
         };
 
 
@@ -131,6 +132,29 @@ sub run {
                 fail('Other exception thrown');
             };
         };
+
+
+        ## throw exception when options isn't a hashref
+        {
+            try {
+                local $ENV{'LANG'} = 'en';
+                $cart->items({}, []);
+
+                fail('no exception thrown');
+            } catch Handel::Exception::Argument with {
+                pass('Argument exception thrown');
+                like(shift, qr/not a hash/i, 'not a hash ref in message');
+            } otherwise {
+                fail('Other exception thrown');
+            };
+        };
+
+
+        ## test out order_by
+        my @oitems = $cart->items(undef, {order_by => 'id DESC'});
+        is(scalar @oitems, 2, 'has 2 ordered items');
+        is($oitems[0]->id, '22222222-2222-2222-2222-222222222222', 'first item is last');
+        is($oitems[1]->id, '11111111-1111-1111-1111-111111111111', 'last item is first');
     };
 
 
@@ -140,51 +164,51 @@ sub run {
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'loaded 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        is($cart->id, '11111111-1111-1111-1111-111111111111');
-        is($cart->shopper, '11111111-1111-1111-1111-111111111111');
-        is($cart->type, CART_TYPE_TEMP);
-        is($cart->name, 'Cart 1');
-        is($cart->description, 'Test Temp Cart 1');
-        is($cart->count, 2);
-        is($cart->subtotal, 5.55);
+        is($cart->id, '11111111-1111-1111-1111-111111111111', 'got cart id');
+        is($cart->shopper, '11111111-1111-1111-1111-111111111111', 'got shopper id');
+        is($cart->type, CART_TYPE_TEMP, 'got temp type');
+        is($cart->name, 'Cart 1', 'got name');
+        is($cart->description, 'Test Temp Cart 1', 'got description');
+        is($cart->count, 2, 'has 2 items');
+        is($cart->subtotal, 5.55, 'total is 5.55');
         if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, 'custom');
+            is($cart->custom, 'custom', 'got custom field');
         };
 
         my @items = $cart->items();
-        is(scalar @items, $cart->count);
+        is(scalar @items, $cart->count, 'loaded same items');
 
         my $item1 = $items[0];
         isa_ok($item1, 'Handel::Cart::Item');
         isa_ok($item1, $itemclass);
-        is($item1->id, '11111111-1111-1111-1111-111111111111');
-        is($item1->cart, $cart->id);
-        is($item1->sku, 'SKU1111');
-        is($item1->quantity, 1);
-        is($item1->price, 1.11);
-        is($item1->description, 'Line Item SKU 1');
-        is($item1->total, 1.11);
+        is($item1->id, '11111111-1111-1111-1111-111111111111', 'got item id');
+        is($item1->cart, $cart->id, 'cart id is set');
+        is($item1->sku, 'SKU1111', 'got sku');
+        is($item1->quantity, 1, 'quantity is 1');
+        is($item1->price, 1.11, 'price is 1.11');
+        is($item1->description, 'Line Item SKU 1', 'got description');
+        is($item1->total, 1.11, 'total is 1.11');
         if ($itemclass ne 'Handel::Cart::Item') {
-            is($item1->custom, 'custom');
+            is($item1->custom, 'custom', 'got custom field');
         };
 
         my $item2 = $items[1];
         isa_ok($item2, 'Handel::Cart::Item');
         isa_ok($item2, $itemclass);
-        is($item2->id, '22222222-2222-2222-2222-222222222222');
-        is($item2->cart, $cart->id);
-        is($item2->sku, 'SKU2222');
-        is($item2->quantity, 2);
-        is($item2->price, 2.22);
-        is($item2->description, 'Line Item SKU 2');
-        is($item2->total, 4.44);
+        is($item2->id, '22222222-2222-2222-2222-222222222222', 'got item id');
+        is($item2->cart, $cart->id, 'cart id is set');
+        is($item2->sku, 'SKU2222', 'got sku');
+        is($item2->quantity, 2, 'quantity is 2');
+        is($item2->price, 2.22, 'price is 2.22');
+        is($item2->description, 'Line Item SKU 2', 'got description');
+        is($item2->total, 4.44, 'total is 4.44');
         if ($itemclass ne 'Handel::Cart::Item') {
-            is($item2->custom, 'custom');
+            is($item2->custom, 'custom', 'got custom field');
         };
     };
 
@@ -195,25 +219,25 @@ sub run {
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'loaded 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        is($cart->id, '11111111-1111-1111-1111-111111111111');
-        is($cart->shopper, '11111111-1111-1111-1111-111111111111');
-        is($cart->type, CART_TYPE_TEMP);
-        is($cart->name, 'Cart 1');
-        is($cart->description, 'Test Temp Cart 1');
-        is($cart->count, 2);
-        is($cart->subtotal, 5.55);
+        is($cart->id, '11111111-1111-1111-1111-111111111111', 'got cart id');
+        is($cart->shopper, '11111111-1111-1111-1111-111111111111', 'got shopper id');
+        is($cart->type, CART_TYPE_TEMP, 'got temp type');
+        is($cart->name, 'Cart 1', 'got name');
+        is($cart->description, 'Test Temp Cart 1', 'got description');
+        is($cart->count, 2, 'has 2 items');
+        is($cart->subtotal, 5.55, 'subtotal is 5.55');
         if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, 'custom');
+            is($cart->custom, 'custom', 'got custom field');
         };
 
         my $items = $cart->items;
         isa_ok($items, 'Handel::Iterator');
-        is($items->count, 2);
+        is($items->count, 2, 'has 2 items');
     };
 
 
@@ -223,38 +247,38 @@ sub run {
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'loaded 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        is($cart->id, '11111111-1111-1111-1111-111111111111');
-        is($cart->shopper, '11111111-1111-1111-1111-111111111111');
-        is($cart->type, CART_TYPE_TEMP);
-        is($cart->name, 'Cart 1');
-        is($cart->description, 'Test Temp Cart 1');
-        is($cart->count, 2);
-        is($cart->subtotal, 5.55);
+        is($cart->id, '11111111-1111-1111-1111-111111111111', 'got cart id');
+        is($cart->shopper, '11111111-1111-1111-1111-111111111111', 'got shopper id');
+        is($cart->type, CART_TYPE_TEMP, 'got temp type');
+        is($cart->name, 'Cart 1', 'got name');
+        is($cart->description, 'Test Temp Cart 1', 'got description');
+        is($cart->count, 2, 'has 2 items');
+        is($cart->subtotal, 5.55, 'subtotal is 5.55');
         if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, 'custom');
+            is($cart->custom, 'custom', 'got custom field');
         };
 
         my $itemit = $cart->items({sku => 'SKU2222'});
         isa_ok($itemit, 'Handel::Iterator');
-        is($itemit, 1);
+        is($itemit, 1, 'has 1 item');
 
         my $item2 = $itemit->first;
         isa_ok($item2, 'Handel::Cart::Item');
         isa_ok($item2, $itemclass);
-        is($item2->id, '22222222-2222-2222-2222-222222222222');
-        is($item2->cart, $cart->id);
-        is($item2->sku, 'SKU2222');
-        is($item2->quantity, 2);
-        is($item2->price, 2.22);
-        is($item2->description, 'Line Item SKU 2');
-        is($item2->total, 4.44);
+        is($item2->id, '22222222-2222-2222-2222-222222222222', 'got item id');
+        is($item2->cart, $cart->id, 'cart id is set');
+        is($item2->sku, 'SKU2222', 'got sku');
+        is($item2->quantity, 2, 'quantity is 2');
+        is($item2->price, 2.22, 'price is 2.22');
+        is($item2->description, 'Line Item SKU 2', 'got description');
+        is($item2->total, 4.44, 'total is 4.44');
         if ($itemclass ne 'Handel::Cart::Item') {
-            is($item2->custom, 'custom');
+            is($item2->custom, 'custom', 'got custom field');
         };
     };
 
@@ -265,23 +289,23 @@ sub run {
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'loaded 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        is($cart->id, '11111111-1111-1111-1111-111111111111');
-        is($cart->shopper, '11111111-1111-1111-1111-111111111111');
-        is($cart->type, CART_TYPE_TEMP);
-        is($cart->name, 'Cart 1');
-        is($cart->description, 'Test Temp Cart 1');
-        is($cart->count, 2);
-        is($cart->subtotal, 5.55);
+        is($cart->id, '11111111-1111-1111-1111-111111111111', 'got cart id');
+        is($cart->shopper, '11111111-1111-1111-1111-111111111111', 'got shopper id');
+        is($cart->type, CART_TYPE_TEMP, 'got temp type');
+        is($cart->name, 'Cart 1', 'got name');
+        is($cart->description, 'Test Temp Cart 1', 'got description');
+        is($cart->count, 2, 'has 2 items');
+        is($cart->subtotal, 5.55, 'subtotal is 5.55');
         if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, 'custom');
+            is($cart->custom, 'custom', 'got custom field');
         };
 
-        my $iterator = $cart->items({sku => 'SKU2222'}, 1);
+        my $iterator = $cart->items({sku => 'SKU2222'});
         isa_ok($iterator, 'Handel::Iterator');
     };
 
@@ -293,25 +317,25 @@ sub run {
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'loaded 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        is($cart->id, '11111111-1111-1111-1111-111111111111');
-        is($cart->shopper, '11111111-1111-1111-1111-111111111111');
-        is($cart->type, CART_TYPE_TEMP);
-        is($cart->name, 'Cart 1');
-        is($cart->description, 'Test Temp Cart 1');
-        is($cart->count, 2);
-        is($cart->subtotal, 5.55);
+        is($cart->id, '11111111-1111-1111-1111-111111111111', 'got cart id');
+        is($cart->shopper, '11111111-1111-1111-1111-111111111111', 'got shopper id');
+        is($cart->type, CART_TYPE_TEMP, 'got temp type');
+        is($cart->name, 'Cart 1', 'got name');
+        is($cart->description, 'Test Temp Cart 1', 'got description');
+        is($cart->count, 2, 'has 2 items');
+        is($cart->subtotal, 5.55, 'subtotal is 5.55');
         if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, 'custom');
+            is($cart->custom, 'custom', 'got custom field');
         };
 
         my $iterator = $cart->items({sku => {like=>'SKU%'}});
         isa_ok($iterator, 'Handel::Iterator');
-        is($iterator, 2);
+        is($iterator, 2, 'has 2 items');
     };
 
 
@@ -322,25 +346,25 @@ sub run {
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'loaded 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        is($cart->id, '11111111-1111-1111-1111-111111111111');
-        is($cart->shopper, '11111111-1111-1111-1111-111111111111');
-        is($cart->type, CART_TYPE_TEMP);
-        is($cart->name, 'Cart 1');
-        is($cart->description, 'Test Temp Cart 1');
-        is($cart->count, 2);
-        is($cart->subtotal, 5.55);
+        is($cart->id, '11111111-1111-1111-1111-111111111111', 'got cart id');
+        is($cart->shopper, '11111111-1111-1111-1111-111111111111', 'got shopper id');
+        is($cart->type, CART_TYPE_TEMP, 'got temp type');
+        is($cart->name, 'Cart 1', 'got name');
+        is($cart->description, 'Test Temp Cart 1', 'got description');
+        is($cart->count, 2, 'has 2 items');
+        is($cart->subtotal, 5.55, 'subtotal is 2.22');
         if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, 'custom');
+            is($cart->custom, 'custom', 'got custom field');
         };
 
         my $iterator = $cart->items({sku => 'SKU%'});
         isa_ok($iterator, 'Handel::Iterator');
-        is($iterator, 2);
+        is($iterator, 2, 'has 2 items');
     };
 
 
@@ -350,23 +374,23 @@ sub run {
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'loaded 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        is($cart->id, '11111111-1111-1111-1111-111111111111');
-        is($cart->shopper, '11111111-1111-1111-1111-111111111111');
-        is($cart->type, CART_TYPE_TEMP);
-        is($cart->name, 'Cart 1');
-        is($cart->description, 'Test Temp Cart 1');
-        is($cart->count, 2);
-        is($cart->subtotal, 5.55);
+        is($cart->id, '11111111-1111-1111-1111-111111111111', 'got cart id');
+        is($cart->shopper, '11111111-1111-1111-1111-111111111111', 'got shopper id');
+        is($cart->type, CART_TYPE_TEMP, 'got temp type');
+        is($cart->name, 'Cart 1', 'got name');
+        is($cart->description, 'Test Temp Cart 1', 'got description');
+        is($cart->count, 2, 'has 2 items');
+        is($cart->subtotal, 5.55, 'subtotal is 5.55');
         if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, 'custom');
+            is($cart->custom, 'custom', 'got custom field');
         };
 
-        my $iterator = $cart->items({sku => 'notfound'}, 1);
+        my $iterator = $cart->items({sku => 'notfound'});
         isa_ok($iterator, 'Handel::Iterator');
     };
 

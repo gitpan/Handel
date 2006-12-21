@@ -1,5 +1,5 @@
 ## no critic
-# $Id: en_us.pm 1461 2006-10-10 02:20:55Z claco $
+# $Id: en_us.pm 1605 2006-11-24 23:16:30Z claco $
 package Handel::L10N::en_us;
 use strict;
 use warnings;
@@ -32,7 +32,7 @@ BEGIN {
         'Param 1 is not a HASH reference or Handel::Order',
 
     PARAM1_NOT_CHECKOUT_PHASE =>
-        'Param 1 is not a a valid CHECKOUT_PHASE_* value',
+        'Param 1 is not a valid CHECKOUT_PHASE_* value',
 
     PARAM1_NOT_CODEREF =>
         'Param 1 is not a CODE reference',

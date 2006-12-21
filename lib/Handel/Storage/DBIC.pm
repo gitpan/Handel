@@ -1,4 +1,4 @@
-# $Id: DBIC.pm 1551 2006-11-07 02:03:05Z claco $
+# $Id: DBIC.pm 1625 2006-12-15 01:01:06Z claco $
 ## no critic (ProhibitExcessComplexity)
 package Handel::Storage::DBIC;
 use strict;
@@ -274,6 +274,16 @@ sub delete_items {
     return $storage_result->delete_related($self->item_relationship, $filter, @_);
 };
 
+sub has_column {
+    my ($self, $column) = @_;
+
+    if ($self->_schema_instance) {
+        return $self->schema_instance->source($self->schema_source)->has_column($column);
+    } else {
+        return $self->SUPER::has_column($column);
+    };
+};
+
 sub primary_columns {
     my ($self, @columns) = @_;
 
@@ -291,22 +301,6 @@ sub primary_columns {
         return $self->_primary_columns ?
             @{$self->_primary_columns} :
             $self->schema_class->source($self->schema_source)->primary_columns;
-    };
-};
-
-sub process_error { ## no critic (RequireFinalReturn)
-    my ($message) = @_;
-
-    if (blessed $message) {
-        die $message; ## no critic
-    };
-
-    if ($message =~ /column\s+(.*)\s+is not unique/) {
-        my $details = translate('COLUMN_VALUE_EXISTS', $1); ## no critic
-
-        throw Handel::Exception::Constraint(-text => $details);
-    } else {
-        throw Handel::Exception::Storage(-text => $message);
     };
 };
 
@@ -441,7 +435,6 @@ sub search_items {
     throw Handel::Exception::Storage(
         -details => translate('ITEM_RELATIONSHIP_NOT_SPECIFIED')
     ) unless $self->item_relationship; ## no critic
-
 
     if ($filter) {
         $filter = $self->_migrate_wildcards($filter);
@@ -642,7 +635,11 @@ sub _configure_schema_instance {
     };
 
 
-    $schema_instance->exception_action($self->can('process_error'));
+    $schema_instance->exception_action(
+        sub {
+            __PACKAGE__->SUPER::process_error(@_);
+        }
+    );
 
 
     # warning: there be dragons in here
@@ -777,7 +774,6 @@ Handel::Storage::DBIC - DBIC schema storage layer for cart/order/item reads/writ
     __PACKAGE__->storage_class('Handel::Storage::DBIC');
     __PACKAGE__->storage({
         schema_source  => 'Carts',
-        item_class     => 'MyCustomItem',
         constraints    => {
             id         => {'Check Id'      => \&constraint_uuid},
             shopper    => {'Check Shopper' => \&constraint_uuid},
@@ -1209,6 +1205,19 @@ specified result has no item relationship.
 
 See L<Handel::Storage/delete_items> for more information about this method.
 
+=head2 has_column
+
+=over
+
+=item Arguments: $column
+
+=back
+
+Returns true if the column exists in the current storage object. If the schema
+is already initialized, the has_column method on the result source will be used.
+Otherwise, has_column will calculate the existence of the column based on any
+current add_columns/remove_columns information.
+
 =head2 item_relationship
 
 =over
@@ -1242,11 +1251,6 @@ When no schema instance exists, the columns are set locally like C<add_columns>
 then added to the schema instance during its configuration. Primary columns are
 returns from the current schema source in the current schema class if no primary
 columns have been set locally.
-
-=head2 process_error
-
-This method accepts errors from DBIC using <exception_action> and converts them
-into Handel::Exception objects before throwing the error.
 
 =head2 remove_columns
 
@@ -1437,7 +1441,7 @@ exact same options that L</new> does.
     package MyStorageClass;
     use strict;
     use warnings;
-    use base qw/Handel::Storage/;
+    use base qw/Handel::Storage::DBIC/;
     
     __PACKAGE__->setup({
         schema_source => 'Foo'
@@ -1445,7 +1449,7 @@ exact same options that L</new> does.
     
     # or
     
-    my $storage = Handel::Storage-new;
+    my $storage = Handel::Storage::DBIC-new;
     $storage->setup({
         schema_source  => 'Carts',
         cart_class     => 'CustomerCart'
@@ -1453,7 +1457,7 @@ exact same options that L</new> does.
 
 This is the same as doing:
 
-    my $storage = Handel::Storage-new({
+    my $storage = Handel::Storage::DBIC-new({
         schema_source  => 'Carts',
         cart_class     => 'CustomerCart'
     });

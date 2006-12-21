@@ -1,9 +1,12 @@
-# $Id: Order.pm 1580 2006-11-12 22:20:23Z claco $
-package Handel::Schema::Order;
+# $Id: Order.pm 1643 2006-12-21 21:12:15Z claco $
+package Handel::Schema::DBIC::Order;
 use strict;
 use warnings;
-use DateTime;
-use base qw/DBIx::Class/;
+
+BEGIN {
+    use base qw/DBIx::Class/;
+    use DateTime;
+};
 
 __PACKAGE__->load_components(qw/InflateColumn::DateTime Core/);
 __PACKAGE__->table('orders');
@@ -247,14 +250,14 @@ __PACKAGE__->add_columns(
     }
 );
 __PACKAGE__->set_primary_key('id');
-__PACKAGE__->has_many(items => 'Handel::Schema::Order::Item', {'foreign.orderid' => 'self.id'});
+__PACKAGE__->has_many(items => 'Handel::Schema::DBIC::Order::Item', {'foreign.orderid' => 'self.id'});
 
 1;
 __END__
 
 =head1 NAME
 
-Handel::Schema::Order - Schema class for order table
+Handel::Schema::DBIC::Order - DBIC schema class for order table
 
 =head1 SYNOPSIS
 
@@ -713,7 +716,7 @@ The shipping address email address for this order.
 
 =head1 SEE ALSO
 
-L<Handel::Schema::Order::Item>, L<DBIx::Class::Schema>
+L<Handel::Schema::DBIC::Order::Item>, L<DBIx::Class::Schema>
 
 =head1 AUTHOR
 

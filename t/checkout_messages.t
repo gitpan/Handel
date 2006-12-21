@@ -1,11 +1,11 @@
 #!perl -wT
-# $Id: checkout_messages.t 1486 2006-10-18 23:44:59Z claco $
+# $Id: checkout_messages.t 1605 2006-11-24 23:16:30Z claco $
 use strict;
 use warnings;
 
 BEGIN {
     use lib 't/lib';
-    use Handel::Test tests => 174;
+    use Handel::Test tests => 180;
 
     use_ok('Handel::Checkout');
     use_ok('Handel::Subclassing::Checkout');
@@ -28,15 +28,17 @@ sub run {
     ## test for Handel::Exception::Argument where message is not a scalar
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $checkout = $subclass->new({pluginpaths => 'Handel::LOADNOTHING'});
 
             $checkout->add_message([1, 2, 3]);
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
+            pass('caught argument exception');
+            like(shift, qr/not.*text message/i, 'not text message in message');
         } otherwise {
-            fail;
+            fail('other exception thrown');
         };
     };
 
@@ -44,16 +46,18 @@ sub run {
     ## test for Handel::Exception::Argument where message is not a Handel::Checkout;:Message subclass
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $fake = bless {}, 'FakeModule';
             my $checkout = $subclass->new({pluginpaths => 'Handel::LOADNOTHING'});
 
             $checkout->add_message($fake);
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
+            pass('caught argument exception');
+            like(shift, qr/not.*Handel::Checkout::Message/i, 'notmessage object in message');
         } otherwise {
-            fail;
+            fail('other exception thrown');
         };
     };
 
@@ -66,8 +70,8 @@ sub run {
         );
 
         isa_ok($message, 'Handel::Checkout::Message');
-        is($message->text, 'My Message');
-        is($message->otherproperty, 'foo');
+        is($message->text, 'My Message', 'got message');
+        is($message->otherproperty, 'foo', 'got other property');
     };
 
 
@@ -79,18 +83,18 @@ sub run {
         $checkout->add_message($axkitmessage);
 
         my @messages = @{$checkout->messages};
-        is(scalar @messages, 1);
+        is(scalar @messages, 1, 'have 1 message');
 
         my $message = $messages[0];
         isa_ok($message, 'Handel::Checkout::Message');
-        is($messages[0]->text . '', 'Foo');
+        is($messages[0]->text . '', 'Foo', 'got message text');
 
-        ok($message->filename);
-        ok($message->line);
+        ok($message->filename, 'has filename');
+        ok($message->line, 'has line');
 
         $checkout->clear_messages;
         @messages = @{$checkout->messages};
-        is(scalar @messages, 0);
+        is(scalar @messages, 0, 'has 0 messages');
     };
 
 
@@ -101,18 +105,18 @@ sub run {
         $checkout->add_message('This is a message');
 
         my @messages = @{$checkout->messages};
-        is(scalar @messages, 1);
+        is(scalar @messages, 1, 'have 1 message');
 
         my $message = $messages[0];
         isa_ok($message, 'Handel::Checkout::Message');
-        is($messages[0]->text, 'This is a message');
+        is($messages[0]->text, 'This is a message', 'got text');
 
-        ok($message->filename);
-        ok($message->line);
+        ok($message->filename, 'has filename');
+        ok($message->line, 'has line');
 
         $checkout->clear_messages;
         @messages = @{$checkout->messages};
-        is(scalar @messages, 0);
+        is(scalar @messages, 0, 'has no messsages');
     };
 
 
@@ -129,14 +133,14 @@ sub run {
         $checkout->add_message($newmessage);
 
         my @messages = @{$checkout->messages};
-        is(scalar @messages, 1);
+        is(scalar @messages, 1, 'has 1 message');
 
         my $message = $messages[0];
         isa_ok($message, 'Handel::Checkout::Message');
-        is($messages[0]->text, 'This is a new message');
-        is($messages[0]->package, 'package');
-        is($messages[0]->filename, 'filename');
-        is($messages[0]->line, 'line');
+        is($messages[0]->text, 'This is a new message', 'has text message');
+        is($messages[0]->package, 'package', 'has package');
+        is($messages[0]->filename, 'filename', 'has filename');
+        is($messages[0]->line, 'line', 'has line');
     };
 
 
@@ -148,14 +152,14 @@ sub run {
         $checkout->add_message($newmessage);
 
         my @messages = @{$checkout->messages};
-        is(scalar @messages, 1);
+        is(scalar @messages, 1, 'has 1 message');
 
         my $message = $messages[0];
         isa_ok($message, 'Handel::Checkout::Message');
-        is($messages[0]->text, 'This is a new message');
+        is($messages[0]->text, 'This is a new message', 'has message text');
 
-        ok($message->filename);
-        ok($message->line);
+        ok($message->filename, 'has filename');
+        ok($message->line, 'has line');
     };
 
 
@@ -167,14 +171,14 @@ sub run {
         $checkout->add_message($newmessage);
 
         my @messages = @{$checkout->messages};
-        is(scalar @messages, 1);
+        is(scalar @messages, 1, 'has 1 message');
 
         my $message = $messages[0];
         isa_ok($message, 'Handel::Checkout::Message');
-        is($messages[0]->text, 'This is a new message');
+        is($messages[0]->text, 'This is a new message', 'has message text');
 
-        ok($message->filename);
-        ok($message->line);
+        ok($message->filename, 'has filename');
+        ok($message->line, 'has line');
 
         is("$message", 'This is a new message', 'message stringifies to message text');
 
@@ -191,32 +195,32 @@ sub run {
         $checkout->add_message('Message2');
 
         my @messages = @{$checkout->messages};
-        is(scalar @messages, 2);
+        is(scalar @messages, 2, 'has 2 messages');
 
         isa_ok($messages[0], 'Handel::Checkout::Message');
-        is($messages[0]->text, 'Message1');
-        is($messages[0], 'Message1');
-        ok($messages[0]->filename);
-        ok($messages[0]->line);
+        is($messages[0]->text, 'Message1', 'has message text');
+        is($messages[0], 'Message1', 'has message text');
+        ok($messages[0]->filename, 'has filename');
+        ok($messages[0]->line, 'has line');
 
         isa_ok($messages[1], 'Handel::Checkout::Message');
-        is($messages[1]->text, 'Message2');
-        is($messages[1], 'Message2');
-        ok($messages[1]->filename);
-        ok($messages[1]->line);
+        is($messages[1]->text, 'Message2', 'has message text');
+        is($messages[1], 'Message2', 'has message text');
+        ok($messages[1]->filename, 'has filename');
+        ok($messages[1]->line, 'has line');
 
         my $messagesref = $checkout->messages;
         isa_ok($messagesref, 'ARRAY');
         isa_ok($messagesref->[0], 'Handel::Checkout::Message');
-        is($messagesref->[0]->text, 'Message1');
-        is($messagesref->[0], 'Message1');
-        ok($messagesref->[0]->filename);
-        ok($messagesref->[0]->line);
+        is($messagesref->[0]->text, 'Message1', 'has message text');
+        is($messagesref->[0], 'Message1', 'has message text');
+        ok($messagesref->[0]->filename, 'has filename');
+        ok($messagesref->[0]->line, 'has line');
 
-        is($messagesref->[1]->text, 'Message2');
-        is($messagesref->[1], 'Message2');
-        ok($messagesref->[1]->filename);
-        ok($messagesref->[1]->line);
+        is($messagesref->[1]->text, 'Message2', 'has message text');
+        is($messagesref->[1], 'Message2', 'has message text');
+        ok($messagesref->[1]->filename, 'has filename');
+        ok($messagesref->[1]->line, 'has line');
     };
 
 };

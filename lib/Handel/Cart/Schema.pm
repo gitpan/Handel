@@ -1,10 +1,13 @@
-# $Id: Schema.pm 1335 2006-07-15 02:43:12Z claco $
+# $Id: Schema.pm 1643 2006-12-21 21:12:15Z claco $
 package Handel::Cart::Schema;
 use strict;
 use warnings;
-use base qw/Handel::Schema/;
 
-__PACKAGE__->load_classes(qw//, {'Handel::Schema' => [qw/Cart Cart::Item/]});
+BEGIN {
+    use base qw/Handel::Schema/;
+};
+
+__PACKAGE__->load_classes(qw//, {'Handel::Schema::DBIC' => [qw/Cart Cart::Item/]});
 
 1;
 __END__

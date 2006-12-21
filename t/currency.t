@@ -1,11 +1,11 @@
 #!perl -wT
-# $Id: currency.t 1506 2006-10-26 02:39:02Z claco $
+# $Id: currency.t 1596 2006-11-17 15:35:34Z claco $
 use strict;
 use warnings;
 
 BEGIN {
     use lib 't/lib';
-    use Handel::Test tests => 140;
+    use Handel::Test tests => 145;
     use Scalar::Util qw/refaddr/;
 
     eval 'use Test::MockObject 0.07';
@@ -383,6 +383,23 @@ SKIP: {
         isa_ok($converted, 'Handel::Currency');
         is($converted->value, 2.23, 'value was set');
         is($converted->stringify, 2.23, 'stringify to value');
+        is($converted->code, 'CAD', 'code is set');
+        is($converted->_format, undef, 'format is not set');
+    };
+
+
+    ## test when converter returns nothing
+    {
+        Test::MockObject->fake_module('Finance::Currency::Convert::WebserviceX' => (
+            new => sub {return bless {}, shift},
+            convert => sub {}
+        ));
+
+        my $currency = Handel::Currency->new(1.23, 'USD');
+        my $converted = $currency->convert('CAD');
+        isa_ok($converted, 'Handel::Currency');
+        is($converted->value, 0, 'value is 0 when converter fails');
+        is($converted->stringify, 0, 'stringify to value');
         is($converted->code, 'CAD', 'code is set');
         is($converted->_format, undef, 'format is not set');
     };

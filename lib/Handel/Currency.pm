@@ -1,4 +1,4 @@
-# $Id: Currency.pm 1550 2006-11-07 01:16:41Z claco $
+# $Id: Currency.pm 1594 2006-11-15 04:54:59Z claco $
 package Handel::Currency;
 use strict;
 use warnings;
@@ -64,7 +64,7 @@ sub format {
     my $cfg = Handel->config;
     my $code = $self->code || $cfg->{'HandelCurrencyCode'};
 
-    
+
     if (!defined $format) {
         $format = $self->_format || $cfg->{'HandelCurrencyFormat'};
     };
@@ -102,7 +102,7 @@ sub convert {
     };
 
     return $class->new(
-        $self->converter->convert($self->value, $from, $to),
+        $self->converter->convert($self->value, $from, $to) || 0,
         $to,
         $self->_format
     );

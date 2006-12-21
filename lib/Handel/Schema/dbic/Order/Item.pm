@@ -1,11 +1,15 @@
-# $Id: Item.pm 1334 2006-07-14 03:22:20Z claco $
-package Handel::Schema::Cart::Item;
+# $Id: Item.pm 1643 2006-12-21 21:12:15Z claco $
+package Handel::Schema::DBIC::Order::Item;
 use strict;
 use warnings;
-use base qw/DBIx::Class/;
+
+BEGIN {
+    use base qw/DBIx::Class/;
+    use Handel::Currency;
+};
 
 __PACKAGE__->load_components(qw/Core/);
-__PACKAGE__->table('cart_items');
+__PACKAGE__->table('order_items');
 __PACKAGE__->source_name('Items');
 __PACKAGE__->add_columns(
     id => {
@@ -13,7 +17,7 @@ __PACKAGE__->add_columns(
         size           => 36,
         is_nullable    => 0,
     },
-    cart => {
+    orderid => {
         data_type      => 'varchar',
         size           => 36,
         is_nullable    => 0,
@@ -31,6 +35,12 @@ __PACKAGE__->add_columns(
         default_value  => 1
     },
     price => {
+        data_type      => 'decimal',
+        size           => [9,2],
+        is_nullable    => 0,
+        default_value  => '0.00'
+    },
+    total => {
         data_type      => 'decimal',
         size           => [9,2],
         is_nullable    => 0,
@@ -50,41 +60,41 @@ __END__
 
 =head1 NAME
 
-Handel::Schema::Cart::Item - Schema class for cart_items table
+Handel::Schema::DBIC::Order::Item - DBIC schema class for order_items table
 
 =head1 SYNOPSIS
 
-    use Handel::Cart::Schema;
+    use Handel::Order::Schema;
     use strict;
     use warnings;
-    
-    my $schema = Handel::Cart::Schema->connect;
-    
+
+    my $schema = Handel::Order::Schema->connect;
+
     my $item = $schema->resultset("Items")->find('12345678-9098-7654-3212-345678909876');
 
 =head1 DESCRIPTION
 
-Handel::Schema::Cart::Item is loaded by Handel::Cart::Schema to read/write data
-to the cart_items table.
+Handel::Schema::DBIC::Order::Item is loaded by Handel::Order::Schema to
+read/write data to the order_items table.
 
 =head1 COLUMNS
 
 =head2 id
 
-Contains the primary key for each cart item record. By default, this is a uuid
+Contains the primary key for each order item record. By default, this is a uuid
 string.
 
     id => {
-        data_type     => 'varchar',
-        size          => 36,
-        is_nullable   => 0,
+        data_type      => 'varchar',
+        size           => 36,
+        is_nullable    => 0,
     },
 
-=head2 cart
+=head2 orderid
 
-Contains the foreign key to the carts table.
+Contains the foreign key to the orders table.
 
-    cart => {
+    orderid => {
         data_type      => 'varchar',
         size           => 36,
         is_nullable    => 0,
@@ -93,7 +103,7 @@ Contains the foreign key to the carts table.
 
 =head2 sku
 
-Contains the sku (Stock Keeping Unit), or part number for the current cart item.
+Contains the sku (Stock Keeping Unit), or part number for the current order item.
 
     sku => {
         data_type      => 'varchar',
@@ -103,7 +113,7 @@ Contains the sku (Stock Keeping Unit), or part number for the current cart item.
 
 =head2 quantity
 
-Contains the number of this cart item being ordered.
+Contains the number of this order item being ordered.
 
     quantity => {
         data_type      => 'tinyint',
@@ -114,7 +124,7 @@ Contains the number of this cart item being ordered.
 
 =head2 price
 
-Contains the price if the current cart item.
+Contains the price of the current order item.
 
     price => {
         data_type      => 'decimal',
@@ -123,9 +133,20 @@ Contains the price if the current cart item.
         default_value  => '0.00'
     },
 
+=head2 total
+
+Contains the total cost of the current order item.
+
+    total => {
+        data_type      => 'decimal',
+        size           => [9,2],
+        is_nullable    => 0,
+        default_value  => '0.00'
+    },
+
 =head2 description
 
-Contains the description of the current cart item.
+Contains the description of the current order item.
 
     description => {
         data_type     => 'varchar',
@@ -136,7 +157,7 @@ Contains the description of the current cart item.
 
 =head1 SEE ALSO
 
-L<Handel::Schema::Cart>, L<DBIx::Class::Schema>
+L<Handel::Schema::DBIC::Order>, L<DBIx::Class::Schema>
 
 =head1 AUTHOR
 
@@ -144,3 +165,4 @@ L<Handel::Schema::Cart>, L<DBIx::Class::Schema>
     CPAN ID: CLACO
     claco@chrislaco.com
     http://today.icantfocus.com/blog/
+

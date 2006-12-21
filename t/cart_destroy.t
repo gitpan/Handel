@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_destroy.t 1492 2006-10-22 23:52:28Z claco $
+# $Id: cart_destroy.t 1603 2006-11-22 21:17:25Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 84;
+        plan tests => 87;
     };
 
     use_ok('Handel::Cart');
@@ -40,22 +40,24 @@ sub run {
     ## Test for Handel::Exception::Argument where first param is not a hashref
     {
         try {
+            local $ENV{'LANG'} = 'en';
             $subclass->destroy(id => '1234');
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
+            pass('caught argument exception');
+            like(shift, qr/not a hash/i, 'not a hash in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
 
     my $total_carts = $subclass->storage->schema_instance->resultset('Carts')->count;
-    ok($total_carts);
+    ok($total_carts, 'table has carts');
 
     my $total_items = $subclass->storage->schema_instance->resultset('Items')->count;
-    ok($total_items);
+    ok($total_items, 'table has items');
 
 
     ## Destroy a single cart via instance
@@ -64,15 +66,15 @@ sub run {
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'loaded 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
 
         my $related_items = $cart->count;
-        is($related_items, 1);
-        is($cart->subtotal, 9.99);
+        is($related_items, 1, 'has 1 item');
+        is($cart->subtotal, 9.99, 'subtotal is 9.99');
 
         $cart->destroy;
 
@@ -80,16 +82,16 @@ sub run {
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($reit, 'Handel::Iterator');
-        is($reit, 0);
+        is($reit, 0, 'has no cart');
 
         my $recart = $reit->first;
-        is($recart, undef);
+        is($recart, undef, 'has no cart');
 
         my $remaining_carts = $subclass->storage->schema_instance->resultset('Carts')->count;
         my $remaining_items = $subclass->storage->schema_instance->resultset('Items')->count;
 
-        is($remaining_carts, $total_carts - 1);
-        is($remaining_items, $total_items - $related_items);
+        is($remaining_carts, $total_carts - 1, 'unrelated carts in table');
+        is($remaining_items, $total_items - $related_items, 'unrelated items in table');
 
         $total_carts--;
         $total_items -= $related_items;
@@ -100,10 +102,10 @@ sub run {
     {
         my $carts = $subclass->search({description => {like => 'Saved%'}});
         isa_ok($carts, 'Handel::Iterator');
-        is($carts, 1);
+        is($carts, 1, 'loaded 1 cart');
 
         my $related_items = $carts->first->items->count;
-        ok($related_items);
+        ok($related_items, 'has items');
 
         $subclass->destroy({
             description => {like => 'Saved%'}
@@ -111,13 +113,13 @@ sub run {
 
         $carts = $subclass->search({description => {like => 'Saved%'}});
         isa_ok($carts, 'Handel::Iterator');
-        is($carts, 0);
+        is($carts, 0, 'cart not loaded');
 
         my $remaining_carts = $subclass->storage->schema_instance->resultset('Carts')->count;
         my $remaining_items = $subclass->storage->schema_instance->resultset('Items')->count;
 
-        is($remaining_carts, $total_carts - 1);
-        is($remaining_items, $total_items - $related_items);
+        is($remaining_carts, $total_carts - 1, 'table has unrelated carts');
+        is($remaining_items, $total_items - $related_items, 'table has unrelated items');
     };
 
 
@@ -126,7 +128,7 @@ sub run {
         my $instance = bless {}, $subclass;
         my $carts = $subclass->search;
         isa_ok($carts, 'Handel::Iterator');
-        is($carts, 1);
+        is($carts, 1, 'loaded 1 cart');
 
         $instance->destroy({
             description => {like => '%'}
@@ -134,7 +136,7 @@ sub run {
 
         $carts = $subclass->search;
         isa_ok($carts, 'Handel::Iterator');
-        is($carts, 0);
+        is($carts, 0, 'no carts loaded');
     };
 };
 
@@ -161,10 +163,10 @@ sub run {
     local $ENV{'HandelDBIDSN'} = $altschema->dsn;
 
     my $cart = Handel::Cart->search({id => '22222222-2222-2222-2222-222222222222'}, {storage => $storage})->first;
-    ok($cart);
+    ok($cart, 'cart still defined if nothing deleted');
 
     no warnings 'redefine';
     local *Handel::Storage::DBIC::Result::delete = sub {};
     $cart->destroy;
-    ok($cart);
+    ok($cart, 'cart still defined if delete returns nothing');
 };

@@ -1,10 +1,11 @@
-# $Id: Handel.pm 1572 2006-11-12 16:57:03Z claco $
+# $Id: Handel.pm 1601 2006-11-22 18:45:35Z claco $
 package Catalyst::Helper::Handel;
 use strict;
 use warnings;
 
 BEGIN {
     use base qw/Catalyst::Helper::Handel::Scaffold/;
+    use Config;
     use Catalyst::Utils;
     use Module::Starter::Handel;
     use File::Spec::Functions qw/catfile catdir/;
@@ -46,9 +47,13 @@ sub mk_stuff {
     };
 
     my $template = $starter->_get_file('setup');
+    $helper->{'startperl'} = "#!$Config{perlpath} -w";
+    $helper->{'scriptname'} = Catalyst::Utils::appprefix($app) . '_handel.pl';
     $t->process(\$template, {%{$helper}}, \$contents);
 
-    $helper->mk_file(catfile($helper->{'base'}, 'script', Catalyst::Utils::appprefix($app) . '_createdb.pl'), $contents);
+    my $setup = catfile($helper->{'base'}, 'script', Catalyst::Utils::appprefix($app) . '_handel.pl');
+    $helper->mk_file($setup, $contents);
+    chmod oct 700, $setup;
 
     $helper->{'handel_auto_wire_models'} = 1;
     $self->SUPER::mk_stuff(@_);

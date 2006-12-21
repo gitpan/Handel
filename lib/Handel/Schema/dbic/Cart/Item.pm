@@ -1,12 +1,14 @@
-# $Id: Item.pm 1334 2006-07-14 03:22:20Z claco $
-package Handel::Schema::Order::Item;
+# $Id: Item.pm 1643 2006-12-21 21:12:15Z claco $
+package Handel::Schema::DBIC::Cart::Item;
 use strict;
 use warnings;
-use base qw/DBIx::Class/;
-use Handel::Currency;
+
+BEGIN {
+    use base qw/DBIx::Class/;
+};
 
 __PACKAGE__->load_components(qw/Core/);
-__PACKAGE__->table('order_items');
+__PACKAGE__->table('cart_items');
 __PACKAGE__->source_name('Items');
 __PACKAGE__->add_columns(
     id => {
@@ -14,7 +16,7 @@ __PACKAGE__->add_columns(
         size           => 36,
         is_nullable    => 0,
     },
-    orderid => {
+    cart => {
         data_type      => 'varchar',
         size           => 36,
         is_nullable    => 0,
@@ -32,12 +34,6 @@ __PACKAGE__->add_columns(
         default_value  => 1
     },
     price => {
-        data_type      => 'decimal',
-        size           => [9,2],
-        is_nullable    => 0,
-        default_value  => '0.00'
-    },
-    total => {
         data_type      => 'decimal',
         size           => [9,2],
         is_nullable    => 0,
@@ -57,22 +53,22 @@ __END__
 
 =head1 NAME
 
-Handel::Schema::Order::Item - Schema class for order_items table
+Handel::Schema::DBIC::Cart::Item - Schema class for cart_items table
 
 =head1 SYNOPSIS
 
-    use Handel::Order::Schema;
+    use Handel::Cart::Schema;
     use strict;
     use warnings;
-
-    my $schema = Handel::Order::Schema->connect;
-
+    
+    my $schema = Handel::Cart::Schema->connect;
+    
     my $item = $schema->resultset("Items")->find('12345678-9098-7654-3212-345678909876');
 
 =head1 DESCRIPTION
 
-Handel::Schema::Order::Item is loaded by Handel::Order::Schema to read/write
-data to the order_items table.
+Handel::Schema::DBIC::Cart::Item is loaded by Handel::Cart::Schema to read/write
+data to the cart_items table.
 
 =head1 COLUMNS
 
@@ -82,16 +78,16 @@ Contains the primary key for each cart item record. By default, this is a uuid
 string.
 
     id => {
-        data_type      => 'varchar',
-        size           => 36,
-        is_nullable    => 0,
+        data_type     => 'varchar',
+        size          => 36,
+        is_nullable   => 0,
     },
 
-=head2 orderid
+=head2 cart
 
-Contains the foreign key to the orders table.
+Contains the foreign key to the carts table.
 
-    orderid => {
+    cart => {
         data_type      => 'varchar',
         size           => 36,
         is_nullable    => 0,
@@ -100,7 +96,7 @@ Contains the foreign key to the orders table.
 
 =head2 sku
 
-Contains the sku (Stock Keeping Unit), or part number for the current order item.
+Contains the sku (Stock Keeping Unit), or part number for the current cart item.
 
     sku => {
         data_type      => 'varchar',
@@ -110,7 +106,7 @@ Contains the sku (Stock Keeping Unit), or part number for the current order item
 
 =head2 quantity
 
-Contains the number of this order item being ordered.
+Contains the number of this cart item being ordered.
 
     quantity => {
         data_type      => 'tinyint',
@@ -121,7 +117,7 @@ Contains the number of this order item being ordered.
 
 =head2 price
 
-Contains the price of the current order item.
+Contains the price if the current cart item.
 
     price => {
         data_type      => 'decimal',
@@ -130,20 +126,9 @@ Contains the price of the current order item.
         default_value  => '0.00'
     },
 
-=head2 total
-
-Contains the total cost of the current order item.
-
-    total => {
-        data_type      => 'decimal',
-        size           => [9,2],
-        is_nullable    => 0,
-        default_value  => '0.00'
-    },
-
 =head2 description
 
-Contains the description of the current order item.
+Contains the description of the current cart item.
 
     description => {
         data_type     => 'varchar',
@@ -154,7 +139,7 @@ Contains the description of the current order item.
 
 =head1 SEE ALSO
 
-L<Handel::Schema::Order>, L<DBIx::Class::Schema>
+L<Handel::Schema::DBIC::Cart>, L<DBIx::Class::Schema>
 
 =head1 AUTHOR
 
@@ -162,4 +147,3 @@ L<Handel::Schema::Order>, L<DBIx::Class::Schema>
     CPAN ID: CLACO
     claco@chrislaco.com
     http://today.icantfocus.com/blog/
-

@@ -1,4 +1,4 @@
-# $Id: Storage.pm 1551 2006-11-07 02:03:05Z claco $
+# $Id: Storage.pm 1642 2006-12-21 17:54:44Z claco $
 ## no critic (RequireFinalReturn)
 package Handel::Storage;
 use strict;
@@ -6,7 +6,7 @@ use warnings;
 
 BEGIN {
     use base qw/Class::Accessor::Grouped/;
-    use Scalar::Util qw/reftype/;
+    use Scalar::Util qw/reftype blessed/;
 
     __PACKAGE__->mk_group_accessors('inherited', qw/
         _columns
@@ -99,7 +99,7 @@ sub add_item {
 };
 
 sub check_constraints {
-    my ($self, $data) = @_;
+    my ($self, $data, $object) = @_;
     my $constraints = $self->constraints;
 
     throw Handel::Exception::Argument(
@@ -110,12 +110,14 @@ sub check_constraints {
 
     my %failed;
 
+    $object = blessed $object ? $object : $data;
+
     foreach my $column (keys %{$constraints}) {
         my $value = $data->{$column};
         
         foreach my $name (keys %{$constraints->{$column}}) {
             if (my $sub = $constraints->{$column}->{$name}) {
-                if (!$sub->($value, $data, $column, $data)) {
+                if (!$sub->($value, $object, $column, $data)) {
                     $failed{$name} = $column;
                 };
             };
@@ -248,6 +250,22 @@ sub primary_columns {
     };
 
     return @{$self->_primary_columns || []};
+};
+
+sub process_error { ## no critic (RequireFinalReturn)
+    my ($self, $message) = @_;
+
+    if (blessed $message && $message->isa('Handel::Exception')) {
+        die $message; ## no critic
+    };
+
+    if ($message =~ /column\s+(.*)\s+is not unique/) {
+        my $details = translate('COLUMN_VALUE_EXISTS', $1); ## no critic
+
+        throw Handel::Exception::Constraint(-text => $details);
+    } else {
+        throw Handel::Exception::Storage(-text => $message);
+    };
 };
 
 sub remove_columns {
@@ -994,6 +1012,19 @@ Returns a list of primary columns from the current storage object;
     $storage->add_columns(qw/foo bar baz/);
     $storage->primary_columns('foo');
     print $storage->primary_columns;  # foo
+
+=head2 process_error
+
+=over
+
+=item Arguments: $message
+
+=back
+
+This method accepts errors and converts them
+into Handel::Exception objects before throwing the error.
+
+If C<message> already a blessed object, it is just rethrown.
 
 =head2 remove_columns
 

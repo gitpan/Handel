@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_search.t 1496 2006-10-24 00:35:45Z claco $
+# $Id: order_search.t 1588 2006-11-14 01:52:44Z claco $
 use strict;
 use warnings;
 
@@ -12,7 +12,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 352;
+        plan tests => 370;
     };
 
     use_ok('Handel::Order');
@@ -49,6 +49,32 @@ sub run {
         } otherwise {
             fail;
         };
+    };
+
+
+    ## throw exception when options isn't a hashref
+    {
+        try {
+            local $ENV{'LANG'} = 'en';
+            $subclass->search({id => '1234'}, []);
+
+            fail('no exception thrown');
+        } catch Handel::Exception::Argument with {
+            pass('Argument exception thrown');
+            like(shift, qr/not a hash/i, 'not a hash ref in message');
+        } otherwise {
+            fail('Other exception thrown');
+        };
+    };
+
+
+    ## test order_by option
+    {
+        my @orders = $subclass->search(undef, {order_by => 'id DESC'});
+        is(scalar @orders, 3);
+        is($orders[0]->id, '33333333-3333-3333-3333-333333333333', 'last order is first');
+        is($orders[1]->id, '22222222-2222-2222-2222-222222222222', 'middle order is middle');
+        is($orders[2]->id, '11111111-1111-1111-1111-111111111111', 'first order is last');
     };
 
 
@@ -99,7 +125,7 @@ sub run {
     {
         my $iterator = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
-        }, 1);
+        });
         isa_ok($iterator, 'Handel::Iterator');
     };
 

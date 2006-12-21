@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_cart.t 1481 2006-10-18 02:51:46Z claco $
+# $Id: checkout_cart.t 1605 2006-11-24 23:16:30Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 208;
+        plan tests => 220;
     };
 
     use_ok('Handel::Checkout');
@@ -51,15 +51,17 @@ sub run {
     ## now tests for order not found since constraint_uuid is gone for subclassing
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $checkout = Handel::Checkout->new;
 
             $checkout->cart('1234');
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Order with {
-            pass;
+            pass('caught order exception');
+            like(shift, qr/not find a cart/i, 'not find a cart in message');
         } otherwise {
-            fail;
+            fail('other exception thrown');
         };
     };
 
@@ -68,13 +70,15 @@ sub run {
     ## now tests for order not found since constraint_uuid is gone for subclassing
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $checkout = Handel::Checkout->new({cart => '1234'});
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Order with {
-            pass;
+            pass('caught order exception');
+            like(shift, qr/not find a cart/i, 'not find a cart in message');
         } otherwise {
-            fail;
+            fail('other exception thrown');
         };
     };
 
@@ -82,15 +86,17 @@ sub run {
     ## test for Handel::Exception::Argument where cart object is not a Handel::Cart object
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $checkout = Handel::Checkout->new;
             my $fake = bless {}, 'MyObject::Foo';
             $checkout->cart($fake);
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
+            pass('caught argument exception');
+            like(shift, qr/not.*Handel::Cart/i, 'not cart object in message');
         } otherwise {
-            fail;
+            fail('other exception thrown');
         };
     };
 
@@ -98,14 +104,16 @@ sub run {
     ## test for Handel::Exception::Argument where cart option object is not a Handel::Cart object
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $fake = bless {}, 'MyObject::Foo';
             my $checkout = Handel::Checkout->new({cart => $fake});
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
+            pass('caught argument exception');
+            like(shift, qr/not.*Handel::Cart/i, 'not cart object in message');
         } otherwise {
-            fail;
+            fail('other exception thrown');
         };
     };
 
@@ -130,17 +138,17 @@ sub run {
 
         my $order = $checkout->order;
         isa_ok($order, 'Handel::Order');
-        is($order->count, $cart->count);
-        is($order->subtotal, $cart->subtotal);
+        is($order->count, $cart->count, 'has same item count');
+        is($order->subtotal, $cart->subtotal, 'has same subtotal');
 
         my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
-        is($orderitem->sku, $item->sku);
-        is($orderitem->quantity, $item->quantity);
-        is($orderitem->price, $item->price);
-        is($orderitem->description, $item->description);
-        is($orderitem->total, $item->total);
-        is($orderitem->orderid, $order->id);
+        is($orderitem->sku, $item->sku, 'same sku');
+        is($orderitem->quantity, $item->quantity, 'same quantity');
+        is($orderitem->price, $item->price, 'same price');
+        is($orderitem->description, $item->description, 'same description');
+        is($orderitem->total, $item->total, 'same total');
+        is($orderitem->orderid, $order->id, 'same id');
     };
 
 
@@ -163,17 +171,17 @@ sub run {
 
         my $order = $checkout->order;
         isa_ok($order, 'Handel::Order');
-        is($order->count, $cart->count);
-        is($order->subtotal, $cart->subtotal);
+        is($order->count, $cart->count, 'same count');
+        is($order->subtotal, $cart->subtotal, 'same subtotal');
 
         my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
-        is($orderitem->sku, $item->sku);
-        is($orderitem->quantity, $item->quantity);
-        is($orderitem->price, $item->price);
-        is($orderitem->description, $item->description);
-        is($orderitem->total, $item->total);
-        is($orderitem->orderid, $order->id);
+        is($orderitem->sku, $item->sku, 'same sku');
+        is($orderitem->quantity, $item->quantity, 'same quantity');
+        is($orderitem->price, $item->price, 'same price');
+        is($orderitem->description, $item->description, 'same description');
+        is($orderitem->total, $item->total, 'same total');
+        is($orderitem->orderid, $order->id, 'same id');
     };
 
 
@@ -197,17 +205,17 @@ sub run {
 
         my $order = $checkout->order;
         isa_ok($order, 'Handel::Order');
-        is($order->count, $cart->count);
-        is($order->subtotal, $cart->subtotal);
+        is($order->count, $cart->count, 'same count');
+        is($order->subtotal, $cart->subtotal, 'same subtotal');
 
         my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
-        is($orderitem->sku, $item->sku);
-        is($orderitem->quantity, $item->quantity);
-        is($orderitem->price, $item->price);
-        is($orderitem->description, $item->description);
-        is($orderitem->total, $item->total);
-        is($orderitem->orderid, $order->id);
+        is($orderitem->sku, $item->sku, 'same sku');
+        is($orderitem->quantity, $item->quantity, 'same quantity');
+        is($orderitem->price, $item->price, 'same price');
+        is($orderitem->description, $item->description, 'same description');
+        is($orderitem->total, $item->total, 'same total');
+        is($orderitem->orderid, $order->id, 'same id');
     };
 
 
@@ -230,17 +238,17 @@ sub run {
 
         my $order = $checkout->order;
         isa_ok($order, 'Handel::Order');
-        is($order->count, $cart->count);
-        is($order->subtotal, $cart->subtotal);
+        is($order->count, $cart->count, 'same count');
+        is($order->subtotal, $cart->subtotal, 'same subtotal');
 
         my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
-        is($orderitem->sku, $item->sku);
-        is($orderitem->quantity, $item->quantity);
-        is($orderitem->price, $item->price);
-        is($orderitem->description, $item->description);
-        is($orderitem->total, $item->total);
-        is($orderitem->orderid, $order->id);
+        is($orderitem->sku, $item->sku, 'same sku');
+        is($orderitem->quantity, $item->quantity, 'same quantity');
+        is($orderitem->price, $item->price, 'same price');
+        is($orderitem->description, $item->description, 'same description');
+        is($orderitem->total, $item->total, 'same total');
+        is($orderitem->orderid, $order->id, 'same id');
     };
 
 
@@ -264,17 +272,17 @@ sub run {
 
         my $order = $checkout->order;
         isa_ok($order, 'Handel::Order');
-        is($order->count, $cart->count);
-        is($order->subtotal, $cart->subtotal);
+        is($order->count, $cart->count, 'same count');
+        is($order->subtotal, $cart->subtotal, 'same subtotal');
 
         my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
-        is($orderitem->sku, $item->sku);
-        is($orderitem->quantity, $item->quantity);
-        is($orderitem->price, $item->price);
-        is($orderitem->description, $item->description);
-        is($orderitem->total, $item->total);
-        is($orderitem->orderid, $order->id);
+        is($orderitem->sku, $item->sku, 'same sku');
+        is($orderitem->quantity, $item->quantity, 'same quantity');
+        is($orderitem->price, $item->price, 'same price');
+        is($orderitem->description, $item->description, 'same description');
+        is($orderitem->total, $item->total, 'same total');
+        is($orderitem->orderid, $order->id, 'same id');
     };
 
 
@@ -297,17 +305,17 @@ sub run {
 
         my $order = $checkout->order;
         isa_ok($order, 'Handel::Order');
-        is($order->count, $cart->count);
-        is($order->subtotal, $cart->subtotal);
+        is($order->count, $cart->count, 'same count');
+        is($order->subtotal, $cart->subtotal, 'same subtotal');
 
         my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
-        is($orderitem->sku, $item->sku);
-        is($orderitem->quantity, $item->quantity);
-        is($orderitem->price, $item->price);
-        is($orderitem->description, $item->description);
-        is($orderitem->total, $item->total);
-        is($orderitem->orderid, $order->id);
+        is($orderitem->sku, $item->sku, 'same sku');
+        is($orderitem->quantity, $item->quantity, 'same quantity');
+        is($orderitem->price, $item->price, 'same price');
+        is($orderitem->description, $item->description, 'same description');
+        is($orderitem->total, $item->total, 'same total');
+        is($orderitem->orderid, $order->id, 'same id');
     };
 
 };

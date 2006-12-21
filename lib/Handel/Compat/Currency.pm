@@ -1,4 +1,4 @@
-# $Id: Currency.pm 1551 2006-11-07 02:03:05Z claco $
+# $Id: Currency.pm 1594 2006-11-15 04:54:59Z claco $
 ## no critic (ProhibitLocalVars, ProhibitConditionalDeclarations, ProhibitPostfixControls)
 package Handel::Compat::Currency;
 use strict;
@@ -56,7 +56,7 @@ sub convert {
 
     local $self->{'_code'} = $from if $from;
     local $self->{'_format'} = $options if $options;
-    
+
     my $result = $self->Handel::Currency::convert($to);
 
     if (defined $result && $format) {
@@ -84,14 +84,14 @@ Handel::Compat::Currency - Price container to do currency conversion/formatting
 =head1 SYNOPSIS
 
     use Handel::Compat::Currency;
-    
+
     MyStorage->currency_class('Handel::Compt::Currency');
-    
+
     my $curr = Handel::Currency->new(1.2);
     print $curr->format();          # 1.20 USD
     print $curr->format('CAD');     # 1.20 CAD
     print $curr->format(undef, 'FMT_SYMBOL');   # $1.20
-    
+
     print 'Your price in Canadian Dollars is: ';
     print $curr->convert('USD', 'CAD');
 
@@ -102,14 +102,14 @@ It can be used separately to format any number into a more friendly format:
 
     my $price = 1.23;
     my $currency = Handel::Currency->new($price);
-    
+
     print $currency->format;
 
 A new Handel::Currency object is automatically returned within the shopping
 cart when calling C<subtotal>, C<total>, and C<price> as an lvalue:
 
     my $cart = Handel::Cart->search({id => '11111111-1111-1111-1111-111111111111'});
-    
+
     print $cart->subtotal;              # 12.9
     print $cart->subtotal->format();    # 12.90 USD
 

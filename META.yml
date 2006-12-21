@@ -2,7 +2,7 @@
 name: Handel
 abstract: A cart/order/checkout framework with AxKit/TT/Catalyst support
 author: Christopher H. Laco <claco@chrislaco.com>
-version: 0.99_15
+version: 0.99_16
 version_from: lib/Handel.pm
 installdirs: site
 license: perl
@@ -33,6 +33,7 @@ requires:
   SQL::Translator: 0.07
   Getopt::Long: 0
   Pod::Usage: 0
+  DBD::SQLite: 0
 build_requires:
   Test::More: 0.61
 recommends:
@@ -49,6 +50,7 @@ recommends:
   Test::Spelling: 0.10
   Test::NoTabs: 0.01
   Test::Perl::Critic: 0.07
+  Test::CheckManifest: 0.07
 no_index:
   directory:
     - demo

@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1409 2006-09-09 21:16:54Z claco $
+# $Id: Cart.pm 1625 2006-12-15 01:01:06Z claco $
 package Handel::Storage::DBIC::Cart;
 use strict;
 use warnings;
@@ -49,7 +49,7 @@ settings used by Handel::Cart.
 
 =head1 SEE ALSO
 
-L<Handel::Cart>, L<Handel::Storage::Storage>
+L<Handel::Cart>, L<Handel::Storage::DBIC>
 
 =head1 AUTHOR
 

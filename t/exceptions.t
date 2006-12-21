@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: exceptions.t 1513 2006-10-29 02:29:08Z claco $
+# $Id: exceptions.t 1603 2006-11-22 21:17:25Z claco $
 use strict;
 use warnings;
 
@@ -18,7 +18,7 @@ BEGIN {
         fail('no exception thrown');
     } catch Handel::Exception with {
         pass('caught exception');
-        is(shift->text, 'foo')
+        is(shift->text, 'foo', 'got foo message')
     } otherwise {
         fail('Other exception thrown');
     };
@@ -29,7 +29,7 @@ BEGIN {
         fail('no exception thrown');
     } catch Handel::Exception with {
         pass('caught exception');
-        is($_[0]->text, 'foo: details');
+        is($_[0]->text, 'foo: details', 'got foo message with details');
         is($_[0]->details, 'details', 'details set');
     } otherwise {
         fail('Other exception thrown');

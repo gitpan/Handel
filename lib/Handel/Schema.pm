@@ -1,10 +1,14 @@
-# $Id: Schema.pm 1518 2006-10-30 14:25:14Z claco $
+# $Id: Schema.pm 1643 2006-12-21 21:12:15Z claco $
 package Handel::Schema;
 use strict;
 use warnings;
-use Handel::ConfigReader;
-use base qw/DBIx::Class::Schema/;
 
+BEGIN {
+    use Handel::ConfigReader;
+    use base qw/DBIx::Class::Schema/;
+};
+
+# this needs to be factored into ConfigReader!
 sub connect {
     my ($self, $dsn, $user, $pass, $opts) = @_;
     my $cfg = Handel::ConfigReader->instance;

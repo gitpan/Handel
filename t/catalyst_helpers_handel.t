@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_handel.t 1574 2006-11-12 17:34:59Z claco $
+# $Id: catalyst_helpers_handel.t 1599 2006-11-21 01:57:01Z claco $
 use strict;
 use warnings;
 
@@ -83,7 +83,7 @@ chdir('var');
     my $orderstorage     = catfile($app, 'lib', $app, 'Storage', 'Order.pm');
     my $orderitemstorage = catfile($app, 'lib', $app, 'Storage', 'Order', 'Item.pm');
     my $checkout         = catfile($app, 'lib', $app, 'Checkout.pm');
-    my $setup            = catfile($app, 'script', 'testapp_createdb.pl');
+    my $setup            = catfile($app, 'script', 'testapp_handel.pl');
 
     $helper->mk_component($app, 'Handel', 'sdsn', 'suser', 'spass');
     file_exists_ok($cmodel);

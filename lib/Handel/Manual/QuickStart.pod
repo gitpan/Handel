@@ -62,7 +62,7 @@ To create a new application with Handel classes, run C<handel>: and give it a ne
     Created MyApp\.cvsignore
     Created MyApp\Makefile.PL
     Created MyApp\MANIFEST
-    Created MyApp\script\myapp_setup.pl
+    Created MyApp\script\myapp_handel.pl
     Created starter directories and files
 
 This creates a new CPAN style distribution with all of the recommended Handel subclasses. If you need to
@@ -80,14 +80,14 @@ B<Note:> The database you specify must already exist and you need to use a user/
 permissions to create tables.
 
     $ cd MyApp
-    $ perl script/myapp_setup.pl --dsn dbi:mysql:handel:localhost --user myuser --pass mypass
+    $ perl script/myapp_handel.pl --install --dsn dbi:mysql:handel:localhost --user myuser --pass mypass
     Installed/created database schema
 
 If you want to use a local SQLite database, you can simply pass the --default option which will create a
 database in MyApp/data/handel.db
 
     $ cd MyApp
-    $ perl script/myapp_setup.pl --default
+    $ perl script/myapp_handel.pl --install --default
     Installed/created database schema
 
 Now, simply treat the newly created code as any other CPAN distribution:
@@ -166,7 +166,7 @@ application will be connecting to:
     created "C:\MyApp\lib\MyApp\Storage\Order\Item.pm"
      exists "C:\MyApp\lib\MyApp"
     created "C:\MyApp\lib\MyApp\Checkout.pm"
-    created "C:\MyApp\script\myapp_createdb.pl"
+    created "C:\MyApp\script\myapp_handel.pl"
      exists "C:\MyApp\lib\MyApp\View"
      exists "C:\MyApp\t"
     created "C:\MyApp\lib\MyApp\View\TT.pm"
@@ -228,7 +228,7 @@ B<Note:> The database you specify must already exist and you need to use a user/
 permissions to create tables.
 
     $ cd MyApp
-    $ perl script/myapp_createdb.pl --dsn mydsn --user myuser --pass mypass
+    $ perl script/myapp_handel.pl --install --dsn mydsn --user myuser --pass mypass
     Installed/created database schema
 
 Now, just run your shiny new Catalyst/Handel application:

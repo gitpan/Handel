@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_items.t 1497 2006-10-24 00:43:51Z claco $
+# $Id: order_items.t 1588 2006-11-14 01:52:44Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 380;
+        plan tests => 395;
     };
 
     use_ok('Handel::Order');
@@ -83,6 +83,29 @@ sub run {
         if ($itemclass ne 'Handel::Order::Item') {
             is($item2->custom, 'custom');
         };
+
+
+        ## throw exception when options isn't a hashref
+        {
+            try {
+                local $ENV{'LANG'} = 'en';
+                $order->items({}, []);
+
+                fail('no exception thrown');
+            } catch Handel::Exception::Argument with {
+                pass('Argument exception thrown');
+                like(shift, qr/not a hash/i, 'not a hash ref in message');
+            } otherwise {
+                fail('Other exception thrown');
+            };
+        };
+
+
+        ## test out order_by
+        my @oitems = $order->items(undef, {order_by => 'id DESC'});
+        is(scalar @oitems, 2);
+        is($oitems[0]->id, '22222222-2222-2222-2222-222222222222', 'first item is last');
+        is($oitems[1]->id, '11111111-1111-1111-1111-111111111111', 'last item is first');
 
 
         ## throw exception when filter isn't a hashref
@@ -234,7 +257,7 @@ sub run {
             is($order->custom, 'custom');
         };
 
-        my $iterator = $order->items({sku => 'SKU2222'}, 1);
+        my $iterator = $order->items({sku => 'SKU2222'});
         isa_ok($iterator, 'Handel::Iterator');
     };
 
@@ -258,7 +281,7 @@ sub run {
             is($order->custom, 'custom');
         };
 
-        my $iterator = $order->items({sku => 'SKU%'}, 1);
+        my $iterator = $order->items({sku => 'SKU%'});
         isa_ok($iterator, 'Handel::Iterator');
         is($iterator, 2);
     };
@@ -283,7 +306,7 @@ sub run {
             is($order->custom, 'custom');
         };
 
-        my $iterator = $order->items({sku => {like => 'SKU%'}}, 1);
+        my $iterator = $order->items({sku => {like => 'SKU%'}});
         isa_ok($iterator, 'Handel::Iterator');
         is($iterator, 2);
     };
@@ -308,7 +331,7 @@ sub run {
             is($order->custom, 'custom');
         };
 
-        my $iterator = $order->items({sku => 'notfound'}, 1);
+        my $iterator = $order->items({sku => 'notfound'});
         isa_ok($iterator, 'Handel::Iterator');
     };
 

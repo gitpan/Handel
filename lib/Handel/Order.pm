@@ -1,4 +1,4 @@
-# $Id: Order.pm 1505 2006-10-25 23:57:55Z claco $
+# $Id: Order.pm 1586 2006-11-13 21:42:48Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -194,15 +194,22 @@ sub destroy {
 };
 
 sub items {
-    my ($self, $filter) = @_;
+    my ($self, $filter, $opts) = @_;
     my $result = $self->result;
     my $storage = $result->storage;
 
+    $filter ||= {};
+    $opts ||= {};
+
     throw Handel::Exception::Argument( -details =>
         translate('PARAM1_NOT_HASHREF')
-    ) unless( ref($filter) eq 'HASH' || !$filter); ## no critic
+    ) unless ref($filter) eq 'HASH'; ## no critic
 
-    my $results = $result->search_items($filter);
+    throw Handel::Exception::Argument( -details =>
+        translate('PARAM2_NOT_HASHREF')
+    ) unless ref($opts) eq 'HASH'; ## no critic
+
+    my $results = $result->search_items($filter, $opts);
     my $iterator = $self->item_class->result_iterator_class->new({
         data         => $results,
         result_class => $self->item_class
@@ -215,17 +222,23 @@ sub search {
     my ($self, $filter, $opts) = @_;
     my $class = blessed $self ? blessed $self : $self;
 
+    $filter ||= {};
+    $opts ||= {};
+
     throw Handel::Exception::Argument( -details =>
         translate('PARAM1_NOT_HASHREF')
-    ) unless (ref($filter) eq 'HASH' || !$filter); ## no critic
+    ) unless ref($filter) eq 'HASH'; ## no critic
 
-    no strict 'refs';
-    my $storage = $opts->{'storage'};
+    throw Handel::Exception::Argument( -details =>
+        translate('PARAM2_NOT_HASHREF')
+    ) unless ref($opts) eq 'HASH'; ## no critic
+
+    my $storage = delete $opts->{'storage'};
     if (!$storage) {
         $storage = $self->storage;
     };
 
-    my $results = $storage->search($filter);
+    my $results = $storage->search($filter, $opts);
     my $iterator = $self->result_iterator_class->new({
         data         => $results,
         result_class => $class
@@ -563,7 +576,7 @@ thrown if C<filter> is not a HASH reference.
 
 =over
 
-=item Arguments: \%filter
+=item Arguments: \%filter [, \%options]
 
 =back
 
@@ -580,6 +593,19 @@ list context.
 
 By default, the items returned as Handel::Order::Item objects. To return
 something different, set C<item_class> in the local C<storage> object.
+
+The following options are available:
+
+=over
+
+=item order_by
+
+Order the items by the column(s) and order specified. This option uses the SQL
+style syntax:
+
+    my $items = $order->items(undef, {order_by => 'sku ASC'});
+
+=back
 
 A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
 thrown if parameter one isn't a hashref or undef.
@@ -598,7 +624,7 @@ list context.
 
     my $iterator = Handel::Order->search({
         shopper => 'D597DEED-5B9F-11D1-8DD2-00AA004ABD5E',
-        type    => CART_TYPE_SAVED
+        type    => ORDER_TYPE_SAVED
     });
     
     while (my $order = $iterator->next) {
@@ -606,9 +632,6 @@ list context.
     };
     
     my @orders = Handel::Orders->search();
-
-A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
-thrown if the first parameter is not a hashref.
 
 The following options are available:
 
@@ -620,7 +643,17 @@ A storage object to use to load order objects. Currently, this storage
 object B<must> have the same columns as the default storage object for the
 current order class.
 
+=item order_by
+
+Order the items by the column(s) and order specified. This option uses the SQL
+style syntax:
+
+    my $orders = Handel::Order->search(undef, {order_by => 'updated DESC'});
+
 =back
+
+A L<Handel::Exception::Argument|Handel::Exception::Argument> exception is
+thrown if the first parameter is not a hashref.
 
 =head2 save
 

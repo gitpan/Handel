@@ -1,11 +1,11 @@
 #!perl -wT
-# $Id: basic.t 1560 2006-11-10 02:36:54Z claco $
+# $Id: basic.t 1643 2006-12-21 21:12:15Z claco $
 use strict;
 use warnings;
 
 BEGIN {
     use lib 't/lib';
-    use Handel::Test tests => 61;
+    use Handel::Test tests => 63;
 
     use_ok('Handel');
     use_ok('Handel::Base');
@@ -18,6 +18,7 @@ BEGIN {
     use_ok('Handel::Checkout::Plugin::MarkOrderSaved');
     use_ok('Handel::Checkout::Plugin::AssignOrderNumber');
     use_ok('Handel::Checkout::Stash');
+    use_ok('Handel::Compat::Currency');
     use_ok('Handel::Components::Constraints');
     use_ok('Handel::Components::DefaultValues');
     use_ok('Handel::Components::Validation');
@@ -39,10 +40,10 @@ BEGIN {
     use_ok('Handel::Order::Item');
     use_ok('Handel::Order::Schema');
     use_ok('Handel::Schema');
-    use_ok('Handel::Schema::Cart');
-    use_ok('Handel::Schema::Cart::Item');
-    use_ok('Handel::Schema::Order');
-    use_ok('Handel::Schema::Order::Item');
+    use_ok('Handel::Schema::DBIC::Cart');
+    use_ok('Handel::Schema::DBIC::Cart::Item');
+    use_ok('Handel::Schema::DBIC::Order');
+    use_ok('Handel::Schema::DBIC::Order::Item');
     use_ok('Handel::Storage');
     use_ok('Handel::Storage::Result');
     use_ok('Handel::Storage::DBIC');
@@ -92,8 +93,9 @@ BEGIN {
 
     SKIP: {
         eval 'use Catalyst 5.7001';
-        skip 'Catalyst 5.7001 not installed', 8 if $@;
+        skip 'Catalyst 5.7001 not installed', 9 if $@;
 
+        use_ok('Catalyst::Helper::Handel');
         use_ok('Catalyst::Helper::Handel::Scaffold');
         use_ok('Catalyst::Helper::Controller::Handel::Cart');
         use_ok('Catalyst::Helper::Controller::Handel::Checkout');

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_process.t 1488 2006-10-19 23:12:26Z claco $
+# $Id: checkout_process.t 1605 2006-11-24 23:16:30Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 190;
+        plan tests => 196;
     };
 
     use_ok('Handel::Checkout');
@@ -42,15 +42,17 @@ sub run {
     ## test for Handel::Exception::Checkout where no order is loaded
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $checkout = $subclass->new;
 
             $checkout->process;
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Checkout with {
-            pass;
+            pass('caught checkout exception');
+            like(shift, qr/no order/i, 'no order found in message');
         } otherwise {
-            fail;
+            fail('other exception caught');
         };
     };
 
@@ -59,14 +61,16 @@ sub run {
     ## or string
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $checkout = $subclass->new;
             $checkout->process({'1234' => 1});
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
+            pass('caught argument exception');
+            like(shift, qr/not an array/i, 'not an array ref in message');
         } otherwise {
-            fail;
+            fail('other exception caught');
         };
     };
 
@@ -79,12 +83,12 @@ sub run {
             phases => [CHECKOUT_PHASE_INITIALIZE]
         });
 
-        is($checkout->process, CHECKOUT_STATUS_OK);
+        is($checkout->process, CHECKOUT_STATUS_OK, 'processed OK');
 
         foreach ($checkout->plugins) {
-            ok($_->{'setup_called'});
-            ok($_->{'handler_called'});
-            ok($_->{'teardown_called'});
+            ok($_->{'setup_called'}, 'setup was called');
+            ok($_->{'handler_called'}, 'handler was called');
+            ok($_->{'teardown_called'}, 'teardown was called');
         };
     };
 
@@ -96,12 +100,12 @@ sub run {
             pluginpaths => 'Handel::TestPlugins, Handel::OtherTestPlugins'
         });
 
-        is($checkout->process('CHECKOUT_PHASE_INITIALIZE'), CHECKOUT_STATUS_OK);
+        is($checkout->process('CHECKOUT_PHASE_INITIALIZE'), CHECKOUT_STATUS_OK, 'processed OK');
 
         foreach ($checkout->plugins) {
-            ok($_->{'setup_called'});
-            ok($_->{'handler_called'});
-            ok($_->{'teardown_called'});
+            ok($_->{'setup_called'}, 'setup was called');
+            ok($_->{'handler_called'}, 'handler was called');
+            ok($_->{'teardown_called'}, 'teardown was called');
         };
     };
 
@@ -113,12 +117,12 @@ sub run {
             pluginpaths => 'Handel::TestPlugins, Handel::OtherTestPlugins'
         });
 
-        is($checkout->process([CHECKOUT_PHASE_INITIALIZE]), CHECKOUT_STATUS_OK);
+        is($checkout->process([CHECKOUT_PHASE_INITIALIZE]), CHECKOUT_STATUS_OK, 'processed OK');
 
         foreach ($checkout->plugins) {
-            ok($_->{'setup_called'});
-            ok($_->{'handler_called'});
-            ok($_->{'teardown_called'});
+            ok($_->{'setup_called'}, 'setup was called');
+            ok($_->{'handler_called'}, 'handler was called');
+            ok($_->{'teardown_called'}, 'teardown was called');
         };
     };
 
@@ -130,12 +134,12 @@ sub run {
             pluginpaths => 'Handel::TestPlugins, Handel::OtherTestPlugins'
         });
 
-        is($checkout->process([0]), CHECKOUT_STATUS_OK);
+        is($checkout->process([0]), CHECKOUT_STATUS_OK, 'processed OK');
 
         foreach ($checkout->plugins) {
-            ok($_->{'setup_called'});
-            ok(!$_->{'handler_called'});
-            ok($_->{'teardown_called'});
+            ok($_->{'setup_called'}, 'setup was called');
+            ok(!$_->{'handler_called'}, 'handler was called');
+            ok($_->{'teardown_called'}, 'teardown was called');;
         };
     };
 
@@ -163,16 +167,16 @@ sub run {
             order       => $order
         });
 
-        is($checkout->process, CHECKOUT_STATUS_OK);
+        is($checkout->process, CHECKOUT_STATUS_OK, 'processed OK');
 
         my $items = $order->items;
-        is($order->subtotal, 5.55);
-        is($items->first->total, 1.11);
+        is($order->subtotal, 5.55, 'subtotal is 5.55');
+        is($items->first->total, 1.11, 'total is 1.11');
         $items->next;
-        is($items->next->total, 4.44);
+        is($items->next->total, 4.44, 'total is 4.44');
 
         my @messages = $checkout->messages;
-        is(scalar @messages, 0);
+        is(scalar @messages, 0, 'has no messages');
     };
 
 
@@ -197,16 +201,16 @@ sub run {
             loadplugins => 'Handel::TestPipeline::InitializeTotals',
             order       => $order
         });
-        is($checkout->process, CHECKOUT_STATUS_OK);
+        is($checkout->process, CHECKOUT_STATUS_OK, 'processed OK');
 
         my $items = $order->items;
-        is($order->subtotal, 0);
-        is($items->first->total, 0);
+        is($order->subtotal, 0, 'subtotal is 0');
+        is($items->first->total, 0, 'total is 0');
         $items->next;
-        is($items->next->total, 0);
+        is($items->next->total, 0, 'total is 0');
 
         my @messages = $checkout->messages;
-        is(scalar @messages, 0);
+        is(scalar @messages, 0, 'has no messages');
     };
 
 
@@ -235,14 +239,13 @@ sub run {
             loadplugins => 'Handel::Checkout::Plugin::AssignOrderNumber, Handel::Checkout::Plugin::MarkOrderSaved'
         });
 
-        is($checkout->process, CHECKOUT_STATUS_OK);
+        is($checkout->process, CHECKOUT_STATUS_OK, 'processed OK');
 
         is($checkout->order->type, ORDER_TYPE_SAVED, 'order was marked saved');
         ok($checkout->order->number, 'number was set');
 
         my @messages = $checkout->messages;
         is(scalar @messages, 0, 'no error messages');
-        diag @messages;
     };
 
 
@@ -273,20 +276,20 @@ sub run {
             order       => $order
         });
 
-        is($checkout->process, CHECKOUT_STATUS_ERROR);
+        is($checkout->process, CHECKOUT_STATUS_ERROR, 'processed ERROR');
 
-        is($checkout->order->billtofirstname, 'BillToFirstName');
-        is($checkout->order->billtolastname, 'BillToLastName');
+        is($checkout->order->billtofirstname, 'BillToFirstName', 'first name unchanged');
+        is($checkout->order->billtolastname, 'BillToLastName', 'last name unchanged');
 
         my $items = $order->items;
-        is($order->subtotal, 0);
-        is($items->first->sku, 'SKU1');
+        is($order->subtotal, 0, 'subtotal is 0');
+        is($items->first->sku, 'SKU1', 'sku1 is unchanged');
         $items->next;
-        is($items->next->sku, 'SKU2');
+        is($items->next->sku, 'SKU2', 'sku2 is unchanged');
 
         my @messages = $checkout->messages;
-        is(scalar @messages, 1);
-        ok($messages[0] =~ /ValidateError/);
+        is(scalar @messages, 1, 'has 1 message');
+        ok($messages[0] =~ /ValidateError/, 'message is validate error');
     };
 
 
@@ -314,16 +317,16 @@ sub run {
             order       => $order
         });
 
-        is($checkout->process, CHECKOUT_STATUS_OK);
-        is($checkout->stash->{'WriteToStash'}, 'WrittenToStash');
+        is($checkout->process, CHECKOUT_STATUS_OK, 'processed OK');
+        is($checkout->stash->{'WriteToStash'}, 'WrittenToStash', 'stash variable set');
 
         my %plugins = map { ref $_ => $_ } $checkout->plugins;
-        is(scalar keys %plugins, 2);
-        ok(exists $plugins{'Handel::TestPipeline::ReadFromStash'});
-        is($plugins{'Handel::TestPipeline::ReadFromStash'}->{'ReadFromStash'}, 'WrittenToStash');
+        is(scalar keys %plugins, 2, 'has 2 plugins');
+        ok(exists $plugins{'Handel::TestPipeline::ReadFromStash'}, 'stash plugin loaded');
+        is($plugins{'Handel::TestPipeline::ReadFromStash'}->{'ReadFromStash'}, 'WrittenToStash', 'stash written to');
 
         my @messages = $checkout->messages;
-        is(scalar @messages, 0);
+        is(scalar @messages, 0, 'has no messages');
     };
 };
 

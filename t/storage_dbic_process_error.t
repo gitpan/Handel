@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_dbic_process_error.t 1560 2006-11-10 02:36:54Z claco $
+# $Id: storage_dbic_process_error.t 1625 2006-12-15 01:01:06Z claco $
 use strict;
 use warnings;
 
@@ -30,7 +30,7 @@ my $storage = Handel::Storage::DBIC->new({
 ## pass an exception object right on through
 try {
     local $ENV{'LANG'} = 'en';
-    Handel::Storage::DBIC::process_error(Handel::Exception->new);
+    Handel::Storage::DBIC->process_error(Handel::Exception->new);
 
     fail('no exception thrown');
 } catch Handel::Exception with {

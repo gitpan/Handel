@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: l10n.t 1565 2006-11-10 18:26:45Z claco $
+# $Id: l10n.t 1603 2006-11-22 21:17:25Z claco $
 use strict;
 use warnings;
 use utf8;
@@ -17,10 +17,10 @@ BEGIN {
 {
     local %ENV = ();
     local $ENV{'LANG'} = 'en';
-    is(translate('Language'), "English");
+    is(translate('Language'), "English", 'got English');
 
     local $ENV{'LANG'} = 'fr';
-    is(translate('Language'), "Français");
+    is(translate('Language'), "Français", 'got French');
 };
 
 
@@ -35,7 +35,7 @@ BEGIN {
     } catch Handel::Exception with {
         my $E = shift;
         is($E->text,
-            "Une erreur non spécifiée s'est produite");
+            "Une erreur non spécifiée s'est produite", 'got french exception');
     };
 
     try {
@@ -43,7 +43,7 @@ BEGIN {
     } catch Handel::Exception with {
         my $E = shift;
         is($E->text,
-            'Le champ recu ne respecte pas les contraintes de la base de données');
+            'Le champ recu ne respecte pas les contraintes de la base de données', 'got french exception');
     };
 
     try {
@@ -51,7 +51,7 @@ BEGIN {
     } catch Handel::Exception with {
         my $E = shift;
         is($E->text,
-            'L\'argument fourni est invalide ou d\'un mauvais type');
+            'L\'argument fourni est invalide ou d\'un mauvais type', 'got french exception');
     };
 
     ## check translations when -details are included
@@ -60,7 +60,7 @@ BEGIN {
     } catch Handel::Exception with {
         my $E = shift;
         is($E->text,
-            "Une erreur non spécifiée s'est produite: crap happens");
+            "Une erreur non spécifiée s'est produite: crap happens", 'got french exception');
     };
 
     try {
@@ -68,7 +68,7 @@ BEGIN {
     } catch Handel::Exception with {
         my $E = shift;
         is($E->text,
-            'Le champ recu ne respecte pas les contraintes de la base de données: crap happens');
+            'Le champ recu ne respecte pas les contraintes de la base de données: crap happens', 'got french exception');
     };
 
     try {
@@ -76,7 +76,7 @@ BEGIN {
     } catch Handel::Exception with {
         my $E = shift;
         is($E->text,
-            'L\'argument fourni est invalide ou d\'un mauvais type: crap happens');
+            'L\'argument fourni est invalide ou d\'un mauvais type: crap happens', 'got french exception');
     };
 };
 
@@ -91,12 +91,12 @@ BEGIN {
     try {
         my $cart = Handel::Cart->create(name => 'nothashref');
 
-        fail;
+        fail('no exception thrown');
     } catch Handel::Exception with {
         my $E = shift;
         is ($E->text,
-            'L\'argument fourni est invalide ou d\'un mauvais type: Le paramètre 1 n\'est pas une référence à un tableau associatif (HASH)');
+            'L\'argument fourni est invalide ou d\'un mauvais type: Le paramètre 1 n\'est pas une référence à un tableau associatif (HASH)', 'got french exception');
     } otherwise {
-        fail;
+        fail('caught other exception');
     };
 };

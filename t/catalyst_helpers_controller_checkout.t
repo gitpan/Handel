@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_controller_checkout.t 1574 2006-11-12 17:34:59Z claco $
+# $Id: catalyst_helpers_controller_checkout.t 1643 2006-12-21 21:12:15Z claco $
 use strict;
 use warnings;
 
@@ -82,7 +82,10 @@ chdir('var');
 
 
 ## load it up
-{
+SKIP: {
+    eval 'require HTML::FillInForm';
+    skip 'HTML::FillInForm not installed', 1 if $@;
+
     my $lib = catfile(cwd, $app, 'lib');
     eval "use lib '$lib';use $app\:\:Controller\:\:Checkout";
     ok(!$@, 'loaded new class');

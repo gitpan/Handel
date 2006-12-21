@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_delete.t 1442 2006-09-27 23:35:20Z claco $
+# $Id: cart_delete.t 1603 2006-11-22 21:17:25Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 107;
+        plan tests => 110;
     };
 
     use_ok('Handel::Cart');
@@ -38,19 +38,21 @@ sub run {
     ## test for Handel::Exception::Argument where first param is not a hashref
     {
         try {
+            local $ENV{'LANG'} = 'en';
             $subclass->delete(id => '1234');
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
+            pass('caught argument exception');
+            like(shift, qr/not a hash/i, 'not a hash in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
 
     my $total_items = $subclass->storage->schema_instance->resultset('Items')->count;
-    ok($total_items);
+    ok($total_items, 'has items in table');
 
 
     ## Delete a single cart item contents and validate counts
@@ -59,33 +61,33 @@ sub run {
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'loaded 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
 
         my $related_items = $cart->count;
-        is($related_items, 1);
-        is($cart->subtotal, 9.99);
-        is($cart->delete({sku => 'SKU3333'}), 1);
-        is($cart->count, 0);
-        is($cart->subtotal, 0);
+        is($related_items, 1, 'has 1 item');
+        is($cart->subtotal, 9.99, 'subtotal is 9.99');
+        is($cart->delete({sku => 'SKU3333'}), 1, 'deleted sku3333');
+        is($cart->count, 0, 'has 0 items');
+        is($cart->subtotal, 0, 'subtotal is 0');
 
         my $reit = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($reit, 'Handel::Iterator');
-        is($reit, 1);
+        is($reit, 1, 'loaded 1 cart');
 
         my $recart = $reit->first;
         isa_ok($recart, 'Handel::Cart');
         isa_ok($recart, $subclass);
-        is($recart->count, 0);
-        is($recart->subtotal, 0.00);
+        is($recart->count, 0, 'has 0 items');
+        is($recart->subtotal, 0.00, 'subtotal is 0');
 
         my $remaining_items = $subclass->storage->schema_instance->resultset('Items')->count;
-        is($remaining_items, $total_items - $related_items);
+        is($remaining_items, $total_items - $related_items, 'other items still in table');
 
         $total_items -= $related_items;
     };
@@ -98,32 +100,32 @@ sub run {
             id => '33333333-3333-3333-3333-333333333333'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'loaded 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
 
         my $related_items = $cart->count;
-        is($related_items, 2);
-        is($cart->subtotal, 45.51);
-        ok($cart->delete({sku => 'SKU%'}));
-        is($cart->count, 0);
-        is($cart->subtotal, 0);
+        is($related_items, 2, 'has 2 items');
+        is($cart->subtotal, 45.51, 'subtotal is 45.51');
+        ok($cart->delete({sku => 'SKU%'}), 'deleted SKU%');
+        is($cart->count, 0, 'has 0 items');
+        is($cart->subtotal, 0, 'subtotal is 0');
 
         my $reit = $subclass->search({
             id => '33333333-3333-3333-3333-333333333333'
         });
         isa_ok($reit, 'Handel::Iterator');
-        is($reit, 1);
+        is($reit, 1, 'loaded 1 cart');
 
         my $recart = $reit->first;
         isa_ok($recart, 'Handel::Cart');
         isa_ok($recart, $subclass);
-        is($recart->count, 0);
-        is($recart->subtotal, 0.00);
+        is($recart->count, 0, 'has 0 items');
+        is($recart->subtotal, 0.00, 'subtotal is 0');
 
         my $remaining_items = $subclass->storage->schema_instance->resultset('Items')->count;
-        is($remaining_items, $total_items - $related_items);
+        is($remaining_items, $total_items - $related_items, 'table still has unrelated items');
     };
 };

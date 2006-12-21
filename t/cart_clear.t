@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_clear.t 1442 2006-09-27 23:35:20Z claco $
+# $Id: cart_clear.t 1590 2006-11-14 02:55:04Z claco $
 use strict;
 use warnings;
 
@@ -39,36 +39,36 @@ sub run {
     ## Clear cart contents and validate counts
     {
         my $total_items = $subclass->storage->schema_instance->resultset('Items')->count;
-        ok($total_items);
+        ok($total_items, 'has items');
 
         my $it = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'got 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
 
         my $related_items = $cart->count;
-        ok($related_items >= 1);
+        ok($related_items >= 1, 'has more than 1 item');
         $cart->clear;
-        is($cart->count, 0);
+        is($cart->count, 0, 'items cleared');
 
         my $reit = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($reit, 'Handel::Iterator');
-        is($reit, 1);
+        is($reit, 1, 'got 1 cart');
 
         my $recart = $reit->first;
         isa_ok($recart, $subclass);
 
-        is($recart->count, 0);
+        is($recart->count, 0, 'have no items');
 
         my $remaining_items = $subclass->storage->schema_instance->resultset('Items')->count;
-        is($remaining_items, $total_items - $related_items);
+        is($remaining_items, $total_items - $related_items, 'deleted appropriate items');
     };
 
 };

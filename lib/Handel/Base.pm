@@ -1,4 +1,4 @@
-# $Id: Base.pm 1547 2006-11-06 01:28:18Z claco $
+# $Id: Base.pm 1586 2006-11-13 21:42:48Z claco $
 package Handel::Base;
 use strict;
 use warnings;
@@ -96,10 +96,6 @@ sub set_column {
 sub create_instance {
     my ($self, $result) = @_;
     my $class = blessed $self ? blessed $self : $self;
-
-    #throw Handel::Exception(
-    #    -details => translate('NOT_OBJECT_METHOD')
-    #) if blessed($class); ## no critic
 
     throw Handel::Exception::Argument(
         -details => translate('NO_RESULT')

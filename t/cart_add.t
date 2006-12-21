@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_add.t 1500 2006-10-24 02:49:21Z claco $
+# $Id: cart_add.t 1589 2006-11-14 02:40:42Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 246;
+        plan tests => 252;
     };
 
     use_ok('Handel::Cart');
@@ -42,13 +42,15 @@ sub run {
     ## or Handle::Cart::Item subclass
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $newitem = $subclass->add(id => '1234');
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
+            pass('caught argument exception');
+            like(shift, qr/not a hash/i, 'not a hash ref in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -57,14 +59,16 @@ sub run {
     ## or Handle::Cart::Item subclass
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $fakeitem = bless {}, 'FakeItem';
             my $newitem = $subclass->add($fakeitem);
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
+            pass('caught argument exception');
+            like(shift, qr/not a hash.*Handel::Cart::Item/i, 'not a cart in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -75,7 +79,7 @@ sub run {
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'returned 1 item');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
@@ -94,45 +98,45 @@ sub run {
         my $item = $cart->add($data);
         isa_ok($item, 'Handel::Cart::Item');
         isa_ok($item, $itemclass);
-        is($item->cart, $cart->id);
-        is($item->sku, 'SKU9999');
-        is($item->quantity, 2);
-        is($item->price, 1.11);
-        is($item->description, 'Line Item SKU 9');
-        is($item->total, 2.22);
+        is($item->cart, $cart->id, 'cart is set');
+        is($item->sku, 'SKU9999', 'got sku');
+        is($item->quantity, 2, 'quantity is 2');
+        is($item->price, 1.11, 'price is 1.11');
+        is($item->description, 'Line Item SKU 9', 'got description');
+        is($item->total, 2.22, 'total is 2.22');
         if ($itemclass ne 'Handel::Cart::Item') {
-            is($item->custom, 'custom');
+            is($item->custom, 'custom', 'got custom');
         };
 
 
-        is($cart->count, 3);
-        is($cart->subtotal, 7.77);
+        is($cart->count, 3, 'count is 3');
+        is($cart->subtotal, 7.77, 'subtotal is 7.77');
 
         my $reit = $subclass->search({
             id => '11111111-1111-1111-1111-111111111111'
         });
         isa_ok($reit, 'Handel::Iterator');
-        is($reit, 1);
+        is($reit, 1, 'got 1 cart');
 
         my $recart = $reit->first;
         isa_ok($recart, $subclass);
-        is($recart->count, 3);
+        is($recart->count, 3, 'has 3 items');
 
         my $reitemit = $cart->items({sku => 'SKU9999'});
         isa_ok($reitemit, 'Handel::Iterator');
-        is($reitemit, 1);
+        is($reitemit, 1, 'got 1 item');
 
         my $reitem = $reitemit->first;
         isa_ok($reitem, 'Handel::Cart::Item');
         isa_ok($reitem, $itemclass);
-        is($reitem->cart, $cart->id);
-        is($reitem->sku, 'SKU9999');
-        is($reitem->quantity, 2);
-        is($reitem->price, 1.11);
-        is($reitem->description, 'Line Item SKU 9');
-        is($reitem->total, 2.22);
+        is($reitem->cart, $cart->id, 'cart is set');
+        is($reitem->sku, 'SKU9999', 'got sku');
+        is($reitem->quantity, 2, 'quantity is 2');
+        is($reitem->price, 1.11, 'price is 1.11');
+        is($reitem->description, 'Line Item SKU 9', 'got description');
+        is($reitem->total, 2.22, 'total is 2.22');
         if ($itemclass ne 'Handel::Cart::Item') {
-            is($item->custom, 'custom');
+            is($item->custom, 'custom', 'got custom');
         };
     };
 
@@ -158,7 +162,7 @@ sub run {
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($it, 'Handel::Iterator');
-        is($it, 1);
+        is($it, 1, 'got 1 cart');
 
         my $cart = $it->first;
         isa_ok($cart, 'Handel::Cart');
@@ -167,45 +171,45 @@ sub run {
         my $item = $cart->add($newitem);
         isa_ok($item, 'Handel::Cart::Item');
         isa_ok($item, $itemclass);
-        is($item->cart, $cart->id);
-        is($item->sku, 'SKU8888');
-        is($item->quantity, 1);
-        is($item->price, 1.11);
-        is($item->description, 'Line Item SKU 8');
-        is($item->total, 1.11);
+        is($item->cart, $cart->id, 'cart is set');
+        is($item->sku, 'SKU8888', 'got sku');
+        is($item->quantity, 1, 'quantity is 1');
+        is($item->price, 1.11, 'price is 1.11');
+        is($item->description, 'Line Item SKU 8', 'got description');
+        is($item->total, 1.11, 'total is 1.11');
         if ($itemclass ne 'Handel::Cart::Item') {
-            is($item->custom, 'custom');
+            is($item->custom, 'custom', 'got custom');
         };
 
-        is($cart->count, 2);
-        is($cart->subtotal, 11.10);
+        is($cart->count, 2, 'has 2 items');
+        is($cart->subtotal, 11.10, 'subtotal is 11.10');
 
         my $recartit = $subclass->search({
             id => '22222222-2222-2222-2222-222222222222'
         });
         isa_ok($recartit, 'Handel::Iterator');
-        is($recartit, 1);
+        is($recartit, 1, 'got 1 cart');
 
         my $recart = $recartit->first;
         isa_ok($recart, $subclass);
         isa_ok($recart, 'Handel::Cart');
-        is($recart->count, 2);
+        is($recart->count, 2, 'has 2 items');
 
         my $reitemit = $cart->items({sku => 'SKU8888'});
         isa_ok($reitemit, 'Handel::Iterator');
-        is($reitemit, 1);
+        is($reitemit, 1, 'have 1 cart');
 
         my $reitem = $reitemit->first;
         isa_ok($reitem, 'Handel::Cart::Item');
         isa_ok($reitem, $itemclass);
-        is($reitem->cart, $cart->id);
-        is($reitem->sku, 'SKU8888');
-        is($reitem->quantity, 1);
-        is($reitem->price, 1.11);
-        is($reitem->description, 'Line Item SKU 8');
-        is($reitem->total, 1.11);
+        is($reitem->cart, $cart->id, 'cart is set');
+        is($reitem->sku, 'SKU8888', 'sku is set');
+        is($reitem->quantity, 1, 'quantity is 1');
+        is($reitem->price, 1.11, 'price is 1.11');
+        is($reitem->description, 'Line Item SKU 8', 'got description');
+        is($reitem->total, 1.11, 'total is 1.11');
         if ($itemclass ne 'Handel::Cart::Item') {
-            is($item->custom, 'custom');
+            is($item->custom, 'custom', 'got custom');
         };
     };
 };
@@ -231,7 +235,7 @@ sub run {
         id => '22222222-2222-2222-2222-222222222222'
     });
     isa_ok($it, 'Handel::Iterator');
-    is($it, 1);
+    is($it, 1, 'got 1 cart');
 
     my $cart = $it->first;
     isa_ok($cart, 'Handel::Cart');
@@ -239,38 +243,38 @@ sub run {
 
     my $item = $cart->add($newitem);
     isa_ok($item, 'Handel::Cart::Item');
-    is($item->cart, $cart->id);
-    is($item->sku, 'SKU8888');
-    is($item->quantity, 1);
-    is($item->price, 1.11);
-    is($item->description, 'Line Item SKU 8');
-    is($item->total, 1.11);
+    is($item->cart, $cart->id, 'cart is set');
+    is($item->sku, 'SKU8888', 'got sku');
+    is($item->quantity, 1, 'quantity is 1');
+    is($item->price, 1.11, 'price is 1.11');
+    is($item->description, 'Line Item SKU 8', 'got description');
+    is($item->total, 1.11, 'total is 1.11');
 
-    is($cart->count, 3);
-    is($cart->subtotal, 12.21);
+    is($cart->count, 3, 'has 3 items');
+    is($cart->subtotal, 12.21, 'subtotal is 12.21');
 
     my $recartit = Handel::Cart->search({
         id => '22222222-2222-2222-2222-222222222222'
     });
     isa_ok($recartit, 'Handel::Iterator');
-    is($recartit, 1);
+    is($recartit, 1, 'got 1 cart');
 
     my $recart = $recartit->first;
     isa_ok($recart, 'Handel::Cart');
-    is($recart->count, 3);
+    is($recart->count, 3, 'has 3 items');
 
     my $reitemit = $cart->items({sku => 'SKU8888'});
     isa_ok($reitemit, 'Handel::Iterator');
-    is($reitemit, 2);
+    is($reitemit, 2, 'has 2 items');
 
     my $reitem = $reitemit->first;
     isa_ok($reitem, 'Handel::Cart::Item');
-    is($reitem->cart, $cart->id);
-    is($reitem->sku, 'SKU8888');
-    is($reitem->quantity, 1);
-    is($reitem->price, 1.11);
-    is($reitem->description, 'Line Item SKU 8');
-    is($reitem->total, 1.11);
+    is($reitem->cart, $cart->id, 'cart is set');
+    is($reitem->sku, 'SKU8888', 'got sku');
+    is($reitem->quantity, 1, 'quantity is 1');
+    is($reitem->price, 1.11, 'price is 1.11');
+    is($reitem->description, 'Line Item SKU 8', 'got description');
+    is($reitem->total, 1.11, 'total is 1.11');
 };
 
 
@@ -298,7 +302,7 @@ sub run {
         id => '22222222-2222-2222-2222-222222222222'
     });
     isa_ok($it, 'Handel::Iterator');
-    is($it, 1);
+    is($it, 1, 'got 1 cart');
 
     my $cart = $it->first;
     isa_ok($cart, 'Handel::Cart');
@@ -306,36 +310,36 @@ sub run {
 
     my $item = $cart->add($newitem);
     isa_ok($item, 'Handel::Cart::Item');
-    is($item->cart, $cart->id);
-    is($item->sku, 'SKU8888');
-    is($item->quantity, 1);
-    is($item->price, 0);
-    is($item->description, undef);
-    is($item->total, 0);
+    is($item->cart, $cart->id, 'cart is set');
+    is($item->sku, 'SKU8888', 'got sku');
+    is($item->quantity, 1, 'quantity is 1');
+    is($item->price, 0, 'price is 0');
+    is($item->description, undef, 'no description');
+    is($item->total, 0, 'total is 0');
 
-    is($cart->count, 4);
-    is($cart->subtotal, 12.21);
+    is($cart->count, 4, 'has 4 items');
+    is($cart->subtotal, 12.21, 'subtotal 12.21');
 
     my $recartit = Handel::Cart->search({
         id => '22222222-2222-2222-2222-222222222222'
     });
     isa_ok($recartit, 'Handel::Iterator');
-    is($recartit, 1);
+    is($recartit, 1, 'got 1 cart');
 
     my $recart = $recartit->first;
     isa_ok($recart, 'Handel::Cart');
-    is($recart->count, 4);
+    is($recart->count, 4, 'has 4 items');
 
     my $reitemit = $cart->items();
     isa_ok($reitemit, 'Handel::Iterator');
-    is($reitemit, 4);
+    is($reitemit, 4, 'has 4 items');
 
     my $reitem = $reitemit->last;
     isa_ok($reitem, 'Handel::Cart::Item');
-    is($reitem->cart, $cart->id);
-    is($reitem->sku, 'SKU8888');
-    is($reitem->quantity, 1);
-    is($reitem->price, 0);
-    is($reitem->description, undef);
-    is($reitem->total, 0);
+    is($reitem->cart, $cart->id, 'cart is set');
+    is($reitem->sku, 'SKU8888', 'got sku');
+    is($reitem->quantity, 1, 'quantity is 1');
+    is($reitem->price, 0, 'price is 0');
+    is($reitem->description, undef, 'no description');
+    is($reitem->total, 0, 'total is 0');
 };

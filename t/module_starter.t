@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: module_starter.t 1577 2006-11-12 18:45:37Z claco $
+# $Id: module_starter.t 1599 2006-11-21 01:57:01Z claco $
 use strict;
 use warnings;
 
@@ -69,7 +69,7 @@ my $app = 'MyProject';
     file_exists_ok(catfile($t, 'pod_spelling.t'));
 
     my $scripts = catdir($app, 'script');
-    file_exists_ok(catfile($scripts, 'myproject_setup.pl'));
+    file_exists_ok(catfile($scripts, 'myproject_handel.pl'));
 };
 
 
@@ -105,7 +105,7 @@ $app = 'TestApp';
     file_exists_ok(catfile($t, 'pod_spelling.t'));
 
     my $scripts = catdir($app, 'script');
-    file_exists_ok(catfile($scripts, 'testapp_setup.pl'));
+    file_exists_ok(catfile($scripts, 'testapp_handel.pl'));
 };
 
 
@@ -142,7 +142,7 @@ $app = 'DistApp';
     file_exists_ok(catfile($t, 'pod_spelling.t'));
 
     my $scripts = catdir('MyDistro', 'script');
-    file_exists_ok(catfile($scripts, 'distapp_setup.pl'));
+    file_exists_ok(catfile($scripts, 'distapp_handel.pl'));
 };
 
 
@@ -179,5 +179,5 @@ $app = 'MyApp';
     file_exists_ok(catfile($t, 'pod_spelling.t'));
 
     my $scripts = catdir('Foo', 'script');
-    file_exists_ok(catfile($scripts, 'myapp_setup.pl'));
+    file_exists_ok(catfile($scripts, 'myapp_handel.pl'));
 };

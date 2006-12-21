@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1552 2006-11-07 03:31:50Z claco $
+# $Id: Cart.pm 1594 2006-11-15 04:54:59Z claco $
 ## no critic
 package AxKit::XSP::Handel::Cart;
 use strict;
@@ -661,7 +661,7 @@ sub new_results_shopper_start {
                 return '
                     if (!$_xsp_handel_cart_called_load) {
                         $_xsp_handel_cart_cart = (scalar keys %_xsp_handel_cart_load_filter) ?
-                            Handel::Cart->search(\%_xsp_handel_cart_load_filter, 1)->next :
+                            Handel::Cart->search(\%_xsp_handel_cart_load_filter)->next :
                             Handel::Cart->search->next;
                             $_xsp_handel_cart_called_load = 1;
                     };
@@ -683,8 +683,8 @@ sub new_results_shopper_start {
                 return '
                     if (!$_xsp_handel_cart_called_item) {
                         $_xsp_handel_cart_item = (scalar keys %_xsp_handel_cart_item_filter) ?
-                            $_xsp_handel_cart_cart->items(\%_xsp_handel_cart_item_filter, 1)->next :
-                            $_xsp_handel_cart_cart->items(undef, 1)->next;
+                            $_xsp_handel_cart_cart->items(\%_xsp_handel_cart_item_filter)->next :
+                            $_xsp_handel_cart_cart->items->next;
                             $_xsp_handel_cart_called_item = 1;
                     };
                     if ($_xsp_handel_cart_item) {
@@ -695,7 +695,7 @@ sub new_results_shopper_start {
                     if (!$_xsp_handel_cart_called_items) {
                         @_xsp_handel_cart_items = (scalar keys %_xsp_handel_cart_items_filter) ?
                             $_xsp_handel_cart_cart->items(\%_xsp_handel_cart_items_filter) :
-                            $_xsp_handel_cart_cart->items();
+                            $_xsp_handel_cart_cart->items;
                             $_xsp_handel_cart_called_items = 1;
                     };
                     foreach my $_xsp_handel_cart_item (@_xsp_handel_cart_items) {
@@ -733,7 +733,7 @@ sub new_results_shopper_start {
                 return '
                     if (!$_xsp_handel_cart_called_load) {
                         $_xsp_handel_cart_cart = (scalar keys %_xsp_handel_cart_load_filter) ?
-                            Handel::Cart->search(\%_xsp_handel_cart_load_filter, 1)->next :
+                            Handel::Cart->search(\%_xsp_handel_cart_load_filter)->next :
                             Handel::Cart->search->next;
                             $_xsp_handel_cart_called_load = 1;
                     };
@@ -753,8 +753,8 @@ sub new_results_shopper_start {
                 return '
                     if (!$_xsp_handel_cart_called_item) {
                         $_xsp_handel_cart_item = (scalar keys %_xsp_handel_cart_item_filter) ?
-                            $_xsp_handel_cart_cart->items(\%_xsp_handel_cart_item_filter, 1)->next :
-                            $_xsp_handel_cart_cart->items(undef, 1)->next;
+                            $_xsp_handel_cart_cart->items(\%_xsp_handel_cart_item_filter)->next :
+                            $_xsp_handel_cart_cart->items->next;
                             $_xsp_handel_cart_called_item = 1;
                     };
                     if (!$_xsp_handel_cart_item) {
@@ -764,7 +764,7 @@ sub new_results_shopper_start {
                     if (!$_xsp_handel_cart_called_items) {
                         @_xsp_handel_cart_items = (scalar keys %_xsp_handel_cart_items_filter) ?
                             $_xsp_handel_cart_cart->items(\%_xsp_handel_cart_items_filter) :
-                            $_xsp_handel_cart_cart->items();
+                            $_xsp_handel_cart_cart->items;
                             $_xsp_handel_cart_called_items = 1;
                     };
                     if (!scalar @_xsp_handel_cart_items) {

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_create.t 1490 2006-10-22 01:56:21Z claco $
+# $Id: cart_create.t 1603 2006-11-22 21:17:25Z claco $
 use strict;
 use warnings;
 
@@ -12,7 +12,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 169;
+        plan tests => 187;
     };
 
     use_ok('Handel::Cart');
@@ -42,13 +42,15 @@ sub run {
     ## test for Handel::Exception::Argument where first param is not a hashref
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $cart = $subclass->create(sku => 'SKU1234');
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Argument with {
-            pass;
+            pass('caught argument exception');
+            like(shift, qr/not a hash/i, 'not a hash in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -56,16 +58,18 @@ sub run {
     ## test for Handel::Exception::Constraint during cart new for bogus shopper
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $cart = $subclass->create({
                 id      => '11111111-1111-1111-1111-111111111111',
                 shopper => 'crap'
             });
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Constraint with {
-            pass;
+            pass('caught constraint exception');
+            like(shift, qr/failed database constraint/i, 'failed constraint in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -73,15 +77,17 @@ sub run {
     ## test for Handel::Exception::Constraint during cart new for empty shopper
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $cart = $subclass->create({
                 id      => '11111111-1111-1111-1111-111111111111'
             });
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Constraint with {
-            pass;
+            pass('caught constraint exception');
+            like(shift, qr/failed database constraint/i, 'failed constraint in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -90,17 +96,19 @@ sub run {
     ## specified and cart type has been set to CART_TYPE_SAVED
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $cart = $subclass->create({
                 id      => '11111111-1111-1111-1111-111111111111',
                 shopper => '33333333-3333-3333-3333-333333333333',
                 type    => CART_TYPE_SAVED
             });
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Constraint with {
-            pass;
+            pass('caught constraint exception');
+            like(shift, qr/failed database constraint/i, 'failed constraint in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -113,13 +121,15 @@ sub run {
         );
 
         try {
+            local $ENV{'LANG'} = 'en';
             my $cart = $subclass->create(\%data);
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Constraint with {
-            pass;
+            pass('caught constraint exception');
+            like(shift, qr/failed database constraint/i, 'failed constraint in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -127,16 +137,18 @@ sub run {
     ## test for raw db key violation
     {
         try {
+            local $ENV{'LANG'} = 'en';
             my $cart = $subclass->create({
                 id      => '11111111-1111-1111-1111-111111111111',
                 shopper => '11111111-1111-1111-1111-111111111111'
             });
 
-            fail;
+            fail('no exception thrown');
         } catch Handel::Exception::Constraint with {
-            pass;
+            pass('caught constraint exception');
+            like(shift, qr/value already exists/i, 'value exists in message');
         } otherwise {
-            fail;
+            fail('caught other exception');
         };
     };
 
@@ -148,24 +160,24 @@ sub run {
         });
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        ok(constraint_uuid($cart->id));
-        is($cart->shopper, '11111111-1111-1111-1111-111111111111');
-        is($cart->type, CART_TYPE_TEMP);
-        is($cart->name, undef);
-        is($cart->description, undef);
-        is($cart->count, 0);
-        is($cart->subtotal, 0);
+        ok(constraint_uuid($cart->id), 'id is uuid');
+        is($cart->shopper, '11111111-1111-1111-1111-111111111111', 'got shopper id');
+        is($cart->type, CART_TYPE_TEMP, 'got temp type');
+        is($cart->name, undef, 'name is undef');
+        is($cart->description, undef, 'description is undef');
+        is($cart->count, 0, 'has 0 items');
+        is($cart->subtotal, 0, 'has 0 subtotal');
         if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, undef);
+            is($cart->custom, undef, 'custom is undef');
         };
 
 
-        is($cart->subtotal->format, '0.00 USD');
-        is($cart->subtotal->format('FMT_NAME'), '0.00 US Dollar');
+        is($cart->subtotal->format, '0.00 USD', 'subtotal formats 0');
+        is($cart->subtotal->format('FMT_NAME'), '0.00 US Dollar', 'subtotal formats 0');
         {
             local $ENV{'HandelCurrencyCode'} = 'CAD';
-            is($cart->subtotal->format, '0.00 CAD');
-            is($cart->subtotal->format('FMT_NAME'), '0.00 Canadian Dollar');
+            is($cart->subtotal->format, '0.00 CAD', 'subtotal formats 0');
+            is($cart->subtotal->format('FMT_NAME'), '0.00 Canadian Dollar', 'subtotal formats 0');
         };
     };
 
@@ -178,16 +190,16 @@ sub run {
         });
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        ok(constraint_uuid($cart->id));
-        is($cart->id, '77777777-7777-7777-7777-777777777777');
-        is($cart->shopper, '77777777-7777-7777-7777-777777777777');
-        is($cart->type, CART_TYPE_TEMP);
-        is($cart->name, undef);
-        is($cart->description, undef);
-        is($cart->count, 0);
-        is($cart->subtotal, 0);
+        ok(constraint_uuid($cart->id), 'id is uuid');
+        is($cart->id, '77777777-7777-7777-7777-777777777777', 'got cart id');
+        is($cart->shopper, '77777777-7777-7777-7777-777777777777', 'got shopper id');
+        is($cart->type, CART_TYPE_TEMP, 'got temp type');
+        is($cart->name, undef, 'name is undef');
+        is($cart->description, undef, 'description is undef');
+        is($cart->count, 0, 'has 0 items');
+        is($cart->subtotal, 0, 'subtotal is 0');
         if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, undef);
+            is($cart->custom, undef, 'custom is unset');
         };
     };
 
@@ -202,15 +214,15 @@ sub run {
         });
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        ok(constraint_uuid($cart->id));
-        is($cart->shopper, '88888888-8888-8888-8888-888888888888');
-        is($cart->type, CART_TYPE_SAVED);
-        is($cart->name, 'My Cart');
-        is($cart->description, 'My Cart Description');
-        is($cart->count, 0);
-        is($cart->subtotal, 0);
+        ok(constraint_uuid($cart->id), 'id is uuid');
+        is($cart->shopper, '88888888-8888-8888-8888-888888888888', 'got shopper id');
+        is($cart->type, CART_TYPE_SAVED, 'got saved type');
+        is($cart->name, 'My Cart', 'got name');
+        is($cart->description, 'My Cart Description', 'got description');
+        is($cart->count, 0, 'has 0 items');
+        is($cart->subtotal, 0, 'subtotal is 0');
         if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, undef);
+            is($cart->custom, undef, 'custom is undef');
         };
     };
 
@@ -226,16 +238,16 @@ sub run {
         });
         isa_ok($cart, 'Handel::Cart');
         isa_ok($cart, $subclass);
-        ok(constraint_uuid($cart->id));
-        is($cart->id, '99999999-9999-9999-9999-999999999999');
-        is($cart->shopper, '99999999-9999-9999-9999-999999999999');
-        is($cart->type, CART_TYPE_SAVED);
-        is($cart->name, 'My Cart');
-        is($cart->description, 'My Cart Description');
-        is($cart->count, 0);
-        is($cart->subtotal, 0);
+        ok(constraint_uuid($cart->id), 'id is uuid');
+        is($cart->id, '99999999-9999-9999-9999-999999999999', 'got cart id');
+        is($cart->shopper, '99999999-9999-9999-9999-999999999999', 'got shopper id');
+        is($cart->type, CART_TYPE_SAVED, 'got temp type');
+        is($cart->name, 'My Cart', 'got name');
+        is($cart->description, 'My Cart Description', 'got description');
+        is($cart->count, 0, 'has 0 items');
+        is($cart->subtotal, 0, 'subtotal is 0');
         if ($subclass ne 'Handel::Cart') {
-            is($cart->custom, undef);
+            is($cart->custom, undef, 'custom is undef');
         };
     };
 };
@@ -255,13 +267,13 @@ sub run {
         storage => $storage
     });
     isa_ok($cart, 'Handel::Cart');
-    ok(constraint_uuid($cart->id));
-    is($cart->shopper, '88888888-8888-8888-8888-888888888888');
-    is($cart->type, CART_TYPE_SAVED);
-    is($cart->name, 'My Alt Cart');
-    is($cart->description, 'My Alt Cart Description');
-    is($cart->count, 0);
-    is($cart->subtotal, 0);
+    ok(constraint_uuid($cart->id), 'id is uuid');
+    is($cart->shopper, '88888888-8888-8888-8888-888888888888', 'got shopper id');
+    is($cart->type, CART_TYPE_SAVED, 'got saved type');
+    is($cart->name, 'My Alt Cart', 'got name');
+    is($cart->description, 'My Alt Cart Description', 'got description');
+    is($cart->count, 0, 'has 0 items');
+    is($cart->subtotal, 0, 'subtotal is 0');
     is(refaddr $cart->result->storage, refaddr $storage, 'storage option used');
     is($altschema->resultset('Carts')->search({name => 'My Alt Cart'})->count, 1, 'cart found in alt storage');
     is($schema->resultset('Carts')->search({name => 'My Alt Cart'})->count, 0, 'alt cart not in class storage');

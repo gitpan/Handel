@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 1579 2006-11-12 21:47:22Z claco $
+# $Id: Makefile.PL 1584 2006-11-13 02:08:05Z claco $
 use ExtUtils::MakeMaker;
 use 5.008001;
 use strict;
@@ -102,7 +102,8 @@ WriteMakefile(
         'File::Path'               => '0',
         'SQL::Translator'          => '0.07',
         'Getopt::Long'             => '0',
-        'Pod::Usage'               => '0'
+        'Pod::Usage'               => '0',
+        'DBD::SQLite'              => '0',
     },
     EXE_FILES => [
         'script/handel.pl'

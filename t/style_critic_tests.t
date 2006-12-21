@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: style_critic_tests.t 1569 2006-11-11 03:54:34Z claco $
+# $Id: style_critic_tests.t 1642 2006-12-21 17:54:44Z claco $
 use strict;
 use warnings;
 
@@ -23,7 +23,7 @@ Test::Perl::Critic->import(
 
 my @files;
 opendir(DIR, 't');
-    push @files, map {catfile 't', $_} grep {m/^.*\.t$/} sort readdir(DIR);
+    push @files, map {catfile 't', $_} grep {m/^cart_restore.*\.t$/} sort readdir(DIR);
 closedir DIR;
 
 BAIL_OUT('No test files were found') unless scalar @files;

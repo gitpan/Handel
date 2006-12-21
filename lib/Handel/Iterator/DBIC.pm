@@ -1,4 +1,4 @@
-# $Id: DBIC.pm 1551 2006-11-07 02:03:05Z claco $
+# $Id: DBIC.pm 1625 2006-12-15 01:01:06Z claco $
 ## no critic (ProhibitAmbiguousNames)
 package Handel::Iterator::DBIC;
 use strict;
@@ -104,7 +104,7 @@ Creates a new iterator object. The following options are available:
 
     my $resultset = $schema->resultset('Carts')->search;
     
-    my $iterator = Handel::Iterator::List->new({
+    my $iterator = Handel::Iterator::DBIC->new({
         data         => $resultset,
         result_class => 'MyResult',
         storage      => $storage

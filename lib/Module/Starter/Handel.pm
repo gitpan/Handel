@@ -1,4 +1,4 @@
-# $Id: Handel.pm 1579 2006-11-12 21:47:22Z claco $
+# $Id: Handel.pm 1601 2006-11-22 18:45:35Z claco $
 package Module::Starter::Handel;
 use strict;
 use warnings;
@@ -8,6 +8,7 @@ BEGIN {
     use File::Spec::Functions qw/catfile catdir/;
     use File::Path qw/mkpath/;
     use FileHandle;
+    use Config;
 };
 
 =head1 NAME
@@ -63,7 +64,7 @@ sub create_distro {
     my %options = @_;
     my $modules = $options{'modules'};
     my $base    = $modules->[0] || 'MyProject';
-    my $setup_pl = lc($base) . '_setup.pl';
+    my $setup_pl = lc($base) . '_handel.pl';
        $setup_pl =~ s/::/_/;
 
     $options{'__base_name'} = $base;
@@ -102,8 +103,13 @@ sub create_distro {
     
     my $setup = $class->_get_file('setup');
     $setup =~ s/\[% app %\]/$base/g;
+    $setup =~ s/\[% startperl %\]/#!$Config{perlpath} -w/;
+    $setup =~ s/\[% scriptname %\]/$options{'__setup_pl'}/g;
     FileHandle->new('>' . $options{'setup.pl'})->print($setup);
-    print "Created " . $options{'setup.pl'}, "\n";
+    chmod oct 700, $options{'setup.pl'};
+    print 'Created ' . $options{'setup.pl'}, "\n";
+
+    return;
 };
 
 =head2 module_guts
@@ -124,6 +130,7 @@ sub module_guts {
     my $contents = $self->_get_file($short) || '';
     $contents =~ s/\[% app %\]/$base/g;
     $contents =~ s/\[% module %\]/$name/g;
+    $contents =~ s/\[% author %\]/$self->{'author'} \<$self->{'email'}\>/g;
 
     return $contents
 };
@@ -152,11 +159,13 @@ EOM
     };
     $basic .= "};\n";
 
+    my $spelling = $self->_get_file('pod_spelling');
+    $spelling =~ s/\[% app %\]/$self->{'__base_name'}/g;
 
     return (
         'basic.t'        => $basic,
         'pod_syntax.t'   => $self->_get_file('pod_syntax'),
-        'pod_spelling.t' => $self->_get_file('pod_spelling'),
+        'pod_spelling.t' => $spelling,
         'pod_coverage.t' => $self->_get_file('pod_coverage'),
     );
 };
@@ -188,7 +197,7 @@ sub _get_file {
         $cache{$class} = eval "package $class; <DATA>";
     };
     my $data = $cache{$class};
-    my @files = split /^__(.+)__\r?\n/m, $data;
+    my @files = split /^___(.+)___\r?\n/m, $data;
     shift @files;
     while (@files) {
         my ( $name, $content ) = splice @files, 0, 2;
@@ -200,7 +209,7 @@ sub _get_file {
 
 =head1 SEE ALSO
 
-L<Module::Starter>
+L<Module::Starter>, <handel>
 
 =head1 AUTHOR
 
@@ -216,14 +225,34 @@ __DATA__
 
 =begin pod_to_ignore
 
-__main__
+___main___
 package [% module %];
 use strict;
 use warnings;
 our $VERSION = '0.01';
 
-1;
-__Cart__
+=head1 NAME
+
+[% module %] - My Handel Application
+
+=head1 SYNOPSIS
+
+    use [% module %]::Cart;
+    
+    my $cart = [% module %]::Cart->create({
+        id   => $id,
+        name => 'MyCart'
+    });
+
+=head1 DESCRIPTION
+
+My Handel Application
+
+=head1 AUTHOR
+
+    [% author %]
+
+___Cart___
 package [% module %];
 use strict;
 use warnings;
@@ -236,8 +265,31 @@ __PACKAGE__->storage_class('[% app %]::Storage::Cart');
 __PACKAGE__->item_class('[% module %]::Item');
 __PACKAGE__->create_accessors;
 
+=head1 NAME
+
+[% module %] - Cart Class
+
+=head1 SYNOPSIS
+
+    use [% module %];
+    
+    my $cart = [% module %]->create({
+        id   => $id,
+        name => 'MyCart'
+    });
+
+=head1 DESCRIPTION
+
+My Cart Class
+
+=head1 AUTHOR
+
+    [% author %]
+
+=cut
+
 1;
-__Cart::Item__
+___Cart::Item___
 package [% module %];
 use strict;
 use warnings;
@@ -249,8 +301,31 @@ BEGIN {
 __PACKAGE__->storage_class('[% app %]::Storage::Cart::Item');
 __PACKAGE__->create_accessors;
 
+=head1 NAME
+
+[% module %] - Cart Item Class
+
+=head1 SYNOPSIS
+
+    use [% module %];
+    
+    my $items = $cart->items;
+    while (my $item = $items->next) {
+        print $item->sku;
+    };
+
+=head1 DESCRIPTION
+
+My Cart Item Class
+
+=head1 AUTHOR
+
+    [% author %]
+
+=cut
+
 1;
-__Storage::Cart__
+___Storage::Cart___
 package [% module %];
 use strict;
 use warnings;
@@ -261,8 +336,26 @@ BEGIN {
 
 __PACKAGE__->item_storage_class('[% app %]::Storage::Cart::Item');
 
+=head1 NAME
+
+[% module %] - Cart Storage Class
+
+=head1 SYNOPSIS
+
+    __PACKAGE__->storage_class('[% module %]');
+
+=head1 DESCRIPTION
+
+My Cart Storage Class
+
+=head1 AUTHOR
+
+    [% author %]
+
+=cut
+
 1;
-__Storage::Cart::Item__
+___Storage::Cart::Item___
 package [% module %];
 use strict;
 use warnings;
@@ -271,8 +364,26 @@ BEGIN {
     use base qw/Handel::Storage::DBIC::Cart::Item/;
 };
 
+=head1 NAME
+
+[% module %] - Cart Item Storage Class
+
+=head1 SYNOPSIS
+
+    __PACKAGE__->storage_class('[% module %]');
+
+=head1 DESCRIPTION
+
+My Cart Item Storage Class
+
+=head1 AUTHOR
+
+    [% author %]
+
+=cut
+
 1;
-__Order__
+___Order___
 package [% module %];
 use strict;
 use warnings;
@@ -287,8 +398,31 @@ __PACKAGE__->cart_class('[% app %]::Cart');
 __PACKAGE__->checkout_class('[% app %]::Checkout');
 __PACKAGE__->create_accessors;
 
+=head1 NAME
+
+[% module %] - Order Class
+
+=head1 SYNOPSIS
+
+    use [% module %];
+    
+    my $order = [% module %]->create({
+        id   => $id,
+        name => 'MyOrder'
+    });
+
+=head1 DESCRIPTION
+
+My Order Class
+
+=head1 AUTHOR
+
+    [% author %]
+
+=cut
+
 1;
-__Order::Item__
+___Order::Item___
 package [% module %];
 use strict;
 use warnings;
@@ -300,8 +434,31 @@ BEGIN {
 __PACKAGE__->storage_class('[% app %]::Storage::Order::Item');
 __PACKAGE__->create_accessors;
 
+=head1 NAME
+
+[% module %] - Order Item Class
+
+=head1 SYNOPSIS
+
+    use [% module %];
+    
+    my $items = $order->items;
+    while (my $item = $items->next) {
+        print $item->sku;
+    };
+
+=head1 DESCRIPTION
+
+My Order Item Class
+
+=head1 AUTHOR
+
+    [% author %]
+
+=cut
+
 1;
-__Storage::Order__
+___Storage::Order___
 package [% module %];
 use strict;
 use warnings;
@@ -312,8 +469,26 @@ BEGIN {
 
 __PACKAGE__->item_storage_class('[% app %]::Storage::Order::Item');
 
+=head1 NAME
+
+[% module %] - Order Storage Class
+
+=head1 SYNOPSIS
+
+    __PACKAGE__->storage_class('[% module %]');
+
+=head1 DESCRIPTION
+
+My Order Storage Class
+
+=head1 AUTHOR
+
+    [% author %]
+
+=cut
+
 1;
-__Storage::Order::Item__
+___Storage::Order::Item___
 package [% module %];
 use strict;
 use warnings;
@@ -322,8 +497,26 @@ BEGIN {
     use base qw/Handel::Storage::DBIC::Order::Item/;
 };
 
+=head1 NAME
+
+[% module %] - Order Item Storage Class
+
+=head1 SYNOPSIS
+
+    __PACKAGE__->storage_class('[% module %]');
+
+=head1 DESCRIPTION
+
+My Order Item Storage Class
+
+=head1 AUTHOR
+
+    [% author %]
+
+=cut
+
 1;
-__Checkout__
+___Checkout___
 package [% module %];
 use strict;
 use warnings;
@@ -334,8 +527,29 @@ BEGIN {
 
 __PACKAGE__->order_class('[% app %]::Order');
 
+=head1 NAME
+
+[% module %] - Checkout Class
+
+=head1 SYNOPSIS
+
+    use [% module %];
+    
+    my $checkout = [% module %]->new;
+    $checkout->process;
+
+=head1 DESCRIPTION
+
+My Checkout Class
+
+=head1 AUTHOR
+
+    [% author %]
+
+=cut
+
 1;
-__pod_syntax__
+___pod_syntax___
 #!perl -wT
 use strict;
 use warnings;
@@ -349,7 +563,7 @@ BEGIN {
 };
 
 all_pod_files_ok();
-__pod_spelling__
+___pod_spelling___
 #!perl -w
 use strict;
 use warnings;
@@ -365,10 +579,13 @@ BEGIN {
 set_spell_cmd('aspell list');
 
 # Add your stopworkds to __DATA__ and uncomment the next line
-# add_stopwords(<DATA>);
+add_stopwords(<DATA>);
 
 all_pod_files_spelling_ok();
-__pod_coverage__
+
+__DATA__
+[% app %]
+___pod_coverage___
 #!perl -wT
 use strict;
 use warnings;
@@ -385,14 +602,14 @@ BEGIN {
 };
 
 all_pod_coverage_ok();
-__setup__
-#!perl -w
+___setup___
+[% startperl %]
 use strict;
 use warnings;
 
 =head1 NAME
 
-setup - installs Handel schema into the specified database
+[% scriptname %] - Handel tools for the current application
 
 =cut
 
@@ -406,35 +623,44 @@ BEGIN {
     use File::Spec::Functions qw/catfile/;
 };
 
-my ($dsn, $user, $pass);
+my ($install, $dsn, $user, $pass);
 
 GetOptions(
-    "dsn=s"  => \$dsn,
-    "user=s" => \$user,
-    "pass=s" => \$pass,
-    default  => sub {$dsn ||= 'dbi:SQLite:dbname=' . catfile("$FindBin::Bin/../data", 'handel.db')},
-    help     => sub {pod2usage(1);},
-) or pod2usage(2);
+    'install|i' => \$install,
+    'dsn=s'     => \$dsn,
+    'user=s'    => \$user,
+    'pass=s'    => \$pass,
+    default     => sub {$dsn ||= 'dbi:SQLite:dbname=' . catfile("$FindBin::Bin/../data", 'handel.db')},
+    help        => sub {pod2usage(1);},
+) or pod2usage(1);
 
-die 'No dsn specified!' unless $dsn;
+pod2usage(1) unless $ARGV[0];
+my $action = lc($ARGV[0]) || die 'No action specified!';
 
-[% app %]::Storage::Cart->new({
-    connection_info => [$dsn, $user, $pass]
-})->schema_instance->deploy;
+if ($action =~ /^schema$/i) {
+    die 'No dsn specified!' unless $dsn;
 
-[% app %]::Storage::Order->new({
-    connection_info => [$dsn, $user, $pass]
-})->schema_instance->deploy;
+    [% app %]::Storage::Cart->new({
+        connection_info => [$dsn, $user, $pass]
+    })->schema_instance->deploy;
 
-print "Installed/created database schema\n";
+    [% app %]::Storage::Order->new({
+        connection_info => [$dsn, $user, $pass]
+    })->schema_instance->deploy;
+
+    print "Installed/created database schema\n";
+} else {
+    pod2usage(1);
+};
 
 =head1 SYNOPSIS
 
-setup [options]
+[% scriptname %] schema [options]
 
 Options:
 
-    --dsn      Create the default schema in the specified dsn
+    --install  Create the default schema in the specified dsn
+    --dsn      The server dsn
     --user     The database user name
     --pass     The database users password
     --default  Create the default database in data/handel.db
@@ -442,8 +668,8 @@ Options:
 
 Example:
 
-    perl scripts/setup.pl --default
-    perl scripts/setup.pl --dsn=dbi:mysql:dbname=handel:host=localhost
+    perl scripts/[% scriptname %] schema --default
+    perl scripts/[% scriptname %] schema --install --dsn=dbi:mysql:dbname=handel:host=localhost
 
 =head1 AUTHOR
 
