@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_dbic_currency_code.t 1560 2006-11-10 02:36:54Z claco $
+# $Id: storage_dbic_currency_code.t 1767 2007-03-22 00:07:33Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 20;
+        plan tests => 24;
     };
 
     use_ok('Handel::Storage::DBIC');
@@ -32,35 +32,39 @@ my $storage = Handel::Storage::DBIC->new({
 my $item = $storage->search->first;
 isa_ok($item->price, 'Handel::Currency');
 is($item->price->code, 'CAD', 'got currency code');
-is($item->price->format, '1.11 CAD', 'got default format');
+is($item->price->format, 'FMT_STANDARD', 'got default format');
+is($item->price->stringify, '1.11 CAD', 'got default format');
 
 $storage->currency_code('DKK');
 $item = $storage->search->first;
 isa_ok($item->price, 'Handel::Currency');
 is($item->price->code, 'DKK', 'code set from storage code');
-is($item->price->format, '1,11 DKK', 'got default format');
+is($item->price->format, 'FMT_STANDARD', 'got default format');
+is($item->price->stringify, '1,11 DKK', 'got default format');
 
 
 $storage->currency_code(undef);
 $item = $storage->search->first;
 isa_ok($item->price, 'Handel::Currency');
-is($item->price->code, undef, 'no code set');
+is($item->price->code, 'USD', 'no code set');
 
 
 {
     local $ENV{'HandelCurrencyCode'} = 'CAD';
     my $item = $storage->search->first;
     isa_ok($item->price, 'Handel::Currency');
-    is($item->price->code, undef, 'no code set');
-    is($item->price->format, '1.11 CAD', 'got default format');
+    is($item->price->code, 'CAD', 'no code set');
+    is($item->price->format, 'FMT_STANDARD', 'got default format');
+    is($item->price->stringify, '1.11 CAD', 'got default format');
 };
 
 
 {
     my $item = $storage->search->first;
     isa_ok($item->price, 'Handel::Currency');
-    is($item->price->code, undef, 'no code is set');
-    is($item->price->format, '1.11 USD', 'got default format');
+    is($item->price->code, 'USD', 'no code is set');
+    is($item->price->format, 'FMT_STANDARD', 'got default format');
+    is($item->price->stringify, '1.11 USD', 'got default format');
 };
 
 

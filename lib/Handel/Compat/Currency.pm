@@ -1,77 +1,100 @@
-# $Id: Currency.pm 1594 2006-11-15 04:54:59Z claco $
-## no critic (ProhibitLocalVars, ProhibitConditionalDeclarations, ProhibitPostfixControls)
+# $Id: Currency.pm 1767 2007-03-22 00:07:33Z claco $
 package Handel::Compat::Currency;
 use strict;
 use warnings;
-use overload '""' => \&Handel::Currency::stringify, fallback => 1;
+use overload '""' => \&stringify, fallback => 1;
 
 BEGIN {
-    use base qw/Handel::Currency/;
     use Handel;
-    use Handel::Constraints qw/:all/;
+    use Handel::Constraints qw(:all);
     use Handel::Exception;
-    use Handel::L10N qw/translate/;
+    use Handel::L10N qw(translate);
+
     use Locale::Currency;
     use Locale::Currency::Format;
-    use Class::Inspector;
-    use Carp;
 };
 
-sub code {
-    my $self = shift;
+sub new {
+    my ($class, $value) = @_;
+    my $self = bless {price => $value}, ref($class) || $class;
 
-    if (scalar @_) {
-        my $code = shift;
-
-        throw Handel::Exception::Argument(
-            -details => translate('Currency code [_1] is invalid or malformed', $code)
-        ) unless constraint_currency_code($code) ||  !$code; ## no critic
-
-        $self->_code($code);
+    eval 'use Finance::Currency::Convert::WebserviceX';
+    if (!$@) {
+        $self->{'converter'} = Finance::Currency::Convert::WebserviceX->new;
     };
 
-    return $self->_code;
+    return $self;
 };
 
 sub format {
     my ($self, $code, $format) = @_;
 
-    local $self->{'_code'} = $code if $code;
+    eval 'use Locale::Currency::Format';
+    return $self->{'price'} if $@;
 
-    return $self->SUPER::format($format);
+    my $cfg = Handel->config;
+
+    eval '$format = ' .  ($format || $cfg->{'HandelCurrencyFormat'});
+    $code   ||= $cfg->{'HandelCurrencyCode'};
+
+    throw Handel::Exception::Argument(
+        -details => translate("Currency code '[_1]' is invalid or malformed", $code) . '.') unless
+            constraint_currency_code($code);
+
+    return _to_utf8(currency_format($code, $self->{'price'}, $format));
 };
 
 sub convert {
     my ($self, $from, $to, $format, $options) = @_;
     my $cfg = Handel->config;
 
-    if (!$from) {
-        $from = $self->code || $cfg->{'HandelCurrencyCode'};
-    };
-    if (!$to) {
-        $to = $self->code || $cfg->{'HandelCurrencyCode'};
-    };
+    $from ||= $cfg->{'HandelCurrencyCode'};
+    $to   ||= $cfg->{'HandelCurrencyCode'};
+    eval '$options = ' .  ($options || $cfg->{'HandelCurrencyFormat'});
 
     return if uc($from) eq uc($to);
 
-    local $self->{'_code'} = $from if $from;
-    local $self->{'_format'} = $options if $options;
+    throw Handel::Exception::Argument(
+        -details => translate("Currency code '[_1]' is invalid or malformed", $from) . '.') unless
+            constraint_currency_code($from);
 
-    my $result = $self->Handel::Currency::convert($to);
+    throw Handel::Exception::Argument(
+        -details => translate("Currency code '[_1]' is invalid or malformed", $to) . '.') unless
+            constraint_currency_code($to);
 
-    if (defined $result && $format) {
-        return $result->format($to, $options);
+    my $result = defined $self->{'converter'} ?
+        $self->{'converter'}->convert($self->{'price'}, $from, $to) :
+        undef;
+
+    eval 'use Locale::Currency::Format';
+    if (!$@ && defined $result && $format) {
+        return _to_utf8(currency_format($to, $result, $options));
     };
 
     return $result;
 };
 
-sub name {
-    my ($self, $code) = @_;
+sub stringify {
+    my $self = shift;
 
-    local $self->{'_code'} = $code if $code;
+    return $self->value;
+};
 
-    return $self->SUPER::name;
+sub value {
+    my $self = shift;
+
+    return $self->{'price'};
+};
+
+sub _to_utf8 {
+    my $value = shift;
+
+    if ($] >= 5.008) {
+        require utf8;
+        utf8::upgrade($value);
+    };
+
+    return $value;
 };
 
 1;
@@ -79,15 +102,13 @@ __END__
 
 =head1 NAME
 
-Handel::Compat::Currency - Price container to do currency conversion/formatting
+Handel::Currency - Price container to do currency conversion/formatting
 
 =head1 SYNOPSIS
 
-    use Handel::Compat::Currency;
+    use Handel::Currency;
 
-    MyStorage->currency_class('Handel::Compt::Currency');
-
-    my $curr = Handel::Currency->new(1.2);
+    my $curr = Handel::Currenct-new(1.2);
     print $curr->format();          # 1.20 USD
     print $curr->format('CAD');     # 1.20 CAD
     print $curr->format(undef, 'FMT_SYMBOL');   # $1.20
@@ -97,8 +118,9 @@ Handel::Compat::Currency - Price container to do currency conversion/formatting
 
 =head1 DESCRIPTION
 
-The Handel::Currency module provides basic currency formatting within Handel.
-It can be used separately to format any number into a more friendly format:
+The C<Handel::Currency> module provides basic currency formatting within
+Handel. It can be used separately to format any number into a more friendly
+format:
 
     my $price = 1.23;
     my $currency = Handel::Currency->new($price);
@@ -108,7 +130,7 @@ It can be used separately to format any number into a more friendly format:
 A new Handel::Currency object is automatically returned within the shopping
 cart when calling C<subtotal>, C<total>, and C<price> as an lvalue:
 
-    my $cart = Handel::Cart->search({id => '11111111-1111-1111-1111-111111111111'});
+    my $cart = Handel::Cart->load({id => '11111111-1111-1111-1111-111111111111'});
 
     print $cart->subtotal;              # 12.9
     print $cart->subtotal->format();    # 12.90 USD
@@ -120,146 +142,68 @@ based price.
 
 =head2 new
 
-=over
-
-=item Arguments: $price [, $code, $formatoptions]
-
-=back
-
 The create a new Handel::Currency instance, simply call C<new> and pass in the
 price to be formatted:
 
     my $currency = Handel::Currency->new(10.23);
 
-You can also pass in the default currency code and/or currency format to be used.
-
 =head1 METHODS
 
-=head2 code
+=head2 format([$code, $options])
 
-=over
-
-=item Arguments: $code
-
-=back
-
-Gets/sets the three letter currency code for the current currency object.
-
-C<code> throws a L<Handel::Exception::Argument|Handel::Exception::Argument>
-if C<code> isn't a valid currency code.
-
-=head2 convert
-
-=over
-
-=item Arguments: $from, $to [, $format, $formatoptions]
-
-=back
-
-If no C<from> or C<formatoptions> is specified, the options passed to C<new>
-and then C<HandelCurrencyCode> and C<HandelCurrencyFormat>  will be used instead.
-
-C<convert> throws a L<Handel::Exception::Argument|Handel::Exception::Argument>
-if C<from> or C<to> aren't valid currency codes.
-
-If C<format> is true, the result of the conversion will also be formatted
-using the formatting options given or the default in C<new> and then
-C<HandelCurrencyFormat>.
-
-You can also simply chain the C<convert> call into a C<format> call.
-
-    my $price = Handel::Currency->new(1.25);
-    print $price->convert('USD', 'CAD')->format;
-
-=head2 converter_class
-
-=over
-
-=item Arguments: $converter_class
-
-=back
-
-Gets/sets the converter class to be used when converting currency numbers.
-
-    __PACKAGE__->currency_class('MyCurrencyConverter');
-
-The converter class can be any class that supports the following method
-signature:
-
-    sub convert {
-        my ($self, $price, $from, $to) = @_;
-
-        return $converted_price;
-    };
-
-A L<Handel::Exception|Handel::Exception> exception will be thrown if the
-specified class can not be loaded.
-
-=head2 format
-
-=over
-
-=item Arguments: $code [, $options]
-
-=back
-
-Returns the freshly formatted price in a currency and format declared in
-L<Locale::Currency::Format|Locale::Currency::Format>. If no currency code or
-format are specified, the defaults values from C<new> and then
-C<Handel::ConfigReader> are used. Currently those defaults are C<USD> and
-C<FMT_STANDARD>.
+The C<format> method returns the freshly formatted price in a currency and
+format declared in C<Locale::Currency::Format>. If no currency code or
+format are specified, the defaults values from C<Handel::ConfigReader> are
+used. Currently those defaults are C<USD> and C<FMT_STANDARD>.
 
 It is also acceptable to specify different default values.
 See L</"CONFIGURATION"> and C<Handel::ConfigReader> for further details.
 
-C<format> throws a L<Handel::Exception::Argument|Handel::Exception::Argument>
-if C<code> isn't a valid currency code.
+In situations where C<Locale::Currency::Format> isn't installed, C<format>
+simply returns the price in it's original format no harm no foul.
 
-=head2 name
+C<format> throws a C<Handel::Exception::Argument> if C<code> isn't a valid
+currency code.
 
-=over
+=head2 convert($from, $to [, $format, $options])
 
-=item Arguments $code
+The C<convert> method converts the given price from one currency to another
+using C<Finance::Currency::Convert::WebserviceX>.
 
-=back
+In situations where C<Finance::Currency::Convert::WebserviceX> isn't installed,
+C<convert> simply returns undef.
 
-Returns the currency name for the specified currency code. If no currency code
-is specified, the currency code for the current object will be used. If that
-too is not specified, the code set in C<HandelCurrencyCode> will be used.
+If no C<from> is specified, C<HandelCurrencyCode> below will be used instead.
 
-C<name> throws a L<Handel::Exception::Argument|Handel::Exception::Argument>
-if C<code> isn't a valid currency code.
+C<convert> throws a C<Handel::Exception::Argument> if C<from> or C<to> aren't
+valid currency codes.
 
-=head2 stringify
-
-Returns C<value> in scalar context. For now, this returns the same thing that
-was passed to C<new>. This maybe change in the future.
+If C<$format> is true, the result of the conversion will also be formatted
+using the formatting C<options> given or the default in
+C<HandelCurrencyFormat>.
 
 =head2 value
 
-Returns the original price value given to C<new>. Always use this instead of
-relying on stringification when deflating currency objects in DBIx::Class
-schemas.
+Returns the original value passed to new.
 
 =head1 CONFIGURATION
 
 =head2 HandelCurrencyCode
 
 This sets the default currency code used when no code is passed into C<format>.
-See L<Locale::Currency::Format|Locale::Currency::Format> for all available
-currency codes. The default code is USD.
+See C<Locale::Currency::Format> for all available currency codes. The default
+code is USD.
 
 =head2 HandelCurrencyFormat
 
 This sets the default options used to format the price. See
-L<Locale::Currency::Format|Locale::Currency::Format> for all available currency
-codes. The default format used is C<FMT_STANDARD>. Just like in
-Locale::Currency::Format, you can combine options using C<|>.
+C<Locale::Currency::Format> for all available currency codes. The default
+format used is C<FMT_STANDARD>. Just like in C<Locale::Currency::Format>,
+you can combine options using C<|>.
 
 =head1 SEE ALSO
 
-L<Locale::Currency>, L<Locale::Currency::Format>,
-L<Finance::Currency::Convert::WebserviceX>
+L<Locale::Currency::Format>, L<Finance::Currency::Convert::WebserviceX>
 
 =head1 AUTHOR
 

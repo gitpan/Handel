@@ -1,4 +1,4 @@
-[%# $Id: cart_fetch_as_array.tt2 1355 2006-08-07 01:51:41Z claco $ %]
+[%# $Id: cart_fetch_as_array.tt2 1767 2007-03-22 00:07:33Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
     [% IF (cart = hcart.search.all) %]
@@ -8,7 +8,7 @@
 			<id>[% cart.0.id %]</id>
 			<name>[% cart.0.name %]</name>
 			<shopper>[% cart.0.shopper %]</shopper>
-			<subtotal>[% cart.0.subtotal %]</subtotal>
+			<subtotal>[% cart.0.subtotal.value %]</subtotal>
 			<type>[% cart.0.type %]</type>
 		</cart>
 		<cart>
@@ -17,7 +17,7 @@
 			<id>[% cart.1.id %]</id>
 			<name>[% cart.1.name %]</name>
 			<shopper>[% cart.1.shopper %]</shopper>
-			<subtotal>[% cart.1.subtotal %]</subtotal>
+			<subtotal>[% cart.1.subtotal.value %]</subtotal>
 			<type>[% cart.1.type %]</type>
 		</cart>
 	[% ELSE %]

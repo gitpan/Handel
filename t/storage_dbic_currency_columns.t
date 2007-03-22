@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_dbic_currency_columns.t 1560 2006-11-10 02:36:54Z claco $
+# $Id: storage_dbic_currency_columns.t 1767 2007-03-22 00:07:33Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 32;
+        plan tests => 34;
     };
 
     use_ok('Handel::Storage::DBIC');
@@ -46,10 +46,10 @@ my $storage = Handel::Storage::DBIC->new({
         id => 1,
         shopper => 2,
         name => 'test',
-        description => 'Christopher Laco'
+        description => '23'
     });
     is($cart->name, 'test', 'got name');
-    is($cart->description, 'Christopher Laco', 'got descrption');
+    is($cart->description, '23.00 USD', 'got descrption');
     isa_ok($cart->description, 'Handel::Currency', 'description is a currency object');
 
     ## reset it all, and try a custom currency class
@@ -67,10 +67,10 @@ my $storage = Handel::Storage::DBIC->new({
         id => 2,
         shopper => 2,
         name => 'foo',
-        description => 'bar'
+        description => '54'
     });
     is($new_cart->name, 'foo', 'got name');
-    is($new_cart->description, 'bar', 'got description');
+    is($new_cart->description, '54.00 USD', 'got description');
     isa_ok($new_cart->description, 'Handel::Subclassing::Currency', 'description is a currency object');
 };
 
@@ -103,7 +103,7 @@ my $storage = Handel::Storage::DBIC->new({
         sku => 5.43,
         price => 1.23
     });
-    is($item->sku, 5.43, 'got sku');
+    is($item->sku+0, 5.43, 'got sku');
     isa_ok($item->sku, 'Handel::Currency', 'sku is a currency column');
     is($item->sku->code, 'USD', 'code set from code column');
 };
@@ -134,8 +134,9 @@ my $storage = Handel::Storage::DBIC->new({
     });
     isa_ok($item->price, 'Handel::Currency');
     is($item->price->code, 'CAD', 'code set from code column');
-    is($item->price, 1.23, 'got price');
-    is($item->price->format, '1.23 CAD', 'got default format');
+    is($item->price+0, 1.23, 'got price');
+    is($item->price->format, 'FMT_STANDARD', 'got default format');
+    is($item->price->stringify, '1.23 CAD', 'got default format');
 
     $item = $schema->resultset('Items')->create({
         id => 3,
@@ -144,10 +145,11 @@ my $storage = Handel::Storage::DBIC->new({
         price => 1.24
     });
     isa_ok($item->price, 'Handel::Currency');
-    is($item->price->code, undef, 'no code is set');
-    is($item->price, 1.24, 'got price');
-    is($item->price->format, '1.24 USD', 'got default format');
+    is($item->price->code, 'USD', 'no code is set');
+    is($item->price+0, 1.24, 'got price');
+    is($item->price->format, 'FMT_STANDARD', 'got default format');
+    is($item->price->stringify, '1.24 USD', 'got default format');
     $item->price(Handel::Currency->new(2.43));
     $item->update;
-    is($item->price, 2.43, 'got new price object');
+    is($item->price+0, 2.43, 'got new price object');
 };

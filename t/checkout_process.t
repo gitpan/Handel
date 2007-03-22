@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_process.t 1605 2006-11-24 23:16:30Z claco $
+# $Id: checkout_process.t 1767 2007-03-22 00:07:33Z claco $
 use strict;
 use warnings;
 
@@ -170,10 +170,10 @@ sub run {
         is($checkout->process, CHECKOUT_STATUS_OK, 'processed OK');
 
         my $items = $order->items;
-        is($order->subtotal, 5.55, 'subtotal is 5.55');
-        is($items->first->total, 1.11, 'total is 1.11');
+        is($order->subtotal+0, 5.55, 'subtotal is 5.55');
+        is($items->first->total+0, 1.11, 'total is 1.11');
         $items->next;
-        is($items->next->total, 4.44, 'total is 4.44');
+        is($items->next->total+0, 4.44, 'total is 4.44');
 
         my @messages = $checkout->messages;
         is(scalar @messages, 0, 'has no messages');
@@ -204,10 +204,10 @@ sub run {
         is($checkout->process, CHECKOUT_STATUS_OK, 'processed OK');
 
         my $items = $order->items;
-        is($order->subtotal, 0, 'subtotal is 0');
-        is($items->first->total, 0, 'total is 0');
+        is($order->subtotal+0, 0, 'subtotal is 0');
+        is($items->first->total+0, 0, 'total is 0');
         $items->next;
-        is($items->next->total, 0, 'total is 0');
+        is($items->next->total+0, 0, 'total is 0');
 
         my @messages = $checkout->messages;
         is(scalar @messages, 0, 'has no messages');
@@ -282,7 +282,7 @@ sub run {
         is($checkout->order->billtolastname, 'BillToLastName', 'last name unchanged');
 
         my $items = $order->items;
-        is($order->subtotal, 0, 'subtotal is 0');
+        is($order->subtotal+0, 0, 'subtotal is 0');
         is($items->first->sku, 'SKU1', 'sku1 is unchanged');
         $items->next;
         is($items->next->sku, 'SKU2', 'sku2 is unchanged');

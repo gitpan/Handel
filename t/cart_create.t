@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_create.t 1603 2006-11-22 21:17:25Z claco $
+# $Id: cart_create.t 1767 2007-03-22 00:07:33Z claco $
 use strict;
 use warnings;
 
@@ -166,18 +166,18 @@ sub run {
         is($cart->name, undef, 'name is undef');
         is($cart->description, undef, 'description is undef');
         is($cart->count, 0, 'has 0 items');
-        is($cart->subtotal, 0, 'has 0 subtotal');
+        is($cart->subtotal+0, 0, 'has 0 subtotal');
         if ($subclass ne 'Handel::Cart') {
             is($cart->custom, undef, 'custom is undef');
         };
 
 
-        is($cart->subtotal->format, '0.00 USD', 'subtotal formats 0');
-        is($cart->subtotal->format('FMT_NAME'), '0.00 US Dollar', 'subtotal formats 0');
+        is($cart->subtotal->stringify, '0.00 USD', 'subtotal formats 0');
+        is($cart->subtotal->stringify('FMT_NAME'), '0.00 US Dollar', 'subtotal formats 0');
         {
             local $ENV{'HandelCurrencyCode'} = 'CAD';
-            is($cart->subtotal->format, '0.00 CAD', 'subtotal formats 0');
-            is($cart->subtotal->format('FMT_NAME'), '0.00 Canadian Dollar', 'subtotal formats 0');
+            is($cart->subtotal->stringify, '0.00 CAD', 'subtotal formats 0');
+            is($cart->subtotal->stringify('FMT_NAME'), '0.00 Canadian Dollar', 'subtotal formats 0');
         };
     };
 
@@ -197,7 +197,7 @@ sub run {
         is($cart->name, undef, 'name is undef');
         is($cart->description, undef, 'description is undef');
         is($cart->count, 0, 'has 0 items');
-        is($cart->subtotal, 0, 'subtotal is 0');
+        is($cart->subtotal+0, 0, 'subtotal is 0');
         if ($subclass ne 'Handel::Cart') {
             is($cart->custom, undef, 'custom is unset');
         };
@@ -220,7 +220,7 @@ sub run {
         is($cart->name, 'My Cart', 'got name');
         is($cart->description, 'My Cart Description', 'got description');
         is($cart->count, 0, 'has 0 items');
-        is($cart->subtotal, 0, 'subtotal is 0');
+        is($cart->subtotal+0, 0, 'subtotal is 0');
         if ($subclass ne 'Handel::Cart') {
             is($cart->custom, undef, 'custom is undef');
         };
@@ -245,7 +245,7 @@ sub run {
         is($cart->name, 'My Cart', 'got name');
         is($cart->description, 'My Cart Description', 'got description');
         is($cart->count, 0, 'has 0 items');
-        is($cart->subtotal, 0, 'subtotal is 0');
+        is($cart->subtotal+0, 0, 'subtotal is 0');
         if ($subclass ne 'Handel::Cart') {
             is($cart->custom, undef, 'custom is undef');
         };
@@ -273,7 +273,7 @@ sub run {
     is($cart->name, 'My Alt Cart', 'got name');
     is($cart->description, 'My Alt Cart Description', 'got description');
     is($cart->count, 0, 'has 0 items');
-    is($cart->subtotal, 0, 'subtotal is 0');
+    is($cart->subtotal+0, 0, 'subtotal is 0');
     is(refaddr $cart->result->storage, refaddr $storage, 'storage option used');
     is($altschema->resultset('Carts')->search({name => 'My Alt Cart'})->count, 1, 'cart found in alt storage');
     is($schema->resultset('Carts')->search({name => 'My Alt Cart'})->count, 0, 'alt cart not in class storage');

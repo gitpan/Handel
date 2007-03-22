@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 1584 2006-11-13 02:08:05Z claco $
+# $Id: Makefile.PL 1768 2007-03-22 00:14:49Z claco $
 use ExtUtils::MakeMaker;
 use 5.008001;
 use strict;
@@ -78,8 +78,9 @@ WriteMakefile(
     ABSTRACT     => 'A cart/order/checkout framework with AxKit/TT/Catalyst support',
     PREREQ_PM    => {
         'DBIx::Class'              => '0.08',
-        'DBIx::Class::UUIDColumns' => '0',
+        'DBIx::Class::UUIDColumns' => '0.01',
         'DBIx::Class::Validation'  => '0.01001',
+        'Data::Currency'           => '0.03',
         'Class::Accessor::Grouped' => '0.03',
         'Class::ISA'               => '0',
         'Class::Inspector'         => '0',

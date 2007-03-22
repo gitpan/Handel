@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_destroy.t 1603 2006-11-22 21:17:25Z claco $
+# $Id: cart_destroy.t 1767 2007-03-22 00:07:33Z claco $
 use strict;
 use warnings;
 
@@ -74,7 +74,7 @@ sub run {
 
         my $related_items = $cart->count;
         is($related_items, 1, 'has 1 item');
-        is($cart->subtotal, 9.99, 'subtotal is 9.99');
+        is($cart->subtotal+0, 9.99, 'subtotal is 9.99');
 
         $cart->destroy;
 

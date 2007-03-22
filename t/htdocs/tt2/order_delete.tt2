@@ -1,4 +1,4 @@
-[%# $Id: order_delete.tt2 1355 2006-08-07 01:51:41Z claco $ %]
+[%# $Id: order_delete.tt2 1767 2007-03-22 00:07:33Z claco $ %]
 [% USE horder  = Handel.Order %]
 <body>
     [% IF (order = horder.create({
@@ -83,10 +83,10 @@
 			<billtoemail>[% order.billtoemail %]</billtoemail>
 			<comments>[% order.comments %]</comments>
 			<created>[% order.created %]</created>
-			<handling>[% order.handling %]</handling>
+			<handling>[% order.handling.value %]</handling>
 			<number>[% order.number %]</number>
 			<shipmethod>[% order.shipmethod %]</shipmethod>
-			<shipping>[% order.shipping %]</shipping>
+			<shipping>[% order.shipping.value %]</shipping>
 			<shiptosameasbillto>[% order.shiptosameasbillto %]</shiptosameasbillto>
 			<shiptofirstname>[% order.shiptofirstname %]</shiptofirstname>
 			<shiptolastname>[% order.shiptolastname %]</shiptolastname>
@@ -101,9 +101,9 @@
 			<shiptonightphone>[% order.shiptonightphone %]</shiptonightphone>
 			<shiptofax>[% order.shiptofax %]</shiptofax>
 			<shiptoemail>[% order.shiptoemail %]</shiptoemail>
-			<subtotal>[% order.subtotal %]</subtotal>
-			<total>[% order.total %]</total>
-			<tax>[% order.tax %]</tax>
+			<subtotal>[% order.subtotal.value %]</subtotal>
+			<total>[% order.total.value %]</total>
+			<tax>[% order.tax.value %]</tax>
 			<updated>[% order.updated %]</updated>
 		</order>
 	[% ELSE %]
@@ -134,10 +134,10 @@
 			<billtoemail>[% order.billtoemail %]</billtoemail>
 			<comments>[% order.comments %]</comments>
 			<created>[% order.created %]</created>
-			<handling>[% order.handling %]</handling>
+			<handling>[% order.handling.value %]</handling>
 			<number>[% order.number %]</number>
 			<shipmethod>[% order.shipmethod %]</shipmethod>
-			<shipping>[% order.shipping %]</shipping>
+			<shipping>[% order.shipping.value %]</shipping>
 			<shiptosameasbillto>[% order.shiptosameasbillto %]</shiptosameasbillto>
 			<shiptofirstname>[% order.shiptofirstname %]</shiptofirstname>
 			<shiptolastname>[% order.shiptolastname %]</shiptolastname>
@@ -152,9 +152,9 @@
 			<shiptonightphone>[% order.shiptonightphone %]</shiptonightphone>
 			<shiptofax>[% order.shiptofax %]</shiptofax>
 			<shiptoemail>[% order.shiptoemail %]</shiptoemail>
-			<subtotal>[% order.subtotal %]</subtotal>
-			<total>[% order.total %]</total>
-			<tax>[% order.tax %]</tax>
+			<subtotal>[% order.subtotal.value %]</subtotal>
+			<total>[% order.total.value %]</total>
+			<tax>[% order.tax.value %]</tax>
 			<updated>[% order.updated %]</updated>
 			[% CALL order.delete({id => '2505E956-D5A6-47B0-AEB5-D19429FCA5FD'}) %]
 			<count>[% order.count %]</count>

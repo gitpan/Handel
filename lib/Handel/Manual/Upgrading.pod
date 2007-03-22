@@ -126,10 +126,30 @@ Version 1.0
     print $price->convert('USD', 'CAD');
     
     # $1.67 Canadian Dollars
-    print $price->convert('USD', 'CAD')->format('FMT_COMMON');
+    print $price->convert('USD', 'CAD')->as_string('FMT_COMMON');
 
 When upgrading, change all of your calls to convert to also call C<format> afterwords. If C<from> and
 C<to> are the same, convert now returns itself instead of undef.
+
+=head3 Currency format is now as_string
+
+Handel::Currency is now a subclass of Data::Currency. As such, C<format> is now a simple getter/setter
+for the format of a given currency object. The act of formatting an object has been moved to C<as_string>.
+The C<stringify> method now returns the same thing as C<as_string> instead of returning the raw numeric
+value.
+
+Version 0.3x
+
+    my $price = Handel::Currency->new(1.23);
+    
+    print $price->format('FMT_COMMON');
+
+Version 1.0
+
+    my $price = Handel::Currency->new(1.23);
+    $price->format('FMT_COMMON');
+    
+    print $price->as_string;
 
 =head2 Subclassing Changes
 
@@ -309,7 +329,7 @@ This tells the storage layer to use Handel::Compat::Currency instead of Handel::
 currency columns. If you really need to abuse the system, you can also resort to:
 
     use Handel::Currency;
-    use Handel::Compay::Currency;
+    use Handel::Compat::Currency;
     {
         no strict;
         
@@ -322,7 +342,7 @@ But don't do that. If you do, kittens will cry.
 
 =head1 SEE ALSO
 
-L<Handel::Base>, L<Handel::Storage>, L<DBIx::Class::Schema>, L<Handel::Compat>
+L<Handel::Base>, L<Handel::Storage>, L<DBIx::Class::Schema>, L<Handel::Compat>, L<Data::Currency>
 
 =head1 AUTHOR
 

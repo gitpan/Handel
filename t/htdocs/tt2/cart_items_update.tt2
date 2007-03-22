@@ -1,4 +1,4 @@
-[%# $Id: cart_items_update.tt2 1355 2006-08-07 01:51:41Z claco $ %]
+[%# $Id: cart_items_update.tt2 1767 2007-03-22 00:07:33Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
     [% IF (cart = hcart.create({
@@ -36,16 +36,16 @@
 			<id>[% cart.id %]</id>
 			<name>[% cart.name %]</name>
 			<shopper>[% cart.shopper %]</shopper>
-			<subtotal>[% cart.subtotal %]</subtotal>
+			<subtotal>[% cart.subtotal.value %]</subtotal>
 			<type>[% cart.type %]</type>
 			[% FOREACH item = cart.items.all %]
 				<item>
 					<description>[% item.description %]</description>
 					<id>[% item.id %]</id>
-					<price>[% item.price %]</price>
+					<price>[% item.price.value %]</price>
 					<quantity>[% item.quantity %]</quantity>
 					<sku>[% item.sku %]</sku>
-					<total>[% item.total %]</total>
+					<total>[% item.total.value %]</total>
 				</item>
 				[% CALL item.description('My Updated Item') %]
 				[% CALL item.price(10.13) %]
@@ -54,13 +54,13 @@
 				<updateditem>
 					<description>[% item.description %]</description>
 					<id>[% item.id %]</id>
-					<price>[% item.price %]</price>
+					<price>[% item.price.value %]</price>
 					<quantity>[% item.quantity %]</quantity>
 					<sku>[% item.sku %]</sku>
-					<total>[% item.total %]</total>
+					<total>[% item.total.value %]</total>
 				</updateditem>
 			[% END %]
-			<subtotal>[% cart.subtotal %]</subtotal>
+			<subtotal>[% cart.subtotal.value %]</subtotal>
 		</cart>
 	[% ELSE %]
 		<message>Could not find cart</message>

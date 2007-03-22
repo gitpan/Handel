@@ -1,4 +1,4 @@
-# $Id: Storage.pm 1642 2006-12-21 17:54:44Z claco $
+# $Id: Storage.pm 1647 2006-12-26 19:36:49Z claco $
 ## no critic (RequireFinalReturn)
 package Handel::Storage;
 use strict;
@@ -1024,7 +1024,7 @@ Returns a list of primary columns from the current storage object;
 This method accepts errors and converts them
 into Handel::Exception objects before throwing the error.
 
-If C<message> already a blessed object, it is just rethrown.
+If C<message> already a blessed object, it is just re thrown.
 
 =head2 remove_columns
 

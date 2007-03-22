@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_search.t 1603 2006-11-22 21:17:25Z claco $
+# $Id: cart_search.t 1767 2007-03-22 00:07:33Z claco $
 use strict;
 use warnings;
 
@@ -97,7 +97,7 @@ sub run {
         is($cart->name, 'Cart 1', 'got name');
         is($cart->description, 'Test Temp Cart 1', 'got description');
         is($cart->count, 2, 'has two items');
-        is($cart->subtotal, 5.55, 'subtotal is 5.55');
+        is($cart->subtotal+0, 5.55, 'subtotal is 5.55');
         if ($subclass ne 'Handel::Cart') {
             is($cart->custom, 'custom', 'got custom field');
         };
@@ -122,7 +122,7 @@ sub run {
         is($cart->name, 'Cart 1', 'got name');
         is($cart->description, 'Test Temp Cart 1', 'got description');
         is($cart->count, 2, 'has 2 items');
-        is($cart->subtotal, 5.55, 'subtotal is 5.55');
+        is($cart->subtotal+0, 5.55, 'subtotal is 5.55');
         if ($subclass ne 'Handel::Cart') {
             is($cart->custom, 'custom', 'got custom field');
         };
@@ -161,7 +161,7 @@ sub run {
         is($cart1->name, 'Cart 1', 'got name');
         is($cart1->description, 'Test Temp Cart 1', 'got description');
         is($cart1->count, 2, 'has 2 items');
-        is($cart1->subtotal, 5.55, 'subtotal is 5.55');
+        is($cart1->subtotal+0, 5.55, 'subtotal is 5.55');
         if ($subclass ne 'Handel::Cart') {
             is($cart1->custom, 'custom', 'got custom field');
         };
@@ -175,7 +175,7 @@ sub run {
         is($cart2->name, 'Cart 2', 'got name');
         is($cart2->description, 'Test Temp Cart 2', 'got description');
         is($cart2->count, 1, 'has 1 item');
-        is($cart2->subtotal, 9.99, 'subtotal is 9.99');
+        is($cart2->subtotal+0, 9.99, 'subtotal is 9.99');
         if ($subclass ne 'Handel::Cart') {
             is($cart2->custom, 'custom', 'got custom field');
         };
@@ -189,7 +189,7 @@ sub run {
         is($cart3->name, 'Cart 3', 'got name');
         is($cart3->description, 'Saved Cart 1', 'got description');
         is($cart3->count, 2, 'has 2 items');
-        is($cart3->subtotal, 45.51, 'subtotal is 45.51');
+        is($cart3->subtotal+0, 45.51, 'subtotal is 45.51');
         if ($subclass ne 'Handel::Cart') {
             is($cart3->custom, 'custom', 'got custom field');
         };
@@ -210,7 +210,7 @@ sub run {
         is($cart1->name, 'Cart 1', 'got name');
         is($cart1->description, 'Test Temp Cart 1', 'got description');
         is($cart1->count, 2, 'has 2 items');
-        is($cart1->subtotal, 5.55, 'subtotal is 5.55');
+        is($cart1->subtotal+0, 5.55, 'subtotal is 5.55');
         if ($subclass ne 'Handel::Cart') {
             is($cart1->custom, 'custom', 'got custom field');
         };
@@ -224,7 +224,7 @@ sub run {
         is($cart2->name, 'Cart 2', 'got name');
         is($cart2->description, 'Test Temp Cart 2', 'got description');
         is($cart2->count, 1, 'has 1 item');
-        is($cart2->subtotal, 9.99, 'subtotal is 9.99');
+        is($cart2->subtotal+0, 9.99, 'subtotal is 9.99');
         if ($subclass ne 'Handel::Cart') {
             is($cart2->custom, 'custom', 'got custom field');
         };
@@ -238,7 +238,7 @@ sub run {
         is($cart3->name, 'Cart 3', 'got name');
         is($cart3->description, 'Saved Cart 1', 'got description');
         is($cart3->count, 2, 'has 2 items');
-        is($cart3->subtotal, 45.51, 'subtotal is 45.51');
+        is($cart3->subtotal+0, 45.51, 'subtotal is 45.51');
         if ($subclass ne 'Handel::Cart') {
             is($cart3->custom, 'custom', 'got custom field');
         };
@@ -262,7 +262,7 @@ sub run {
         is($cart->name, 'Cart 2', 'got name');
         is($cart->description, 'Test Temp Cart 2', 'got description');
         is($cart->count, 1, 'has 1 item');
-        is($cart->subtotal, 9.99, 'subtotal is 9.99');
+        is($cart->subtotal+0, 9.99, 'subtotal is 9.99');
         if ($subclass ne 'Handel::Cart') {
             is($cart->custom, 'custom', 'got custom field');
         };
@@ -286,7 +286,7 @@ sub run {
         is($cart1->name, 'Cart 1', 'got name');
         is($cart1->description, 'Test Temp Cart 1', 'got description');
         is($cart1->count, 2, 'has 2 items');
-        is($cart1->subtotal, 5.55, 'subtotal is 5.55');
+        is($cart1->subtotal+0, 5.55, 'subtotal is 5.55');
         if ($subclass ne 'Handel::Cart') {
             is($cart1->custom, 'custom', 'got custom field');
         };
@@ -300,7 +300,7 @@ sub run {
         is($cart2->name, 'Cart 2', 'got name');
         is($cart2->description, 'Test Temp Cart 2', 'got description');
         is($cart2->count, 1, 'has 1 item');
-        is($cart2->subtotal, 9.99, 'subtotal is 9.99');
+        is($cart2->subtotal+0, 9.99, 'subtotal is 9.99');
         if ($subclass ne 'Handel::Cart') {
             is($cart2->custom, 'custom', 'got custom field');
         };
@@ -314,7 +314,7 @@ sub run {
         is($cart3->name, 'Cart 3', 'got name');
         is($cart3->description, 'Saved Cart 1', 'got description');
         is($cart3->count, 2, 'has 2 items');
-        is($cart3->subtotal, 45.51, 'subtotal is 45.51');
+        is($cart3->subtotal+0, 45.51, 'subtotal is 45.51');
         if ($subclass ne 'Handel::Cart') {
             is($cart3->custom, 'custom', 'got custom field');
         };
@@ -338,7 +338,7 @@ sub run {
         is($cart1->name, 'Cart 1', 'got name');
         is($cart1->description, 'Test Temp Cart 1', 'got description');
         is($cart1->count, 2, 'has 2 items');
-        is($cart1->subtotal, 5.55, 'subtotal is 5.55');
+        is($cart1->subtotal+0, 5.55, 'subtotal is 5.55');
         if ($subclass ne 'Handel::Cart') {
             is($cart1->custom, 'custom', 'got custom field');
         };
@@ -352,7 +352,7 @@ sub run {
         is($cart2->name, 'Cart 2', 'got name');
         is($cart2->description, 'Test Temp Cart 2', 'got description');
         is($cart2->count, 1, 'has 1 item');
-        is($cart2->subtotal, 9.99, 'subtotal is 9.99');
+        is($cart2->subtotal+0, 9.99, 'subtotal is 9.99');
         if ($subclass ne 'Handel::Cart') {
             is($cart2->custom, 'custom', 'got custom field');
         };
@@ -366,7 +366,7 @@ sub run {
         is($cart3->name, 'Cart 3', 'got name');
         is($cart3->description, 'Saved Cart 1', 'got description');
         is($cart3->count, 2, 'has 2 items');
-        is($cart3->subtotal, 45.51, 'subtotal is 45.51');
+        is($cart3->subtotal+0, 45.51, 'subtotal is 45.51');
         if ($subclass ne 'Handel::Cart') {
             is($cart3->custom, 'custom', 'got custom field');
         };
@@ -408,7 +408,7 @@ sub run {
     is($cart->name, 'My Alt Cart', 'got name');
     is($cart->description, 'My Alt Cart Description', 'got description');
     is($cart->count, 0, 'has no items');
-    is($cart->subtotal, 0, 'subtotal is 0');
+    is($cart->subtotal+0, 0, 'subtotal is 0');
     is(refaddr $cart->result->storage, refaddr $storage, 'storage option used');
     is($altschema->resultset('Carts')->search({name => 'My Alt Cart'})->count, 1, 'cart found in alt storage');
     is($schema->resultset('Carts')->search({name => 'My Alt Cart'})->count, 0, 'alt cart not in class storage');

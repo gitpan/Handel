@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: compat_order_new.t 1517 2006-10-30 01:26:12Z claco $
+# $Id: compat_order_new.t 1647 2006-12-26 19:36:49Z claco $
 use strict;
 use warnings;
 
@@ -25,7 +25,7 @@ eval 'use Locale::Currency::Format';
 if (!$@) {$haslcf = 1};
 
 
-eval 'use Test::MockObject 0.07';
+eval 'use Test::MockObject 1.07';
 if (!$@) {
     my $mock = Test::MockObject->new();
 
@@ -657,8 +657,8 @@ sub run {
 
 
     SKIP: {
-        eval 'use Test::MockObject 0.07';
-        skip 'Test::MockObject not installed', 6 if $@;
+        eval 'use Test::MockObject 1.07';
+        skip 'Test::MockObject 1.07 not installed', 6 if $@;
 
         ## add a new order and test process::OK (in mock series)
         {

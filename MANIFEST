@@ -518,8 +518,6 @@ t/pod_syntax.t
 t/schema.t
 t/style_critic_core.rc
 t/style_critic_core.t
-t/style_critic_tests.rc
-t/style_critic_tests.t
 t/style_no_tabs.t
 t/strict.t
 t/SMOKE.PL

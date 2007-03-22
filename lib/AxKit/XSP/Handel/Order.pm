@@ -1,4 +1,4 @@
-# $Id: Order.pm 1595 2006-11-16 02:06:31Z claco $
+# $Id: Order.pm 1767 2007-03-22 00:07:33Z claco $
 ## no critic
 package AxKit::XSP::Handel::Order;
 use strict;
@@ -285,10 +285,12 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                     AxKit::Debug(5, "[Handel] [Order] [$tag] code=$code, format=$format, from=$from, to=$to");
 
                     if ($attr{'convert'}) {
-                        $e->append_to_script("Handel::Compat::Currency::convert(\$_xsp_handel_order_order->$tag, '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
+                        $e->append_to_script("Handel::Compat::Currency::convert(Handel::Compat::Currency->new(\$_xsp_handel_order_order->$tag->value), '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
                     } elsif ($attr{'format'}) {
-                        $e->append_to_script("Handel::Compat::Currency::format(\$_xsp_handel_order_order->$tag, '$code', '$format');\n");
+                        $e->append_to_script("Handel::Compat::Currency::format(Handel::Compat::Currency->new(\$_xsp_handel_order_order->$tag->value), '$code', '$format');\n");
                     };
+                } elsif ($tag =~ /^(subtotal|tax|handling|shipping)$/) {
+                    $e->append_to_script("\$_xsp_handel_order_order->$tag->value;\n");
                 } else {
                     $e->append_to_script("\$_xsp_handel_order_order->$tag;\n");
                 };
@@ -323,10 +325,10 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
                 return "\n\$_xsp_handel_order_new_filter{$tag} = ''";
             } elsif ($context[-1] eq 'add') {
                 return "\n\$_xsp_handel_order_add_filter{$tag} = ''";
-            } elsif ($context[-1] eq 'results' && $context[-2] eq 'add') {
-                $e->start_expr($tag);
-                $e->append_to_script("\$_xsp_handel_order_item->$tag;\n");
-            } elsif ($context[-1] eq 'results' && $context[-2] =~ /^(new|order(s?)|item(s?))$/) {
+            #} elsif ($context[-1] eq 'results' && $context[-2] eq 'add') {
+            #    $e->start_expr($tag);
+            #    $e->append_to_script("\$_xsp_handel_order_item->$tag;\n");
+            } elsif ($context[-1] eq 'results' && $context[-2] =~ /^(add|new|order(s?)|item(s?))$/) {
                 $e->start_expr($tag);
 
                 if ($tag =~ /^(price|total)$/ && ($attr{'format'} || $attr{'convert'})) {
@@ -340,16 +342,22 @@ $NS  = 'http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order';
 
                     if ($attr{'convert'}) {
                         if ($context[-2] =~ /^(new|order(s?))$/) {
-                            $e->append_to_script("Handel::Compat::Currency::convert(\$_xsp_handel_order_order->$tag, '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
+                            $e->append_to_script("Handel::Compat::Currency::convert(Handel::Compat::Currency->new(\$_xsp_handel_order_order->$tag->value), '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
                         } else {
-                            $e->append_to_script("Handel::Compat::Currency::convert(\$_xsp_handel_order_item->$tag, '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
+                            $e->append_to_script("Handel::Compat::Currency::convert(Handel::Compat::Currency->new(\$_xsp_handel_order_item->$tag->value), '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
                         };
                     } elsif ($attr{'format'}) {
                         if ($context[-2] =~ /^(new|order(s?))$/) {
-                            $e->append_to_script("Handel::Compat::Currency::format(\$_xsp_handel_order_order->$tag, '$code', '$format');\n");
+                            $e->append_to_script("Handel::Compat::Currency::format(Handel::Compat::Currency->new(\$_xsp_handel_order_order->$tag->value), '$code', '$format');\n");
                         } else {
-                            $e->append_to_script("Handel::Compat::Currency::format(\$_xsp_handel_order_item->$tag, '$code', '$format');\n");
+                            $e->append_to_script("Handel::Compat::Currency::format(Handel::Compat::Currency->new(\$_xsp_handel_order_item->$tag->value), '$code', '$format');\n");
                         };
+                    };
+                } elsif ($tag =~ /^(price|total)$/) {
+                    if ($context[-2] =~ /^(new|order(s?))$/) {
+                        $e->append_to_script("\$_xsp_handel_order_order->$tag->value;\n");
+                    } else {
+                        $e->append_to_script("\$_xsp_handel_order_item->$tag->value;\n");
                     };
                 } else {
                     if ($context[-2] =~ /^(new|order(s?))$/) {

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_items.t 1588 2006-11-14 01:52:44Z claco $
+# $Id: order_items.t 1767 2007-03-22 00:07:33Z claco $
 use strict;
 use warnings;
 
@@ -65,7 +65,7 @@ sub run {
         is($item1->orderid, $order->id);
         is($item1->sku, 'SKU1111');
         is($item1->quantity, 1);
-        is($item1->price, 1.11);
+        is($item1->price+0, 1.11);
         is($item1->description, 'Line Item SKU 1');
         if ($itemclass ne 'Handel::Order::Item') {
             is($item1->custom, 'custom');
@@ -78,7 +78,7 @@ sub run {
         is($item2->orderid, $order->id);
         is($item2->sku, 'SKU2222');
         is($item2->quantity, 2);
-        is($item2->price, 2.22);
+        is($item2->price+0, 2.22);
         is($item2->description, 'Line Item SKU 2');
         if ($itemclass ne 'Handel::Order::Item') {
             is($item2->custom, 'custom');
@@ -154,7 +154,7 @@ sub run {
         is($item1->orderid, $order->id);
         is($item1->sku, 'SKU1111');
         is($item1->quantity, 1);
-        is($item1->price, 1.11);
+        is($item1->price+0, 1.11);
         is($item1->description, 'Line Item SKU 1');
         if ($itemclass ne 'Handel::Order::Item') {
             is($item1->custom, 'custom');
@@ -167,7 +167,7 @@ sub run {
         is($item2->orderid, $order->id);
         is($item2->sku, 'SKU2222');
         is($item2->quantity, 2);
-        is($item2->price, 2.22);
+        is($item2->price+0, 2.22);
         is($item2->description, 'Line Item SKU 2');
         if ($itemclass ne 'Handel::Order::Item') {
             is($item2->custom, 'custom');
@@ -230,7 +230,7 @@ sub run {
         is($item2->orderid, $order->id);
         is($item2->sku, 'SKU2222');
         is($item2->quantity, 2);
-        is($item2->price, 2.22);
+        is($item2->price+0, 2.22);
         is($item2->description, 'Line Item SKU 2');
         if ($itemclass ne 'Handel::Order::Item') {
             is($item2->custom, 'custom');

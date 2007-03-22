@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_create.t 1504 2006-10-25 14:55:49Z claco $
+# $Id: order_create.t 1767 2007-03-22 00:07:33Z claco $
 use strict;
 use warnings;
 
@@ -22,7 +22,7 @@ BEGIN {
 };
 
 
-eval 'use Test::MockObject 0.07';
+eval 'use Test::MockObject 1.07';
 if (!$@) {
     my $mock = Test::MockObject->new();
 
@@ -243,13 +243,13 @@ sub run {
             is($order->custom, undef);
         };
 
-        is($order->subtotal->format, '0.00 USD');
-        is($order->subtotal->format('FMT_NAME'), '0.00 US Dollar');
+        is($order->subtotal->stringify, '0.00 USD');
+        is($order->subtotal->stringify('FMT_NAME'), '0.00 US Dollar');
         
         {
             local $ENV{'HandelCurrencyCode'} = 'CAD';
-            is($order->subtotal->format, '0.00 CAD');
-            is($order->subtotal->format('FMT_NAME'), '0.00 Canadian Dollar');
+            is($order->subtotal->stringify, '0.00 CAD');
+            is($order->subtotal->stringify('FMT_NAME'), '0.00 Canadian Dollar');
         };
     };
 
@@ -320,38 +320,38 @@ sub run {
         is($order->updated . '', '2005-08-23T12:53:55');
         is($order->comments, 'Rush Order Please');
         is($order->shipmethod, 'UPS Ground');
-        is($order->shipping, 1.23);
+        is($order->shipping+0, 1.23);
         if ($subclass ne 'Handel::Order') {
             is($order->custom, 'custom');
         };
 
 
-        is($order->shipping->format, '1.23 USD');
-        is($order->shipping->format('FMT_NAME'), '1.23 US Dollar');
-        is($order->handling, 4.56);
-        is($order->handling->format, '4.56 USD');
-        is($order->handling->format('FMT_NAME'), '4.56 US Dollar');
-        is($order->tax, 7.89);
-        is($order->tax->format, '7.89 USD');
-        is($order->tax->format('FMT_NAME'), '7.89 US Dollar');
-        is($order->subtotal, 10.11);
-        is($order->subtotal->format, '10.11 USD');
-        is($order->subtotal->format('FMT_NAME'), '10.11 US Dollar');
-        is($order->total, 12.13);
-        is($order->total->format, '12.13 USD');
-        is($order->total->format('FMT_NAME'), '12.13 US Dollar');
+        is($order->shipping->stringify, '1.23 USD');
+        is($order->shipping->stringify('FMT_NAME'), '1.23 US Dollar');
+        is($order->handling+0, 4.56);
+        is($order->handling->stringify, '4.56 USD');
+        is($order->handling->stringify('FMT_NAME'), '4.56 US Dollar');
+        is($order->tax+0, 7.89);
+        is($order->tax->stringify, '7.89 USD');
+        is($order->tax->stringify('FMT_NAME'), '7.89 US Dollar');
+        is($order->subtotal+0, 10.11);
+        is($order->subtotal->stringify, '10.11 USD');
+        is($order->subtotal->stringify('FMT_NAME'), '10.11 US Dollar');
+        is($order->total+0, 12.13);
+        is($order->total->stringify, '12.13 USD');
+        is($order->total->stringify('FMT_NAME'), '12.13 US Dollar');
         {
             local $ENV{'HandelCurrencyCode'} = 'CAD';
-            is($order->shipping->format, '1.23 CAD');
-            is($order->shipping->format('FMT_NAME'), '1.23 Canadian Dollar');
-            is($order->handling->format, '4.56 CAD');
-            is($order->handling->format('FMT_NAME'), '4.56 Canadian Dollar');
-            is($order->tax->format, '7.89 CAD');
-            is($order->tax->format('FMT_NAME'), '7.89 Canadian Dollar');
-            is($order->subtotal->format, '10.11 CAD');
-            is($order->subtotal->format('FMT_NAME'), '10.11 Canadian Dollar');
-            is($order->total->format, '12.13 CAD');
-            is($order->total->format('FMT_NAME'), '12.13 Canadian Dollar');
+            is($order->shipping->stringify, '1.23 CAD');
+            is($order->shipping->stringify('FMT_NAME'), '1.23 Canadian Dollar');
+            is($order->handling->stringify, '4.56 CAD');
+            is($order->handling->stringify('FMT_NAME'), '4.56 Canadian Dollar');
+            is($order->tax->stringify, '7.89 CAD');
+            is($order->tax->stringify('FMT_NAME'), '7.89 Canadian Dollar');
+            is($order->subtotal->stringify, '10.11 CAD');
+            is($order->subtotal->stringify('FMT_NAME'), '10.11 Canadian Dollar');
+            is($order->total->stringify, '12.13 CAD');
+            is($order->total->stringify('FMT_NAME'), '12.13 Canadian Dollar');
         };
 
         is($order->billtofirstname, 'Christopher');
@@ -410,12 +410,12 @@ sub run {
             is($order->custom, undef);
         };
 
-        is($order->subtotal->format, '2.22 USD');
-        is($order->subtotal->format('FMT_NAME'), '2.22 US Dollar');
+        is($order->subtotal->stringify, '2.22 USD');
+        is($order->subtotal->stringify('FMT_NAME'), '2.22 US Dollar');
         {
             local $ENV{'HandelCurrencyCode'} = 'CAD';
-            is($order->subtotal->format, '2.22 CAD');
-            is($order->subtotal->format('FMT_NAME'), '2.22 Canadian Dollar');
+            is($order->subtotal->stringify, '2.22 CAD');
+            is($order->subtotal->stringify('FMT_NAME'), '2.22 Canadian Dollar');
         };
 
         my $orderitem = $order->items->first;
@@ -431,16 +431,16 @@ sub run {
             is($orderitem->custom, undef);
         };
 
-        is($orderitem->price->format, '1.11 USD');
-        is($orderitem->price->format('FMT_NAME'), '1.11 US Dollar');
-        is($orderitem->total->format, '2.22 USD');
-        is($orderitem->total->format('FMT_NAME'), '2.22 US Dollar');
+        is($orderitem->price->stringify, '1.11 USD');
+        is($orderitem->price->stringify('FMT_NAME'), '1.11 US Dollar');
+        is($orderitem->total->stringify, '2.22 USD');
+        is($orderitem->total->stringify('FMT_NAME'), '2.22 US Dollar');
         {
             local $ENV{'HandelCurrencyCode'} = 'CAD';
-            is($orderitem->price->format, '1.11 CAD');
-            is($orderitem->price->format('FMT_NAME'), '1.11 Canadian Dollar');
-            is($orderitem->total->format, '2.22 CAD');
-            is($orderitem->total->format('FMT_NAME'), '2.22 Canadian Dollar');
+            is($orderitem->price->stringify, '1.11 CAD');
+            is($orderitem->price->stringify('FMT_NAME'), '1.11 Canadian Dollar');
+            is($orderitem->total->stringify, '2.22 CAD');
+            is($orderitem->total->stringify('FMT_NAME'), '2.22 Canadian Dollar');
         };
     };
 
@@ -475,12 +475,12 @@ sub run {
         };
 
 
-        is($order->subtotal->format, '2.22 USD');
-        is($order->subtotal->format('FMT_NAME'), '2.22 US Dollar');
+        is($order->subtotal->stringify, '2.22 USD');
+        is($order->subtotal->stringify('FMT_NAME'), '2.22 US Dollar');
         {
             local $ENV{'HandelCurrencyCode'} = 'CAD';
-            is($order->subtotal->format, '2.22 CAD');
-            is($order->subtotal->format('FMT_NAME'), '2.22 Canadian Dollar');
+            is($order->subtotal->stringify, '2.22 CAD');
+            is($order->subtotal->stringify('FMT_NAME'), '2.22 Canadian Dollar');
         };
 
         my $orderitem = $order->items->first;
@@ -496,16 +496,16 @@ sub run {
             is($orderitem->custom, undef);
         };
 
-        is($orderitem->price->format, '1.11 USD');
-        is($orderitem->price->format('FMT_NAME'), '1.11 US Dollar');
-        is($orderitem->total->format, '2.22 USD');
-        is($orderitem->total->format('FMT_NAME'), '2.22 US Dollar');
+        is($orderitem->price->stringify, '1.11 USD');
+        is($orderitem->price->stringify('FMT_NAME'), '1.11 US Dollar');
+        is($orderitem->total->stringify, '2.22 USD');
+        is($orderitem->total->stringify('FMT_NAME'), '2.22 US Dollar');
         {
             local $ENV{'HandelCurrencyCode'} = 'CAD';
-            is($orderitem->price->format, '1.11 CAD');
-            is($orderitem->price->format('FMT_NAME'), '1.11 Canadian Dollar');
-            is($orderitem->total->format, '2.22 CAD');
-            is($orderitem->total->format('FMT_NAME'), '2.22 Canadian Dollar');
+            is($orderitem->price->stringify, '1.11 CAD');
+            is($orderitem->price->stringify('FMT_NAME'), '1.11 Canadian Dollar');
+            is($orderitem->total->stringify, '2.22 CAD');
+            is($orderitem->total->stringify('FMT_NAME'), '2.22 Canadian Dollar');
         };
     };
 
@@ -664,16 +664,16 @@ sub run {
         isa_ok($order, 'Handel::Order');
         isa_ok($order, $subclass);
         is($order->count, 1);
-        is($order->subtotal, 6.66);
+        is($order->subtotal+0, 6.66);
 
         my $orderitem = $order->items->first;
         isa_ok($orderitem, 'Handel::Order::Item');
         isa_ok($orderitem, $itemclass);
         is($orderitem->sku, 'sku2');
         is($orderitem->quantity, 3);
-        is($orderitem->price, 2.22);
+        is($orderitem->price+0, 2.22);
         is($orderitem->description, 'My Second Item');
-        is($orderitem->total, 6.66);
+        is($orderitem->total+0, 6.66);
         is($orderitem->orderid, $order->id);
     };
 
@@ -692,8 +692,8 @@ sub run {
     
 
     SKIP: {
-        eval 'use Test::MockObject 0.07';
-        skip 'Test::MockObject not installed', 7 if $@;
+        eval 'use Test::MockObject 1.07';
+        skip 'Test::MockObject 1.07 not installed', 7 if $@;
 
         ## add a new order and test process::OK (in mock series)
         {
@@ -737,7 +737,7 @@ sub run {
     is($order->shopper, '88888888-8888-8888-8888-888888888888');
     is($order->type, ORDER_TYPE_SAVED);
     is($order->count, 0);
-    is($order->subtotal, 0);
+    is($order->subtotal+0, 0);
     is(refaddr $order->result->storage, refaddr $storage, 'storage option used');
     is($altschema->resultset('Orders')->search({id => $order->id})->count, 1, 'order found in alt storage');
     is($schema->resultset('Orders')->search({id => $order->id})->count, 0, 'alt order not in class storage');

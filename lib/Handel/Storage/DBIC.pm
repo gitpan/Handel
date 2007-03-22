@@ -1,4 +1,4 @@
-# $Id: DBIC.pm 1625 2006-12-15 01:01:06Z claco $
+# $Id: DBIC.pm 1672 2007-01-27 02:47:25Z claco $
 ## no critic (ProhibitExcessComplexity)
 package Handel::Storage::DBIC;
 use strict;
@@ -607,6 +607,7 @@ sub _configure_schema_instance {
         if ($item_storage->currency_columns) {
             my $currency_class = $item_storage->currency_class;
             foreach my $column ($item_storage->currency_columns) {
+                next unless $item_source_class->has_column($column); ## no critic
                 $item_source_class->inflate_column($column, {
                     inflate => sub {
                         my ($value, $row) = @_;

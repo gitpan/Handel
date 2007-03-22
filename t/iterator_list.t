@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: iterator_list.t 1568 2006-11-11 01:13:31Z claco $
+# $Id: iterator_list.t 1647 2006-12-26 19:36:49Z claco $
 use strict;
 use warnings;
 
@@ -50,8 +50,8 @@ BEGIN {
 
 
 SKIP: {
-    eval 'use Test::MockObject 0.07';
-    skip 'Test::MockObject 0.07 not installed', 30 if $@;
+    eval 'use Test::MockObject 1.07';
+    skip 'Test::MockObject 1.07 not installed', 30 if $@;
 
     Test::MockObject->fake_module('MyResult' => (
         create_instance => sub {

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: base_create_instance.t 1560 2006-11-10 02:36:54Z claco $
+# $Id: base_create_instance.t 1647 2006-12-26 19:36:49Z claco $
 use strict;
 use warnings;
 
@@ -8,11 +8,11 @@ BEGIN {
     use Handel::Test;
     use Scalar::Util qw/refaddr/;
 
-    eval 'use Test::MockObject 0.07';
+    eval 'use Test::MockObject 1.07';
     if (!$@) {
         plan tests => 12;
     } else {
-        plan skip_all => 'Test::MockObject 0.07 not installed';
+        plan skip_all => 'Test::MockObject 1.07 not installed';
     };
 
     use_ok('Handel::Base');

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_reconcile.t 1505 2006-10-25 23:57:55Z claco $
+# $Id: order_reconcile.t 1647 2006-12-26 19:36:49Z claco $
 use strict;
 use warnings;
 
@@ -25,7 +25,7 @@ eval 'use Locale::Currency::Format';
 if (!$@) {$haslcf = 1};
 
 
-eval 'use Test::MockObject 0.07';
+eval 'use Test::MockObject 1.07';
 if (!$@) {
     my $mock = Test::MockObject->new();
 

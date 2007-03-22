@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: cart_item_create.t 1603 2006-11-22 21:17:25Z claco $
+# $Id: cart_item_create.t 1767 2007-03-22 00:07:33Z claco $
 use strict;
 use warnings;
 
@@ -69,26 +69,26 @@ sub run {
         isa_ok($item, $subclass);
         ok(constraint_uuid($item->id), 'id is uuid');
         is($item->sku, 'sku1234', 'sku is set');
-        is($item->price, 1.23, 'price is 1.23');
+        is($item->price+0, 1.23, 'price is 1.23');
         is($item->quantity, 2, 'quantity is 2');
         is($item->description, 'My SKU', 'got description');
-        is($item->total, 2.46, 'total is 2.46');
+        is($item->total+0, 2.46, 'total is 2.46');
         if ($subclass ne 'Handel::Cart::Item') {
             is($item->custom, 'custom', 'got custom field');
         };
 
 
-        is($item->price->format, '1.23 USD', 'price formatted default');
-        is($item->price->format('FMT_NAME'), '1.23 US Dollar', 'price formatted using format');
-        is($item->total->format, '2.46 USD', 'total formatted default');
-        is($item->total->format('FMT_NAME'), '2.46 US Dollar', 'total formatted using format');
+        is($item->price->stringify, '1.23 USD', 'price formatted default');
+        is($item->price->stringify('FMT_NAME'), '1.23 US Dollar', 'price formatted using format');
+        is($item->total->stringify, '2.46 USD', 'total formatted default');
+        is($item->total->stringify('FMT_NAME'), '2.46 US Dollar', 'total formatted using format');
         {
             local $ENV{'HandelCurrencyCode'} = 'CAD';
             
-            is($item->price->format, '1.23 CAD', 'price formatted default');
-            is($item->price->format('FMT_NAME'), '1.23 Canadian Dollar', 'price formatted using format');
-            is($item->total->format, '2.46 CAD', 'price formatted default');
-            is($item->total->format('FMT_NAME'), '2.46 Canadian Dollar', 'price formatted using format');
+            is($item->price->stringify, '1.23 CAD', 'price formatted default');
+            is($item->price->stringify('FMT_NAME'), '1.23 Canadian Dollar', 'price formatted using format');
+            is($item->total->stringify, '2.46 CAD', 'price formatted default');
+            is($item->total->stringify('FMT_NAME'), '2.46 Canadian Dollar', 'price formatted using format');
         };
         
     };
@@ -113,10 +113,10 @@ sub run {
     isa_ok($item, 'Handel::Cart::Item');
     ok(constraint_uuid($item->id), 'id is uuid');
     is($item->sku, 'sku1234', 'got sku');
-    is($item->price, 1.23, 'price is 1.23');
+    is($item->price+0, 1.23, 'price is 1.23');
     is($item->quantity, 2, 'quantity is 2');
     is($item->description, 'My Alt SKU', 'got description');
-    is($item->total, 2.46, 'total is 2.46');
+    is($item->total+0, 2.46, 'total is 2.46');
     is(refaddr $item->result->storage, refaddr $storage, 'storage option used');
     is($altschema->resultset('CartItems')->search({description => 'My Alt SKU'})->count, 1, 'sku found in alt storage');
     is($schema->resultset('CartItems')->search({description => 'My Alt SKU'})->count, 0, 'sku not in class storage');

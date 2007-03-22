@@ -1,4 +1,4 @@
-[%# $Id: order_items_as_iterator.tt2 1355 2006-08-07 01:51:41Z claco $ %]
+[%# $Id: order_items_as_iterator.tt2 1767 2007-03-22 00:07:33Z claco $ %]
 [% USE horder  = Handel.Order %]
 <body>
     [% IF (order = horder.create({
@@ -85,10 +85,10 @@
 			<billtoemail>[% order.billtoemail %]</billtoemail>
 			<comments>[% order.comments %]</comments>
 			<created>[% order.created %]</created>
-			<handling>[% order.handling %]</handling>
+			<handling>[% order.handling.value %]</handling>
 			<number>[% order.number %]</number>
 			<shipmethod>[% order.shipmethod %]</shipmethod>
-			<shipping>[% order.shipping %]</shipping>
+			<shipping>[% order.shipping.value %]</shipping>
 			<shiptosameasbillto>[% order.shiptosameasbillto %]</shiptosameasbillto>
 			<shiptofirstname>[% order.shiptofirstname %]</shiptofirstname>
 			<shiptolastname>[% order.shiptolastname %]</shiptolastname>
@@ -103,19 +103,19 @@
 			<shiptonightphone>[% order.shiptonightphone %]</shiptonightphone>
 			<shiptofax>[% order.shiptofax %]</shiptofax>
 			<shiptoemail>[% order.shiptoemail %]</shiptoemail>
-			<subtotal>[% order.subtotal %]</subtotal>
-			<total>[% order.total %]</total>
-			<tax>[% order.tax %]</tax>
+			<subtotal>[% order.subtotal.value %]</subtotal>
+			<total>[% order.total.value %]</total>
+			<tax>[% order.tax.value %]</tax>
 			<updated>[% order.updated %]</updated>
 			[% IF (items = order.items) %]
 				[% WHILE (item = items.next) %]
 					<item>
 						<description>[% item.description %]</description>
 						<id>[% item.id %]</id>
-						<price>[% item.price %]</price>
+						<price>[% item.price.value %]</price>
 						<quantity>[% item.quantity %]</quantity>
 						<sku>[% item.sku %]</sku>
-						<total>[% item.total %]</total>
+						<total>[% item.total.value %]</total>
 					</item>
 				[% END %]
 			[% END %]

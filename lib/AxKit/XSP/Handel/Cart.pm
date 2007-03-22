@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1594 2006-11-15 04:54:59Z claco $
+# $Id: Cart.pm 1767 2007-03-22 00:07:33Z claco $
 ## no critic
 package AxKit::XSP::Handel::Cart;
 use strict;
@@ -149,7 +149,7 @@ BEGIN {
 my @context = 'root';
 
 sub start_document {
-    return "use Handel::Cart;\nuse Handel::Compat::Currency;\n";
+    return "use Handel::Cart;\nuse Handel::Compat::Currency;use Handel::Currency;\n";
 };
 
 sub quoted_text {
@@ -553,10 +553,12 @@ sub new_results_shopper_start {
                     AxKit::Debug(5, "[Handel] [Cart] [$tag] code=$code, format=$format, from=$from, to=$to");
 
                     if ($attr{'convert'}) {
-                        $e->append_to_script("Handel::Compat::Currency::convert(\$_xsp_handel_cart_cart->$tag, '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
+                        $e->append_to_script("Handel::Compat::Currency::convert(Handel::Compat::Currency->new(\$_xsp_handel_cart_cart->$tag->value), '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
                     } elsif ($attr{'format'}) {
-                        $e->append_to_script("Handel::Compat::Currency::format(\$_xsp_handel_cart_cart->$tag, '$code', '$format');\n");
+                        $e->append_to_script("Handel::Compat::Currency::format(Handel::Compat::Currency->new(\$_xsp_handel_cart_cart->$tag->value), '$code', '$format');\n");
                     };
+                } elsif ($tag eq 'subtotal') {
+                    $e->append_to_script("\$_xsp_handel_cart_cart->$tag->value;\n");
                 } else {
                     $e->append_to_script("\$_xsp_handel_cart_cart->$tag;\n");
                 };
@@ -589,10 +591,10 @@ sub new_results_shopper_start {
         } elsif ($tag =~ /^(sku|price|quantity|total)$/) {
             if ($context[-1] eq 'add' && $tag ne 'total') {
                 return "\n\$_xsp_handel_cart_add_filter{$tag} = ''";
-            } elsif ($context[-1] eq 'results' && $context[-2] eq 'add') {
-                $e->start_expr($tag);
-                $e->append_to_script("\$_xsp_handel_cart_item->$tag;\n");
-            } elsif ($context[-1] eq 'results' && $context[-2] =~ /^item(s?)$/) {
+            #} elsif ($context[-1] eq 'results' && $context[-2] eq 'add') {
+            #    $e->start_expr($tag);
+            #    $e->append_to_script("\$_xsp_handel_cart_item->$tag;\n");
+            } elsif ($context[-1] eq 'results' && $context[-2] =~ /^(item(s?)|add)$/) {
                 $e->start_expr($tag);
 
                 if ($tag =~ /^(price|total)$/ && ($attr{'format'} || $attr{'convert'})) {
@@ -605,10 +607,12 @@ sub new_results_shopper_start {
                     AxKit::Debug(5, "[Handel] [Cart] [$tag] code=$code, format=$format, from=$from, to=$to");
 
                     if ($attr{'convert'}) {
-                        $e->append_to_script("Handel::Compat::Currency::convert(\$_xsp_handel_cart_item->$tag, '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
+                        $e->append_to_script("Handel::Compat::Currency::convert(Handel::Compat::Currency->new(\$_xsp_handel_cart_item->$tag->value), '$from', '$to', '".($attr{'format'}||'')."', '$format');\n");
                     } elsif ($attr{'format'}) {
-                        $e->append_to_script("Handel::Compat::Currency::format(\$_xsp_handel_cart_item->$tag, '$code', '$format');\n");
+                        $e->append_to_script("Handel::Compat::Currency::format(Handel::Compat::Currency->new(\$_xsp_handel_cart_item->$tag->value), '$code', '$format');\n");
                     };
+                } elsif ($tag =~ /^(price|total)$/) {
+                    $e->append_to_script("\$_xsp_handel_cart_item->$tag->value;\n");
                 } else {
                     $e->append_to_script("\$_xsp_handel_cart_item->$tag;\n");
                 };

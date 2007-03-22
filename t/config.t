@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: config.t 1557 2006-11-09 15:03:02Z claco $
+# $Id: config.t 1647 2006-12-26 19:36:49Z claco $
 ## no critic (ProhibitPackageVars)
 use strict;
 use warnings;
@@ -37,7 +37,7 @@ is($Handel::ConfigReader::MOD_PERL, 0, 'MOD_PERL should be zero');
 
 ## test defaults and their way through get/tied hash
 {
-    local $Handel::ConfigReader::Defaults{'MyDefault'} = 'Default';
+    local $Handel::ConfigReader::DEFAULTS{'MyDefault'} = 'Default';
 
     ok(exists $cfg->{'MyDefault'}, 'MyDefault exists');
     is($cfg->get('MyDefault'), 'Default', 'get MyDefault returns default from %Defaults');
@@ -74,7 +74,7 @@ is($Handel::ConfigReader::MOD_PERL, 0, 'MOD_PERL should be zero');
 
 ## send a ref through the werks
 {
-    local %Handel::ConfigReader::Defaults = ('MP1DefaultRef' => {});
+    local %Handel::ConfigReader::DEFAULTS = ('MP1DefaultRef' => {});
     isa_ok($cfg->{'MP1DefaultRef'}, 'HASH', 'return ref passed through defaults');
 };
 

@@ -1,12 +1,12 @@
-# $Id: ConfigReader.pm 1551 2006-11-07 02:03:05Z claco $
+# $Id: ConfigReader.pm 1647 2006-12-26 19:36:49Z claco $
 package Handel::ConfigReader;
 use strict;
 use warnings;
-use vars qw/%Defaults $MOD_PERL/;
+use vars qw/%DEFAULTS $MOD_PERL/;
 
 my $instance;
 
-%Defaults = (
+%DEFAULTS = (
     HandelMaxQuantityAction => 'Adjust',
     HandelCurrencyCode      => 'USD',
     HandelCurrencyFormat    => 'FMT_STANDARD'
@@ -16,14 +16,14 @@ BEGIN {
     use Tie::Hash;
     use base qw/Tie::StdHash/;
 
-    if (exists $ENV{MOD_PERL_API_VERSION} && $ENV{MOD_PERL_API_VERSION} == 2) {
+    if (exists $ENV{'MOD_PERL_API_VERSION'} && $ENV{'MOD_PERL_API_VERSION'} == 2) {
         require Apache2::RequestRec;
         require Apache2::RequestUtil;
         require Apache2::RequestIO;
         require Apache2::ServerUtil;
 
         $MOD_PERL = 2;
-    } elsif ($ENV{MOD_PERL}) {
+    } elsif ($ENV{'MOD_PERL'}) {
         require Apache;
 
         $MOD_PERL = 1;
@@ -50,7 +50,7 @@ sub instance {
 
 sub get {
     my ($self, $key) = (shift, shift);
-    my $default = defined $_[0] ? shift : $Defaults{$key};
+    my $default = defined $_[0] ? shift : $DEFAULTS{$key};
     my $value = $self->{$key} || undef;
 
     return defined $value ? $value : $default;
@@ -58,7 +58,7 @@ sub get {
 
 sub FETCH {
     my ($self, $key) = @_;
-    my $default = $Defaults{$key};
+    my $default = $DEFAULTS{$key};
     my $value;
 
     if ($MOD_PERL == 2) {

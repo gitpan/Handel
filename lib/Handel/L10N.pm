@@ -1,4 +1,5 @@
-# $Id: L10N.pm 1441 2006-09-27 02:48:09Z claco $
+# $Id: L10N.pm 1647 2006-12-26 19:36:49Z claco $
+## no critic (ProhibitPackageVars)
 package Handel::L10N;
 use strict;
 use warnings;

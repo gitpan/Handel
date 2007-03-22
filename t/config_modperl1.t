@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: config_modperl1.t 1557 2006-11-09 15:03:02Z claco $
+# $Id: config_modperl1.t 1647 2006-12-26 19:36:49Z claco $
 ## no critic (ProhibitPackageVars, ProhibitStringyEval)
 use strict;
 use warnings;
@@ -10,7 +10,7 @@ BEGIN {
 
     local $ENV{'MOD_PERL'} = 1;
 
-    eval 'use Test::MockObject 0.07';
+    eval 'use Test::MockObject 1.07';
     if (!$@) {
         plan tests => 9;
 
@@ -28,7 +28,7 @@ BEGIN {
             server  => sub {shift @servers}
         ));
     } else {
-        plan skip_all => 'Test::MockObject 0.07 not installed';
+        plan skip_all => 'Test::MockObject 1.07 not installed';
     };
 
     use_ok('Handel::ConfigReader');
@@ -58,13 +58,13 @@ is($cfg->{'MP1Setting'}, 'MP1ServerHere', 'return server dir_config next');
 
 ## return from defaults if all else fails
 {
-    local %Handel::ConfigReader::Defaults = ('MP1Default' => 'MP1DefaultHere');
+    local %Handel::ConfigReader::DEFAULTS = ('MP1Default' => 'MP1DefaultHere');
     is($cfg->{'MP1Default'}, 'MP1DefaultHere', 'return from defaults on empty dir_config and ENV');
 };
 
 
 ## return undef when dir_config, ENV and defaults fail
 {
-    local %Handel::ConfigReader::Defaults = ('MP1Default' => undef);
+    local %Handel::ConfigReader::DEFAULTS = ('MP1Default' => undef);
     is($cfg->{'MP1Default'}, undef, 'return undef when dir_config, ENV and defaults fail');
 };

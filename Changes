@@ -1,5 +1,16 @@
 Revision history for Perl module Handel
 
+0.99_17 Wed Mar 21 20:11:24 2007
+    - Renamed ConfigReaders %Defaults to %DEFAULTS
+    - Removed t/style_critic_tests. ETOOMUCHWORKFORLITTLEBENEFIT
+    - Updated Test::MockObject in tests to 1.07
+    - Fixed destroy in Order
+    - Fixed has_column check when setting item currency columns
+
+    BREAKING API CHANGE:
+    - Handel::Currency isa Data::Currency
+    - H::C::format moved to as_string; now just returns the format
+
 0.99_16 Thur Dec 21 16:21:15 2006
     - Added \%options/order_by to search/items in Cart/Order
     - Added has_column to DBIC Storage to use ResultSource->has_column

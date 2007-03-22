@@ -1,4 +1,4 @@
-[%# $Id: cart_delete.tt2 1355 2006-08-07 01:51:41Z claco $ %]
+[%# $Id: cart_delete.tt2 1767 2007-03-22 00:07:33Z claco $ %]
 [% USE hcart  = Handel.Cart %]
 <body>
     [% IF (cart = hcart.create({
@@ -32,7 +32,7 @@
 			<id>[% cart.id %]</id>
 			<name>[% cart.name %]</name>
 			<shopper>[% cart.shopper %]</shopper>
-			<subtotal>[% cart.subtotal %]</subtotal>
+			<subtotal>[% cart.subtotal.value %]</subtotal>
 			<type>[% cart.type %]</type>
 		</cart>
 	[% ELSE %]
@@ -49,11 +49,11 @@
 			<id>[% cart.id %]</id>
 			<name>[% cart.name %]</name>
 			<shopper>[% cart.shopper %]</shopper>
-			<subtotal>[% cart.subtotal %]</subtotal>
+			<subtotal>[% cart.subtotal.value %]</subtotal>
 			<type>[% cart.type %]</type>
 			[% CALL cart.delete({id => '2505E956-D5A6-47B0-AEB5-D19429FCA5FD'}) %]
 			<count>[% cart.count %]</count>
-			<subtotal>[% cart.subtotal %]</subtotal>
+			<subtotal>[% cart.subtotal.value %]</subtotal>
 		</cart>
 	[% ELSE %]
 		<message>Could not find cart</message>

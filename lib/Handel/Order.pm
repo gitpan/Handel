@@ -1,4 +1,4 @@
-# $Id: Order.pm 1586 2006-11-13 21:42:48Z claco $
+# $Id: Order.pm 1705 2007-02-04 02:17:33Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -172,7 +172,7 @@ sub delete {
 sub destroy {
     my ($self, $filter, $opts) = @_;
 
-    if (ref $self) {
+    if (blessed $self && !defined $filter) {
         my $result = $self->result->delete;
         if ($result) {
             undef ($self);

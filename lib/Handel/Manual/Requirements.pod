@@ -46,6 +46,10 @@ Version 0.16 or greater.
 
 Version 0.20 or greater.
 
+=head3 Data::Currency
+
+Version 0.03 or greater.
+
 =head3 Error
 
 Version 0.14 or greater.

@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: compat_currency.t 1511 2006-10-27 18:40:38Z claco $
+# $Id: compat_currency.t 1767 2007-03-22 00:07:33Z claco $
 use strict;
 use warnings;
-use Test::More tests => 37;
+use Test::More tests => 24;
 
 BEGIN {
     use_ok('Handel::Compat::Currency');
@@ -16,34 +16,26 @@ BEGIN {
     isa_ok($currency, 'Handel::Compat::Currency');
     is($currency, 1.2);
 
-    is($currency->format, '1.20 USD');
-    is($currency->format('CAD'), '1.20 CAD');
-    is($currency->format(undef, 'FMT_NAME'), '1.20 US Dollar');
-    is($currency->format('CAD', 'FMT_NAME'), '1.20 Canadian Dollar');
-    
-    is($currency->code, undef);
-    is($currency->name, 'US Dollar');
 
-    $currency->code('DKK');
-    is($currency->code, 'DKK');
-    is($currency->name, 'Danish Krone');
-    is($currency->name('JPY'), 'Yen');
-
-    $currency->code(undef);
-
-    try {
-        $currency->code('CRAP');
-
-        fail;
-    } catch Handel::Exception::Argument with {
-        pass;
-    } otherwise {
-        fail;
+    eval 'use Locale::Currency::Format';
+    if ($@) {
+        is($currency->format, 1.2);
+        is($currency->format('CAD'), 1.2);
+        is($currency->format(undef, 'FMT_NAME'), 1.2);
+        is($currency->format('CAD', 'FMT_NAME'), 1.2);
+    } else {
+        is($currency->format, '1.20 USD');
+        is($currency->format('CAD'), '1.20 CAD');
+        is($currency->format(undef, 'FMT_NAME'), '1.20 US Dollar');
+        is($currency->format('CAD', 'FMT_NAME'), '1.20 Canadian Dollar');
     };
 };
 
 
-{
+SKIP: {
+    eval 'use Finance::Currency::Convert::WebserviceX 0.03';
+    skip 'Finance::Currency::Convert::WebserviceX 0.03 not installed', 8 if $@;
+
     my $currency = Handel::Compat::Currency->new(1);
     isa_ok($currency, 'Handel::Compat::Currency');
     is($currency, 1);
@@ -76,48 +68,12 @@ BEGIN {
         is($currency->convert(undef, 'CAD'), undef);
         ok($currency->convert(undef, 'USD'));
     }
-
-    $currency->code('USD');
-    is($currency->code, 'USD');
-    is($currency->convert(undef, 'USD'), undef);
-    is($currency->convert, undef);
-
-    {
-        $currency->code(undef);
-        local $ENV{'HandelCurrencyCode'} = '';
-        local $Handel::ConfigReader::Defaults{'HandelCurrencyCode'} = '';
-
-        is($currency->convert, undef);
-
-
-        try {
-            $currency->convert(undef, 'CAD');
-
-            fail;
-        } catch Handel::Exception::Argument with {
-            pass;
-        } otherwise {
-            fail;
-        };
-    };
-
-
-    {
-        $currency->code(undef);
-        local $ENV{'HandelCurrencyCode'} = 'USD';
-
-        is($currency->convert, undef);
-    };
-
-    {
-        no warnings 'redefine';
-        local *Handel::Currency::convert = sub {};
-        is($currency->convert('USD', 'CAD', 1), undef);
-    };
 };
 
+SKIP: {
+    eval 'use Locale::Currency';
+    skip 'Locale::Currency not installed', 4 if $@;
 
-{
     my $currency = Handel::Compat::Currency->new(1);
     isa_ok($currency, 'Handel::Compat::Currency');
     is($currency, 1);
@@ -143,8 +99,12 @@ BEGIN {
     };
 };
 
+SKIP: {
+    eval 'use Locale::Currency';
+    eval 'use Finance::Currency::Convert::WebserviceX 0.03' if !$@;
+    eval 'use Locale::Currency::Format' if !$@;
+    skip 'Format and Convert not installed', 4 if $@;
 
-{
     my $currency = Handel::Compat::Currency->new(1.23);
     isa_ok($currency, 'Handel::Compat::Currency');
     is($currency, 1.23);

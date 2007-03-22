@@ -1,4 +1,4 @@
-[%# $Id: cart_fetch.tt2 1355 2006-08-07 01:51:41Z claco $ %]
+[%# $Id: cart_fetch.tt2 1767 2007-03-22 00:07:33Z claco $ %]
 [% USE hcart = Handel.Cart %]
 [% carts = hcart.search %]
 <body>
@@ -9,7 +9,7 @@
 			<id>[% cart.id %]</id>
 			<name>[% cart.name %]</name>
 			<shopper>[% cart.shopper %]</shopper>
-			<subtotal>[% cart.subtotal %]</subtotal>
+			<subtotal>[% cart.subtotal.value %]</subtotal>
 			<type>[% cart.type %]</type>
 		</cart>
     [% END %]
