@@ -1,4 +1,4 @@
-# $Id: Order.pm 1705 2007-02-04 02:17:33Z claco $
+# $Id: Order.pm 1806 2007-04-19 00:10:05Z claco $
 package Handel::Order;
 use strict;
 use warnings;
@@ -176,7 +176,7 @@ sub destroy {
         my $result = $self->result->delete;
         if ($result) {
             undef ($self);
-        } 
+        };
         return $result;
     } else {
         throw Handel::Exception::Argument( -details =>
@@ -262,7 +262,7 @@ sub reconcile {
     ) if ( ## no critic
             (ref($cart) && !blessed($cart) && ref($cart) ne 'HASH') ||
             (blessed($cart) && !$cart->isa('Handel::Cart'))
-    ); 
+    );
 
     if (ref $cart eq 'HASH') {
         $cart = $self->cart_class->search($cart)->first;

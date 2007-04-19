@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: style_critic_core.t 1562 2006-11-10 03:54:54Z claco $
+# $Id: style_critic_core.t 1806 2007-04-19 00:10:05Z claco $
 use strict;
 use warnings;
 
@@ -9,8 +9,11 @@ BEGIN {
 
     plan skip_all => 'set TEST_CRITIC or TEST_PRIVATE to enable this test' unless $ENV{TEST_CRITIC} || $ENV{TEST_PRIVATE};
 
-    eval 'use Test::Perl::Critic 0.08';
-    plan skip_all => 'Test::Perl::Critic 0.08 not installed' if $@;
+    eval 'use Test::Perl::Critic 1.01';
+    plan skip_all => 'Test::Perl::Critic 1.01 not installed' if $@;
+
+    eval 'use Perl::Critic 1.051';
+    plan skip_all => 'Perl::Critic 1.051 not installed' if $@;
 };
 
 Test::Perl::Critic->import(

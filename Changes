@@ -1,5 +1,12 @@
 Revision history for Perl module Handel
 
+0.99_18 Wed Apr 18 19:55:09 2007
+    - Added --version to handel.pl/handel.bat
+    - Fixed Handel::Compat::Currency pod
+    - Updated prereq to use DBIx::Class 0.07999_02
+    - Added skips for DBD::SQLite 1.13 (teh devil) causing failing tests
+    - Updated Perl::Critic tests
+
 0.99_17 Wed Mar 21 20:11:24 2007
     - Renamed ConfigReaders %Defaults to %DEFAULTS
     - Removed t/style_critic_tests. ETOOMUCHWORKFORLITTLEBENEFIT

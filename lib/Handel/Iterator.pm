@@ -1,4 +1,4 @@
-# $Id: Iterator.pm 1551 2006-11-07 02:03:05Z claco $
+# $Id: Iterator.pm 1806 2007-04-19 00:10:05Z claco $
 ## no critic (ProhibitAmbiguousNames, RequireFinalReturn)
 package Handel::Iterator;
 use strict;
@@ -69,11 +69,11 @@ sub create_result {
         $storage = $self->storage;
     };
 
-    throw Handel::Exception::Argument( -text => 
+    throw Handel::Exception::Argument( -text =>
         translate('NO_RESULT')
     ) unless $result; ## no critic
 
-    throw Handel::Exception::Argument( -text => 
+    throw Handel::Exception::Argument( -text =>
         translate('NO_STORAGE')
     ) unless $storage; ## no critic
 

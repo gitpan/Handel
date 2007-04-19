@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: handel.pl 1600 2006-11-22 01:42:06Z claco $
+# $Id: handel.pl 1770 2007-03-22 00:49:53Z claco $
 use strict;
 use warnings;
 
@@ -15,6 +15,7 @@ my $email   = 'author@example.com';
 my $builder = 'ExtUtils::MakeMaker';
 my $force   = 0;
 my $verbose = 1;
+my $version = 0;
 my $distro;
 my $directory;
 
@@ -26,8 +27,15 @@ GetOptions(
     'directory|dir=s' => \$directory,
     'builder=s'       => \$builder,
     'force'           => \$force,
-    'verbose!'        => \$verbose
+    'verbose!'        => \$verbose,
+    'version'         => \$version
 ) || pod2usage(1);
+
+if ($version) {
+    require Handel;
+    print "Handel ", Handel->VERSION, "\n";
+    exit;
+};
 
 pod2usage(1) if ($help || !$ARGV[0]);
 
@@ -71,6 +79,7 @@ Options:
     --builder    ExtUtils::MakeMaker (default) or Module::Build
     --force      Overwrite existing files
     --noverbose  Turn off progress messages
+    --version    The installed version
 
 Example:
 

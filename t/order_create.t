@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_create.t 1767 2007-03-22 00:07:33Z claco $
+# $Id: order_create.t 1806 2007-04-19 00:10:05Z claco $
 use strict;
 use warnings;
 
@@ -185,6 +185,10 @@ sub run {
         };
     };
 
+SKIP: {
+    if (DBD::SQLite->VERSION eq '1.13') {
+        skip 'DBD::SQLite 1.13 wonky on some platforms', 2;
+    };
 
     ## test for raw db key violation
     {
@@ -207,6 +211,7 @@ sub run {
             fail;
         };
     };
+};
 
 
     ## add a new temp order and test auto id creation

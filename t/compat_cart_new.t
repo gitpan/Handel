@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: compat_cart_new.t 1470 2006-10-13 15:50:23Z claco $
+# $Id: compat_cart_new.t 1806 2007-04-19 00:10:05Z claco $
 use strict;
 use warnings;
 
@@ -135,6 +135,10 @@ sub run {
         };
     };
 
+SKIP: {
+    if (DBD::SQLite->VERSION eq '1.13') {
+        skip 'DBD::SQLite 1.13 wonky on some platforms', 1;
+    };
 
     ## test for raw db key violation
     {
@@ -151,6 +155,7 @@ sub run {
             fail;
         };
     };
+};
 
 
     ## add a new temp cart and test auto id creation
