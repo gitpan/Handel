@@ -1,4 +1,4 @@
-# $Id: L10N.pm 1647 2006-12-26 19:36:49Z claco $
+# $Id: L10N.pm 1899 2007-06-21 02:26:51Z claco $
 ## no critic (ProhibitPackageVars)
 package Handel::L10N;
 use strict;
@@ -54,6 +54,10 @@ If you have the time and can do a language, the help would be much appreciated.
 If you're going to email a translation module, please Gzip it first. It's not
 uncommon for an email server along the way to trash UTF-8 characters in the
 .pm attachment text.
+
+There is also a t/l10n_lexicon_synced.t test that ensures that each lexicon
+has the same number of keys as the English version. Please make sure to
+run/update that test before submitting your lexicon.
 
 =head1 FUNCTIONS
 

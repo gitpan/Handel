@@ -59,8 +59,6 @@ lib/Handel/Iterator/Results.pm
 lib/Handel/L10N.pm
 lib/Handel/L10N/en_us.pm
 lib/Handel/L10N/fr.pm
-lib/Handel/L10N/zh_tw.pm
-lib/Handel/L10N/es_es.pm
 lib/Handel/Manual.pod
 lib/Handel/Manual/About.pod
 lib/Handel/Manual/Cookbook.pod

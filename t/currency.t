@@ -1,11 +1,11 @@
 #!perl -wT
-# $Id: currency.t 1767 2007-03-22 00:07:33Z claco $
+# $Id: currency.t 1897 2007-06-20 01:42:01Z claco $
 use strict;
 use warnings;
 
 BEGIN {
     use lib 't/lib';
-    use Handel::Test tests => 139;
+    use Handel::Test tests => 142;
     use Scalar::Util qw/refaddr/;
 
     eval 'use Test::MockObject 1.07';
@@ -445,6 +445,30 @@ SKIP: {
     };
 
 
+    ## throw exception when bad code is returned from code into convert
+    {
+        my $currency = Handel::Currency->new(1.23, 'USD');
+
+        try {
+            local $ENV{'LANG'} = 'en';
+
+            no warnings 'redefine';
+            local *Handel::Currency::code = sub {
+                return 'BOGUS';
+            };
+            
+            $currency->convert('CAD');
+
+            fail('no exception thrown');
+        } catch Handel::Exception::Argument with {
+            pass('Argument exception thrown');
+            like(shift, qr/currency code/i, 'currency code in message');
+        } otherwise {
+            fail('Other exception thrown');
+        };
+    };
+
+
     ## return self if to is same as from
     {
         my $currency = Handel::Currency->new(1.23, 'USD');
@@ -484,4 +508,17 @@ SKIP: {
 
     Handel::Currency->converter_class('Handel::Base');
     is(Handel::Currency->converter_class, 'Handel::Base', 'set converter_class');
+
+    Handel::Currency->converter_class('CustomConverterClass');
+    is(Handel::Currency->converter_class, 'CustomConverterClass', 'set converter_class');
 };
+
+
+package CustomConverterClass;
+use strict;
+use warnings;
+
+BEGIN {
+    use base qw/Finance::Currency::Convert::WebserviceX/;
+};
+1;

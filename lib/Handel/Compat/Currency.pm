@@ -1,4 +1,4 @@
-# $Id: Currency.pm 1806 2007-04-19 00:10:05Z claco $
+# $Id: Currency.pm 1902 2007-06-21 19:41:31Z claco $
 ## no critic
 package Handel::Compat::Currency;
 use strict;
@@ -13,30 +13,30 @@ BEGIN {
 
     use Locale::Currency;
     use Locale::Currency::Format;
+    use Finance::Currency::Convert::WebserviceX;
 };
 
 sub new {
     my ($class, $value) = @_;
-    my $self = bless {price => $value}, ref($class) || $class;
+    my $self = bless {price => $value}, $class;
 
-    eval 'use Finance::Currency::Convert::WebserviceX';
-    if (!$@) {
-        $self->{'converter'} = Finance::Currency::Convert::WebserviceX->new;
-    };
+    $self->{'converter'} = Finance::Currency::Convert::WebserviceX->new;
 
     return $self;
 };
 
 sub format {
     my ($self, $code, $format) = @_;
-
-    eval 'use Locale::Currency::Format';
-    return $self->{'price'} if $@;
-
     my $cfg = Handel->config;
 
-    eval '$format = ' .  ($format || $cfg->{'HandelCurrencyFormat'});
-    $code   ||= $cfg->{'HandelCurrencyCode'};
+    if (!$format) {
+        $format =  $cfg->{'HandelCurrencyFormat'};
+    };
+
+    eval '$format = ' .  $format;
+    if (!$code) {
+        $code = $cfg->{'HandelCurrencyCode'};
+    };
 
     throw Handel::Exception::Argument(
         -details => translate("Currency code '[_1]' is invalid or malformed", $code) . '.') unless
@@ -49,9 +49,17 @@ sub convert {
     my ($self, $from, $to, $format, $options) = @_;
     my $cfg = Handel->config;
 
-    $from ||= $cfg->{'HandelCurrencyCode'};
-    $to   ||= $cfg->{'HandelCurrencyCode'};
-    eval '$options = ' .  ($options || $cfg->{'HandelCurrencyFormat'});
+    if (!$from) {
+        $from = $cfg->{'HandelCurrencyCode'};
+    };
+    if (!$to) {
+        $to = $cfg->{'HandelCurrencyCode'};
+    };
+    if (!$options) {
+        $options = $cfg->{'HandelCurrencyFormat'};
+    };
+
+    eval '$options = ' . $options;
 
     return if uc($from) eq uc($to);
 
@@ -67,8 +75,7 @@ sub convert {
         $self->{'converter'}->convert($self->{'price'}, $from, $to) :
         undef;
 
-    eval 'use Locale::Currency::Format';
-    if (!$@ && defined $result && $format) {
+    if (defined $result && $format) {
         return _to_utf8(currency_format($to, $result, $options));
     };
 

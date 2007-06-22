@@ -1,4 +1,4 @@
-# $Id: Storage.pm 1647 2006-12-26 19:36:49Z claco $
+# $Id: Storage.pm 1903 2007-06-22 01:47:59Z claco $
 ## no critic (RequireFinalReturn)
 package Handel::Storage;
 use strict;
@@ -263,8 +263,12 @@ sub process_error { ## no critic (RequireFinalReturn)
         my $details = translate('COLUMN_VALUE_EXISTS', $1); ## no critic
 
         throw Handel::Exception::Constraint(-text => $details);
+    } elsif ($message =~ /\s*(.*)\s+value already exists/) {
+        my $details = translate('COLUMN_VALUE_EXISTS', $1); ## no critic
+
+        throw Handel::Exception::Constraint(-text => $details);
     } else {
-        throw Handel::Exception::Storage(-text => $message);
+        throw Handel::Exception::Storage(-text => "$message");
     };
 };
 
@@ -415,7 +419,11 @@ sub setup {
     };
 
     foreach my $key (keys %{$options}) {
-        $self->$key($options->{$key});
+        if ($self->can($key)) {
+            $self->$key($options->{$key});
+        } else {
+            $self->{$key} = $options->{$key};
+        };
     };
 
     return;

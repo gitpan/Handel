@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_dbic_process_error.t 1625 2006-12-15 01:01:06Z claco $
+# $Id: storage_dbic_process_error.t 1900 2007-06-21 15:27:22Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 8;
+        plan tests => 13;
     };
 
     use_ok('Handel::Storage::DBIC');
@@ -59,6 +59,20 @@ try {
 };
 
 
+## catch 'value already exists' DBIC errors
+try {
+    local $ENV{'LANG'} = 'en';
+    $storage->process_error('id value already exists');
+
+    fail('no exception thrown');
+} catch Handel::Exception::Constraint with {
+    pass('caught constraint exception');
+    like(shift, qr/id value already exists/i, 'value exists in message');
+} otherwise {
+    fail('other exception caught');
+};
+
+
 ## catch other DBIC errors
 try {
     local $ENV{'LANG'} = 'en';
@@ -69,7 +83,35 @@ try {
     fail('no exception thrown');
 } catch Handel::Exception::Storage with {
     pass('caught storage exception');
-    like(shift, qr/can't find source/i, 'source in massage');
+    like(shift, qr/can\'t find source/i, 'source in massage');
 } otherwise {
     fail('other exception caught');
 };
+
+
+## catch other blessed objects
+my $message = 'Custom Foo';
+my $error = bless(\$message, 'Foo');
+
+eval {
+    local $ENV{'LANG'} = 'en';
+    $storage->process_error($error);
+};
+if ($@) {
+    pass('caught custom exception');
+    isa_ok($@, 'Handel::Exception::Storage');
+    like($@->text, qr/Custom Foo/i, 'custom massage');
+} else {
+    fail('no exception caught');   
+};
+
+
+package Foo;
+use strict;
+use warnings;
+
+use overload
+    '""' => sub {my $self = shift; return ${$self}},
+    fallback => 1;
+
+1;

@@ -1,11 +1,11 @@
 #!perl -wT
-# $Id: storage_check_constraints.t 1555 2006-11-09 01:46:20Z claco $
+# $Id: storage_check_constraints.t 1897 2007-06-20 01:42:01Z claco $
 use strict;
 use warnings;
 
 BEGIN {
     use lib 't/lib';
-    use Handel::Test tests => 10;
+    use Handel::Test tests => 15;
 
     use_ok('Handel::Storage');
     use_ok('Handel::Exception', ':try');
@@ -31,12 +31,12 @@ try {
 };
 
 
-# do nothing if no constraints are set
+## do nothing if no constraints are set
 my $data = {};
 ok($storage->check_constraints($data), 'passed constraint checks');
 
 
-# set the constraints
+## set the constraints
 $storage->constraints({
     id => {'Check Id Format' => \&constraint_uuid, 'Check without sub' => undef}
 });
@@ -55,7 +55,20 @@ try {
     fail('other exception caught');
 };
 
-# make it work people
+## make it work people
 $data->{'id'} = '00000000-0000-0000-0000-000000000000';
 ok($storage->check_constraints($data), 'passed constraint checks');
 
+
+## test the compat/CDBI $object param
+## set the constraints
+$storage->constraints({
+    id => {'Check Id Format' => sub {
+        my ($value, $object, $column, $data) = @_;
+        is($value, '00000000-0000-0000-0000-000000000000');
+        isa_ok($object, 'Foo');
+        is($column, 'id');
+        is_deeply($data, {'id' => '00000000-0000-0000-0000-000000000000'});
+    }}
+});
+ok($storage->check_constraints($data, bless({}, 'Foo')), 'passed constraint checks');

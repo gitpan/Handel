@@ -18,10 +18,6 @@ send me an email and I'll lower the version requirements.
 
 Version 0.08 or greater.
 
-B<Until 0.08 is released, please use the DBIx-Class-current branch from the Bast repository:>
-
-    http://dev.catalystframework.org/repos/bast/branches/DBIx-Class-current/
-
 =head3 DBIx::Class::UUIDColumns
 
 Version 0.01 or greater.
@@ -94,7 +90,7 @@ This is only used in Handel::Compat.
 
 =head3 SQL::Translator
 
-Version 0.07 or greater. This is used by DBIC and the quick start code to install the schema to a db. You can
+Version 0.08 or greater. This is used by DBIC and the quick start code to install the schema to a db. You can
 ignore this requirement if you are not going to use the quick start.
 
 =head3 Locale::Currency::Format
@@ -144,7 +140,7 @@ TT plugins.
 
 =head3 Catalyst::Runtime
 
-Version 5.7001 or greater.
+Version 5.7007 or greater.
 
 Catalyst is only required if you plan on using the supplied Catalyst Cart/Order models withing a Catalyst app.
 

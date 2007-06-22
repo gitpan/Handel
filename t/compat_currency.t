@@ -1,8 +1,8 @@
 #!perl -wT
-# $Id: compat_currency.t 1767 2007-03-22 00:07:33Z claco $
+# $Id: compat_currency.t 1898 2007-06-21 02:14:24Z claco $
 use strict;
 use warnings;
-use Test::More tests => 24;
+use Test::More tests => 28;
 
 BEGIN {
     use_ok('Handel::Compat::Currency');
@@ -28,6 +28,15 @@ BEGIN {
         is($currency->format('CAD'), '1.20 CAD');
         is($currency->format(undef, 'FMT_NAME'), '1.20 US Dollar');
         is($currency->format('CAD', 'FMT_NAME'), '1.20 Canadian Dollar');
+    };
+
+    try {
+        $currency->format('CRAP');
+        fail;
+    } catch Handel::Exception::Argument with {
+        pass;
+    } otherwise {
+        fail;
     };
 };
 
@@ -111,4 +120,17 @@ SKIP: {
 
     ok($currency->convert('USD', 'CAD', 1, 'FMT_STANDARD') =~ / CAD$/);
     ok($currency->convert('USD', 'CAD', 0, 'FMT_STANDARD') !~ / CAD$/);
+
+    local $Handel::ConfigReader::DEFAULTS{'HandelCurrencyCode'} = 'CAD';
+    ok($currency->convert('USD', undef, 1, 'FMT_STANDARD') =~ / CAD$/);
+
+    undef $currency->{'converter'};
+    is($currency->convert('USD'), undef);
+};
+
+
+## worthless test for coverage purpose
+{
+    local $] = 5.006001;
+    is(Handel::Compat::Currency::_to_utf8('3.0 USD'), '3.0 USD');
 };

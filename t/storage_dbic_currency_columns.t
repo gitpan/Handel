@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_dbic_currency_columns.t 1767 2007-03-22 00:07:33Z claco $
+# $Id: storage_dbic_currency_columns.t 1896 2007-06-18 03:14:17Z claco $
 use strict;
 use warnings;
 
@@ -122,6 +122,10 @@ my $storage = Handel::Storage::DBIC->new({
     $storage->item_storage($item_storage);
 
     is($storage->item_storage->currency_code, undef, 'unset schema instance');
+
+    ## ignored. just a safety check that should never make it past the
+    ## currency_columns checks -> columns
+    push @{$item_storage->_currency_columns}, 'nonexistant';
 
     my $schema = $storage->schema_instance;
     isa_ok($schema, 'Handel::Cart::Schema');

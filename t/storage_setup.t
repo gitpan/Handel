@@ -1,11 +1,11 @@
 #!perl -wT
-# $Id: storage_setup.t 1555 2006-11-09 01:46:20Z claco $
+# $Id: storage_setup.t 1903 2007-06-22 01:47:59Z claco $
 use strict;
 use warnings;
 
 BEGIN {
     use lib 't/lib';
-    use Handel::Test tests => 21;
+    use Handel::Test tests => 22;
 
     use_ok('Handel::Storage');
     use_ok('Handel::Exception', ':try');
@@ -59,8 +59,11 @@ BEGIN {
         add_columns        => $add_columns,
         remove_columns     => $remove_columns,
         constraints        => $constraints,
-        currency_columns   => $currency_columns
+        currency_columns   => $currency_columns,
+        _does_not_exist    => 'Boo!'
     });
+
+    is($storage->{'_does_not_exist'}, 'Boo!');
 
     ## iterator_class
     is($storage->iterator_class, 'Handel::Iterator', 'iterator class is set');

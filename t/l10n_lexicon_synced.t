@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: l10n_lexicon_synced.t 1597 2006-11-19 03:26:12Z claco $
+# $Id: l10n_lexicon_synced.t 1899 2007-06-21 02:26:51Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'Module::Find not installed';
     } else {
-        plan tests => 265;
+        plan tests => 133;
         setmoduledirs('lib');
     };
 

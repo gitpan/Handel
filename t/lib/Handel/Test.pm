@@ -1,4 +1,4 @@
-# $Id: Test.pm 1601 2006-11-22 18:45:35Z claco $
+# $Id: Test.pm 1836 2007-05-12 01:36:57Z claco $
 package Handel::Test;
 use strict;
 use warnings;
@@ -44,7 +44,7 @@ sub init_schema {
     mkdir($db_dir) unless -d $db_dir;
 
     my $dsn = 'dbi:SQLite:' . $db;
-    my $schema = Handel::Test::Schema->compose_namespace($namespace)->connect($dsn);
+    my $schema = Handel::Test::Schema->compose_namespace($namespace)->connect($dsn, undef, undef, {AutoCommit => 1});
     $schema->storage->on_connect_do([
         'PRAGMA synchronous = OFF',
         'PRAGMA temp_store = MEMORY'

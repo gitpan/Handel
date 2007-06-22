@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_process.t 1767 2007-03-22 00:07:33Z claco $
+# $Id: checkout_process.t 1836 2007-05-12 01:36:57Z claco $
 use strict;
 use warnings;
 
@@ -251,7 +251,8 @@ sub run {
 
     ## Run a failing test pipeline
     {
-        my $order = Handel::Order->create({
+        $subclass->order_class->_set_storage(undef);
+        my $order = $subclass->order_class->create({
             shopper => '00000000-0000-0000-0000-000000000000',
             billtofirstname => 'BillToFirstName',
             billtolastname  => 'BillToLastName'

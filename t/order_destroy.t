@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: order_destroy.t 1767 2007-03-22 00:07:33Z claco $
+# $Id: order_destroy.t 1897 2007-06-20 01:42:01Z claco $
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'DBD::SQLite not installed';
     } else {
-        plan tests => 74;
+        plan tests => 86;
     };
 
     use_ok('Handel::Order');
@@ -123,6 +123,22 @@ sub run {
         is($remaining_items, $total_items - $related_items);
     };
 
+
+    ## Destroy orders on an instance
+    {
+        my $instance = bless {}, $subclass;
+        my $orders = $subclass->search;
+        isa_ok($orders, 'Handel::Iterator');
+        is($orders, 1, 'loaded 1 order');
+
+        $instance->destroy({
+            id => {like => '%'}
+        });
+
+        $orders = $subclass->search;
+        isa_ok($orders, 'Handel::Iterator');
+        is($orders, 0, 'no orders loaded');
+    };
 };
 
 
