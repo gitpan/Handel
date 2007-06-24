@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_has_column.t 1593 2006-11-15 02:10:36Z claco $
+# $Id: storage_has_column.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

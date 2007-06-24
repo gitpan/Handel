@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_dbic_schema_class.t 1553 2006-11-08 01:40:26Z claco $
+# $Id: storage_dbic_schema_class.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

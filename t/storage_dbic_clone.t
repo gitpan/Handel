@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_dbic_clone.t 1560 2006-11-10 02:36:54Z claco $
+# $Id: storage_dbic_clone.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

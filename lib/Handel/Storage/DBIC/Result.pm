@@ -1,4 +1,4 @@
-# $Id: Result.pm 1618 2006-12-13 03:46:25Z claco $
+# $Id: Result.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Storage::DBIC::Result;
 use strict;
 use warnings;

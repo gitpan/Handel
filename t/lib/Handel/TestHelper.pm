@@ -1,4 +1,4 @@
-# $Id: TestHelper.pm 1064 2006-01-10 00:06:26Z claco $
+# $Id: TestHelper.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::TestHelper;
 use strict;
 use warnings;

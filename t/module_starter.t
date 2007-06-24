@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: module_starter.t 1599 2006-11-21 01:57:01Z claco $
+# $Id: module_starter.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

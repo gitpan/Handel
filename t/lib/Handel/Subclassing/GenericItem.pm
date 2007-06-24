@@ -1,4 +1,4 @@
-# $Id: GenericItem.pm 1385 2006-08-25 02:42:03Z claco $
+# $Id: GenericItem.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Subclassing::GenericItem;
 use strict;
 use warnings;

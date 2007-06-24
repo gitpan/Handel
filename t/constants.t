@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: constants.t 1558 2006-11-09 15:04:57Z claco $
+# $Id: constants.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: handel.pl 1770 2007-03-22 00:49:53Z claco $
+# $Id: handel.pl 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

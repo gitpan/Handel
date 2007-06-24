@@ -1,4 +1,4 @@
-# $Id: Storage.pm 1267 2006-06-30 02:05:44Z claco $
+# $Id: Storage.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Subclassing::Storage;
 use strict;
 use warnings;

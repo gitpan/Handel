@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: l10n_lexicon_synced.t 1899 2007-06-21 02:26:51Z claco $
+# $Id: l10n_lexicon_synced.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

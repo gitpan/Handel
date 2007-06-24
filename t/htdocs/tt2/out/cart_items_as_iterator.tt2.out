@@ -1,4 +1,4 @@
-[%# $Id: cart_items_as_iterator.tt2.out 837 2005-09-19 22:56:39Z claco $ %]
+[%# $Id: cart_items_as_iterator.tt2.out 1915 2007-06-24 15:35:46Z claco $ %]
 <body>
 	<cart>
 		<count>2</count>

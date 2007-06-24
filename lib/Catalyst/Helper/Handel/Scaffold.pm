@@ -1,4 +1,4 @@
-# $Id: Scaffold.pm 1458 2006-10-08 19:38:12Z claco $
+# $Id: Scaffold.pm 1915 2007-06-24 15:35:46Z claco $
 ## no critic (ProhibitCaptureWithoutTest)
 package Catalyst::Helper::Handel::Scaffold;
 use strict;

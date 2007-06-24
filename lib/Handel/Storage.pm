@@ -1,4 +1,4 @@
-# $Id: Storage.pm 1903 2007-06-22 01:47:59Z claco $
+# $Id: Storage.pm 1915 2007-06-24 15:35:46Z claco $
 ## no critic (RequireFinalReturn)
 package Handel::Storage;
 use strict;

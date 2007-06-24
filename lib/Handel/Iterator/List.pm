@@ -1,4 +1,4 @@
-# $Id: List.pm 1551 2006-11-07 02:03:05Z claco $
+# $Id: List.pm 1915 2007-06-24 15:35:46Z claco $
 ## no critic (ProhibitAmbiguousNames)
 package Handel::Iterator::List;
 use strict;

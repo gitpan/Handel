@@ -1,4 +1,4 @@
-# $Id: Currency.pm 1767 2007-03-22 00:07:33Z claco $
+# $Id: Currency.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Currency;
 use strict;
 use warnings;

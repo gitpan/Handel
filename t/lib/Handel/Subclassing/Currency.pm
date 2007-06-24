@@ -1,4 +1,4 @@
-# $Id: Currency.pm 1255 2006-06-28 01:53:00Z claco $
+# $Id: Currency.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Subclassing::Currency;
 use strict;
 use warnings;

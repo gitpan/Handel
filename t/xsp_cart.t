@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: xsp_cart.t 1567 2006-11-11 00:44:41Z claco $
+# $Id: xsp_cart.t 1915 2007-06-24 15:35:46Z claco $
 ## no critic (RequireTestLabels)
 use strict;
 use warnings;

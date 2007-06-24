@@ -1,4 +1,4 @@
-# $Id: OrderOnly.pm 1409 2006-09-09 21:16:54Z claco $
+# $Id: OrderOnly.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Subclassing::OrderOnly;
 use strict;
 use warnings;

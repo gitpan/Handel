@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1456 2006-10-08 02:01:24Z claco $
+# $Id: Cart.pm 1915 2007-06-24 15:35:46Z claco $
 package Catalyst::Model::Handel::Cart;
 use strict;
 use warnings;

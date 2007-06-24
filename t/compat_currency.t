@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: compat_currency.t 1898 2007-06-21 02:14:24Z claco $
+# $Id: compat_currency.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 use Test::More tests => 28;

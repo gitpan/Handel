@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: constraints_uuid.t 1512 2006-10-27 23:25:34Z claco $
+# $Id: constraints_uuid.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1625 2006-12-15 01:01:06Z claco $
+# $Id: Cart.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Storage::DBIC::Cart;
 use strict;
 use warnings;

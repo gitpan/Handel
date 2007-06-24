@@ -1,4 +1,4 @@
-# $Id: Handel.pm 1601 2006-11-22 18:45:35Z claco $
+# $Id: Handel.pm 1915 2007-06-24 15:35:46Z claco $
 package Catalyst::Helper::Handel;
 use strict;
 use warnings;

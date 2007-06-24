@@ -1,4 +1,4 @@
--- $Id: handel.sqlite.sql 1311 2006-07-09 18:28:51Z claco $
+-- $Id: handel.sqlite.sql 1915 2007-06-24 15:35:46Z claco $
 CREATE TABLE cart (
 	id varchar(36) NOT NULL default '',
 	shopper varchar(36) NOT NULL default '',

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: exceptions.t 1603 2006-11-22 21:17:25Z claco $
+# $Id: exceptions.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

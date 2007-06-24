@@ -1,4 +1,4 @@
-# $Id: Constants.pm 1548 2006-11-06 01:50:49Z claco $
+# $Id: Constants.pm 1915 2007-06-24 15:35:46Z claco $
 package Template::Plugin::Handel::Constants;
 use strict;
 use warnings;

@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1441 2006-09-27 02:48:09Z claco $
+# $Id: Checkout.pm 1915 2007-06-24 15:35:46Z claco $
 ## no critic
 package AxKit::XSP::Handel::Checkout;
 use strict;

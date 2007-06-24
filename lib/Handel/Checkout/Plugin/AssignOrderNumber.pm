@@ -1,4 +1,4 @@
-# $Id: AssignOrderNumber.pm 1480 2006-10-17 23:58:11Z claco $
+# $Id: AssignOrderNumber.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Checkout::Plugin::AssignOrderNumber;
 use strict;
 use warnings;

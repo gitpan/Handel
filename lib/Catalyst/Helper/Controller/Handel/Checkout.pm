@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1475 2006-10-16 01:03:10Z claco $
+# $Id: Checkout.pm 1915 2007-06-24 15:35:46Z claco $
 ## no critic (ProhibitCaptureWithoutTest)
 package Catalyst::Helper::Controller::Handel::Checkout;
 use strict;

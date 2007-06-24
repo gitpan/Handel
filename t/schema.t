@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: schema.t 1448 2006-10-05 15:24:18Z claco $
+# $Id: schema.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

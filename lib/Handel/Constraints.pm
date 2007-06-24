@@ -1,4 +1,4 @@
-# $Id: Constraints.pm 1512 2006-10-27 23:25:34Z claco $
+# $Id: Constraints.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Constraints;
 use strict;
 use warnings;
@@ -11,6 +11,7 @@ BEGIN {
     use Handel::Exception;
     use Handel::L10N qw/translate/;
     use Locale::Currency;
+    use Scalar::Util qw/blessed/;
 };
 
 @EXPORT_OK = qw/&constraint_quantity
@@ -50,6 +51,10 @@ sub constraint_quantity {
 
 sub constraint_price {
     my $value = defined $_[0] ? shift : '';
+
+    if (blessed $value && $value->isa('Data::Currency')) {
+        $value = $value->value;
+    };
 
     return ($value =~ /^\d{1,5}(\.\d{1,2})?$/);
 };

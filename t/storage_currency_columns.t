@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: storage_currency_columns.t 1555 2006-11-09 01:46:20Z claco $
+# $Id: storage_currency_columns.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

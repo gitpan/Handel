@@ -1,4 +1,4 @@
-# $Id: TestPlugin.pm 1059 2006-01-06 01:59:25Z claco $
+# $Id: TestPlugin.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Checkout::Plugin::TestPlugin;
 use strict;
 use warnings;

@@ -1,4 +1,4 @@
-# $Id: Constants.pm 1365 2006-08-10 14:47:20Z claco $
+# $Id: Constants.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Constants;
 use strict;
 use warnings;

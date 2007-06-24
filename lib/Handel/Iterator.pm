@@ -1,4 +1,4 @@
-# $Id: Iterator.pm 1806 2007-04-19 00:10:05Z claco $
+# $Id: Iterator.pm 1915 2007-06-24 15:35:46Z claco $
 ## no critic (ProhibitAmbiguousNames, RequireFinalReturn)
 package Handel::Iterator;
 use strict;

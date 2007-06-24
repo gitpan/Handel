@@ -1,4 +1,4 @@
-# $Id: Stash.pm 1476 2006-10-16 20:41:50Z claco $
+# $Id: Stash.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Checkout::Stash;
 use strict;
 use warnings;

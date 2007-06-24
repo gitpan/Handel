@@ -1,4 +1,4 @@
-[%# $Id: checkout_phases.tt2 1167 2006-05-31 01:50:19Z claco $ %]
+[%# $Id: checkout_phases.tt2 1915 2007-06-24 15:35:46Z claco $ %]
 [% USE hcheckout = Handel.Checkout %]
 
 <body>

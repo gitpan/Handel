@@ -1,4 +1,4 @@
-# $Id: Cart.pm 1547 2006-11-06 01:28:18Z claco $
+# $Id: Cart.pm 1915 2007-06-24 15:35:46Z claco $
 package Template::Plugin::Handel::Cart;
 use strict;
 use warnings;

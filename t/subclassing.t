@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: subclassing.t 1566 2006-11-11 00:23:59Z claco $
+# $Id: subclassing.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

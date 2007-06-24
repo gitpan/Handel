@@ -1,4 +1,4 @@
-# $Id: httpd.conf.include 1594 2006-11-15 04:54:59Z claco $
+# $Id: httpd.conf.include 1915 2007-06-24 15:35:46Z claco $
 # Don't forget to change DocumentRoot, ErrorLog, db_name
 # and 'use lib' to match your system setup!!!!!
 

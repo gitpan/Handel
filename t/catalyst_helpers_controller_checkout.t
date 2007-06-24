@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_controller_checkout.t 1643 2006-12-21 21:12:15Z claco $
+# $Id: catalyst_helpers_controller_checkout.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

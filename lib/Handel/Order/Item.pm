@@ -1,4 +1,4 @@
-# $Id: Item.pm 1495 2006-10-24 00:06:19Z claco $
+# $Id: Item.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Order::Item;
 use strict;
 use warnings;

@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 1903 2007-06-22 01:47:59Z claco $
+# $Id: Makefile.PL 1915 2007-06-24 15:35:46Z claco $
 use ExtUtils::MakeMaker;
 use 5.008001;
 use strict;

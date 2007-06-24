@@ -1,4 +1,4 @@
-# $Id: Item.pm 1402 2006-09-06 23:29:59Z claco $
+# $Id: Item.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Storage::DBIC::Order::Item;
 use strict;
 use warnings;

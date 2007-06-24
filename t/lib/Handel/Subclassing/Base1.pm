@@ -1,4 +1,4 @@
-# $Id: Base1.pm 1386 2006-08-26 01:46:16Z claco $
+# $Id: Base1.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Subclassing::Base1;
 use strict;
 use warnings;

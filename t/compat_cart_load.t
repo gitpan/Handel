@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: compat_cart_load.t 1524 2006-10-31 04:02:19Z claco $
+# $Id: compat_cart_load.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

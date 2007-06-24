@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: checkout_stash.t 1476 2006-10-16 20:41:50Z claco $
+# $Id: checkout_stash.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

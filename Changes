@@ -1,5 +1,9 @@
 Revision history for Perl module Handel
 
+1.00000 Sun June 24 08:57:22 2007
+    - constraint_price now uses $currency->value if value isa
+        Data::Currency object
+
 0.99_19 Thur June 21 21:02:36 2007
     - Storage->setup now puts non-accessor keys into %$self
     - Removed incomplete L10N Lexicons
@@ -36,10 +40,9 @@ Revision history for Perl module Handel
     - Changed quickstart setup script to *_handel.pl
     - Added 0700 perms to handel.pl app script
     - Storage::process_error now only dies Handel::Exception subclasses instead
-    of
-        all blessed objects
+        of all blessed objects
     - Renamed DBIC schema classes into Schema::DBIC space, like their RDBO
-    cousins
+        cousins
 
 0.99_15 Sun Nov 12 17:50:52 2006
     - L10N files now use constant-like keys rather than english errors
@@ -60,7 +63,7 @@ Revision history for Perl module Handel
     - Added Iterator tests
     - Fixed bug in Iterator:::DBIC where first increments the resulset
     - Fixed issue in Cat Helpers that treated MyApp::Controller:: as a valid
-    name
+        name
     - Added Catalyst Model setup tests
     - Added Catalyst Scaffold Helper tests
     - Added checkout_class to Order pod
@@ -68,8 +71,7 @@ Revision history for Perl module Handel
     - Added currency_code_column to storage so DBIC inflators can set currency
         code using another column in the row
     - Removed formatting options from Currency->convert now that it always
-    returns
-        a currency object instead of formatted strings
+        returns a currency object instead of formatted strings
     - Reworked Handel::Currency to be more object like with its parameters
     - Added Handel::Compat::Currency, inserted automatically when loading
         Handel::Compat
@@ -79,7 +81,7 @@ Revision history for Perl module Handel
     - Only create currency converter when calling convert for the first time
     - Added handel.pl quickstart scripts for Module::Starter::Handel apps
     - Added Catalyst::Helper::Handel to create entire cat app w/ starter
-    subclasses
+        subclasses
     - Huge test coverage. 99% w00t!
     - Mostly Perl::Critic happy...except for some test labels
     - Probably last release before 1.0!

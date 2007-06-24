@@ -1,4 +1,4 @@
-# $Id: Base.pm 1586 2006-11-13 21:42:48Z claco $
+# $Id: Base.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Base;
 use strict;
 use warnings;

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: currency.t 1897 2007-06-20 01:42:01Z claco $
+# $Id: currency.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

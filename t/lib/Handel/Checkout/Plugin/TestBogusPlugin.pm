@@ -1,4 +1,4 @@
-# $Id: TestBogusPlugin.pm 837 2005-09-19 22:56:39Z claco $
+# $Id: TestBogusPlugin.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Checkout::Plugin::TestBogusPlugin;
 use strict;
 use warnings;

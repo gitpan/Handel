@@ -1,4 +1,4 @@
-# $Id: Order.pm 1365 2006-08-10 14:47:20Z claco $
+# $Id: Order.pm 1915 2007-06-24 15:35:46Z claco $
 package Template::Plugin::Handel::Order;
 use strict;
 use warnings;

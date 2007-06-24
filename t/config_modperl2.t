@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: config_modperl2.t 1647 2006-12-26 19:36:49Z claco $
+# $Id: config_modperl2.t 1915 2007-06-24 15:35:46Z claco $
 ## no critic (ProhibitPackageVars, ProhibitStringyEval, RequireCarping)
 use strict;
 use warnings;

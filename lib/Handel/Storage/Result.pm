@@ -1,4 +1,4 @@
-# $Id: Result.pm 1593 2006-11-15 02:10:36Z claco $
+# $Id: Result.pm 1915 2007-06-24 15:35:46Z claco $
 ## no critic (RequireFinalReturn)
 package Handel::Storage::Result;
 use strict;

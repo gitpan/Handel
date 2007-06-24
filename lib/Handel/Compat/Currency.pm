@@ -1,4 +1,4 @@
-# $Id: Currency.pm 1902 2007-06-21 19:41:31Z claco $
+# $Id: Currency.pm 1915 2007-06-24 15:35:46Z claco $
 ## no critic
 package Handel::Compat::Currency;
 use strict;

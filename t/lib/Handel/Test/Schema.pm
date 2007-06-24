@@ -1,4 +1,4 @@
-# $Id: Schema.pm 1738 2007-02-26 00:21:13Z claco $
+# $Id: Schema.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Test::Schema;
 use strict;
 use warnings;

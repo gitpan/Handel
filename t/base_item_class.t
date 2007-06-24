@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: base_item_class.t 1560 2006-11-10 02:36:54Z claco $
+# $Id: base_item_class.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

@@ -1,4 +1,4 @@
-# $Id: NotBlessedPlugin.pm 1481 2006-10-18 02:51:46Z claco $
+# $Id: NotBlessedPlugin.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Checkout::Plugin::NotBlessedPlugin;
 use strict;
 use warnings;

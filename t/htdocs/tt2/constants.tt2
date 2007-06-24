@@ -1,4 +1,4 @@
-[%# $Id: constants.tt2 1548 2006-11-06 01:50:49Z claco $ %]
+[%# $Id: constants.tt2 1915 2007-06-24 15:35:46Z claco $ %]
 [% USE Handel.Constants %]
 [% USE hconstants = Handel.Constants %]
 <body>

@@ -1,4 +1,4 @@
-# $Id: Constraints.pm 1242 2006-06-27 02:22:20Z claco $
+# $Id: Constraints.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::TestComponents::Constraints;
 use strict;
 use warnings;

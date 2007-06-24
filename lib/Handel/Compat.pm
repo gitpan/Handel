@@ -1,4 +1,4 @@
-# $Id: Compat.pm 1523 2006-10-31 02:58:19Z claco $
+# $Id: Compat.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::Compat;
 use strict;
 use warnings;

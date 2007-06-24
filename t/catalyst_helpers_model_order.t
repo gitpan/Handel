@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: catalyst_helpers_model_order.t 1574 2006-11-12 17:34:59Z claco $
+# $Id: catalyst_helpers_model_order.t 1915 2007-06-24 15:35:46Z claco $
 use strict;
 use warnings;
 

@@ -1,5 +1,5 @@
 ## no critic
-# $Id: en_us.pm 1605 2006-11-24 23:16:30Z claco $
+# $Id: en_us.pm 1915 2007-06-24 15:35:46Z claco $
 package Handel::L10N::en_us;
 use strict;
 use warnings;
