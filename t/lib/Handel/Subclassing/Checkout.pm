@@ -1,4 +1,4 @@
-# $Id: Checkout.pm 1915 2007-06-24 15:35:46Z claco $
+# $Id: /local/Handel/trunk/t/lib/Handel/Subclassing/Checkout.pm 1638 2007-06-24T15:35:46.298350Z claco  $
 package Handel::Subclassing::Checkout;
 use strict;
 use warnings;

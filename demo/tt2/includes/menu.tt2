@@ -1,4 +1,4 @@
-[%# $Id: menu.tt2 1915 2007-06-24 15:35:46Z claco $ %]
+[%# $Id: /local/Handel/trunk/demo/tt2/includes/menu.tt2 1638 2007-06-24T15:35:46.298350Z claco  $ %]
 <ul>
 	<li><a href="index.tt2">Home</a></li>
 	<li><a href="products.tt2">Products</a></li>

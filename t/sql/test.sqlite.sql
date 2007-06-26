@@ -1,4 +1,4 @@
--- $Id: test.sqlite.sql 1915 2007-06-24 15:35:46Z claco $
+-- $Id: /local/Handel/trunk/t/sql/test.sqlite.sql 1638 2007-06-24T15:35:46.298350Z claco  $
 CREATE TABLE cart (
 	id varchar(36) NOT NULL default '',
 	shopper varchar(36) NOT NULL default '',

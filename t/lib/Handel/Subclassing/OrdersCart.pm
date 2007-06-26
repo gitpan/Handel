@@ -1,4 +1,4 @@
-# $Id: OrdersCart.pm 1915 2007-06-24 15:35:46Z claco $
+# $Id: /local/Handel/trunk/t/lib/Handel/Subclassing/OrdersCart.pm 1638 2007-06-24T15:35:46.298350Z claco  $
 package Handel::Subclassing::OrdersCart;
 use strict;
 use warnings;

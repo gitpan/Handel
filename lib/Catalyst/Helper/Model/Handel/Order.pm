@@ -1,4 +1,4 @@
-# $Id: Order.pm 1915 2007-06-24 15:35:46Z claco $
+# $Id: /local/Handel/trunk/lib/Catalyst/Helper/Model/Handel/Order.pm 1638 2007-06-24T15:35:46.298350Z claco  $
 package Catalyst::Helper::Model::Handel::Order;
 use strict;
 use warnings;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: index.xsp 1915 2007-06-24 15:35:46Z claco $ -->
+<!-- $Id: /local/Handel/trunk/demo/axkit/index.xsp 1638 2007-06-24T15:35:46.298350Z claco  $ -->
 <?xml-stylesheet href="NULL" type="application/x-xsp"?>
 <?xml-stylesheet href="style/xsl/to_xhtml.xsl" type="text/xsl" media="screen"?>
 <!DOCTYPE page [

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: currency.t 1915 2007-06-24 15:35:46Z claco $
+# $Id: /local/Handel/trunk/t/currency.t 1684 2007-06-26T03:17:42.962862Z claco  $
 use strict;
 use warnings;
 
@@ -343,7 +343,7 @@ BEGIN {
 ## test convert
 SKIP: {
     eval 'use Test::MockObject 1.07';
-    skip 'Test::MockObject 1.07 not installed', 46 if $@;
+    skip 'Test::MockObject 1.07 not installed', 48 if $@;
 
 
     ## convert with code

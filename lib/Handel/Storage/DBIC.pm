@@ -1,4 +1,4 @@
-# $Id: DBIC.pm 1915 2007-06-24 15:35:46Z claco $
+# $Id: /local/Handel/trunk/lib/Handel/Storage/DBIC.pm 1638 2007-06-24T15:35:46.298350Z claco  $
 ## no critic (ProhibitExcessComplexity)
 package Handel::Storage::DBIC;
 use strict;

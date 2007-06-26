@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: compat_order_new.t 1915 2007-06-24 15:35:46Z claco $
+# $Id: /local/Handel/trunk/t/compat_order_new.t 1684 2007-06-26T03:17:42.962862Z claco  $
 use strict;
 use warnings;
 
@@ -663,7 +663,7 @@ SKIP: {
 
     SKIP: {
         eval 'use Test::MockObject 1.07';
-        skip 'Test::MockObject 1.07 not installed', 6 if $@;
+        skip 'Test::MockObject 1.07 not installed', 7 if $@;
 
         ## add a new order and test process::OK (in mock series)
         {

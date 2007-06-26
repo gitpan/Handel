@@ -1,4 +1,4 @@
-# $Id: Validation.pm 1915 2007-06-24 15:35:46Z claco $
+# $Id: /local/Handel/trunk/lib/Handel/Components/Validation.pm 1684 2007-06-26T03:17:42.962862Z claco  $
 package Handel::Components::Validation;
 use strict;
 use warnings;
@@ -20,6 +20,20 @@ sub throw_exception { ## no critic (RequireFinalReturn)
             Handel::Exception::Validation->new(-details => $exception)
         );
     };
+};
+
+sub validate {
+    my $self = shift;
+    my $result;
+
+    eval {
+        $result = $self->next::method(@_);
+    };
+    if ($@) {
+        $self->throw_exception($@);
+    };
+
+    return $result;
 };
 
 1;

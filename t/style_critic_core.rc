@@ -1,4 +1,4 @@
-# $Id: style_critic_core.rc 1915 2007-06-24 15:35:46Z claco $
+# $Id: /local/Handel/trunk/t/style_critic_core.rc 1638 2007-06-24T15:35:46.298350Z claco  $
 # Remember to Id keyword our files
 [Miscellanea::RequireRcsKeywords]
 keywords = Id

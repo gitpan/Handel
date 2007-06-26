@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: module_starter.t 1915 2007-06-24 15:35:46Z claco $
+# $Id: /local/Handel/trunk/t/module_starter.t 1638 2007-06-24T15:35:46.298350Z claco  $
 use strict;
 use warnings;
 

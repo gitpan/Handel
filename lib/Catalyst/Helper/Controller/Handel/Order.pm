@@ -1,4 +1,4 @@
-# $Id: Order.pm 1915 2007-06-24 15:35:46Z claco $
+# $Id: /local/Handel/trunk/lib/Catalyst/Helper/Controller/Handel/Order.pm 1638 2007-06-24T15:35:46.298350Z claco  $
 ## no critic (ProhibitCaptureWithoutTest)
 package Catalyst::Helper::Controller::Handel::Order;
 use strict;

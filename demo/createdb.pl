@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: createdb.pl 1915 2007-06-24 15:35:46Z claco $
+# $Id: /local/Handel/trunk/demo/createdb.pl 1638 2007-06-24T15:35:46.298350Z claco  $
 use strict;
 use warnings;
 use lib '../t/lib';
