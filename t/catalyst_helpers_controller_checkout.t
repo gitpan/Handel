@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: /local/Handel/trunk/t/catalyst_helpers_controller_checkout.t 1638 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/catalyst_helpers_controller_checkout.t 1574 2007-06-30T04:31:38.958855Z claco  $
 use strict;
 use warnings;
 
@@ -26,9 +26,12 @@ BEGIN {
     plan(skip_all =>
         'Test::File::Contents 0.02 not installed') if $@;
 
-    plan tests => 94;
+    plan tests => 97;
 
     use_ok('Catalyst::Helper');
+    use_ok('Catalyst::Helper::Controller::Handel::Checkout');
+    use_ok('Handel::Constants');
+    use_ok('Handel::Checkout');
 };
 
 my $helper = Catalyst::Helper->new;

@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/lib/Handel/Components/Validation.pm 1684 2007-06-26T03:17:42.962862Z claco  $
+# $Id: /local/Handel/trunk/lib/Handel/Components/Validation.pm 1576 2007-06-30T21:08:06.870163Z claco  $
 package Handel::Components::Validation;
 use strict;
 use warnings;
@@ -71,6 +71,12 @@ component will be loaded into the appropriate schema source class automatically.
 If validation
 fails, a L<Handel::Exception::Validation|Handel::Exception::Validation> will be
 thrown containing the the result object returned from the validation module.
+
+=head2 validate
+
+Validates the data using the specified validation module/profile. If validation
+succeeds, the result object from the validaiton module is returned. If
+validation fails, a Handel:Exception::Validation will be thrown.
 
 =head2 throw_exception
 

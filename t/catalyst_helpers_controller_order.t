@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: /local/Handel/trunk/t/catalyst_helpers_controller_order.t 1638 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/catalyst_helpers_controller_order.t 1574 2007-06-30T04:31:38.958855Z claco  $
 use strict;
 use warnings;
 
@@ -26,9 +26,11 @@ BEGIN {
     plan(skip_all =>
         'Test::File::Contents 0.02 not installed') if $@;
 
-    plan tests => 58;
+    plan tests => 60;
 
     use_ok('Catalyst::Helper');
+    use_ok('Catalyst::Helper::Controller::Handel::Order');
+    use_ok('Handel::Constants');
 };
 
 my $helper = Catalyst::Helper->new;

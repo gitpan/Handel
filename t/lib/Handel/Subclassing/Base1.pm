@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/t/lib/Handel/Subclassing/Base1.pm 1638 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/lib/Handel/Subclassing/Base1.pm 1569 2007-06-24T15:35:46.298350Z claco  $
 package Handel::Subclassing::Base1;
 use strict;
 use warnings;

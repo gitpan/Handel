@@ -1,4 +1,4 @@
-[%# $Id: /local/Handel/trunk/t/htdocs/tt2/out/cart_items.tt2.out 1638 2007-06-24T15:35:46.298350Z claco  $ %]
+[%# $Id: /local/Handel/trunk/t/htdocs/tt2/out/cart_items.tt2.out 1569 2007-06-24T15:35:46.298350Z claco  $ %]
 <body>
 	<cart>
 		<count>2</count>

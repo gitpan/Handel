@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/t/style_critic_core.rc 1638 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/style_critic_core.rc 1569 2007-06-24T15:35:46.298350Z claco  $
 # Remember to Id keyword our files
 [Miscellanea::RequireRcsKeywords]
 keywords = Id

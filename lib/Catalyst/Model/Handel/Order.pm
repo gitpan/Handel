@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/lib/Catalyst/Model/Handel/Order.pm 1638 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/lib/Catalyst/Model/Handel/Order.pm 1569 2007-06-24T15:35:46.298350Z claco  $
 package Catalyst::Model::Handel::Order;
 use strict;
 use warnings;

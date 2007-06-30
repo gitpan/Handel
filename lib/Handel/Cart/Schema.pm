@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/lib/Handel/Cart/Schema.pm 1638 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/lib/Handel/Cart/Schema.pm 1569 2007-06-24T15:35:46.298350Z claco  $
 package Handel::Cart::Schema;
 use strict;
 use warnings;
