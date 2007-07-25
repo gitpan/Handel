@@ -1,5 +1,9 @@
 Revision history for Perl module Handel
 
+1.00003 Tue July 24 20:55:32 2007
+    - Changed tests to use TEST_AUTHOR instead
+    - Converted to Module::Install
+
 1.00002 Sat June 30 17:15:12 2007
     - Catalyst Model tests now skip when Catalyst not installed
     - Fixed Catalyst tests after fresh perl install explosion

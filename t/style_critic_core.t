@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: /local/Handel/trunk/t/style_critic_core.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/style_critic_core.t 1796 2007-07-21T02:28:17.957833Z claco  $
 use strict;
 use warnings;
 
@@ -7,7 +7,7 @@ BEGIN {
     use lib 't/lib';
     use Handel::Test;
 
-    plan skip_all => 'set TEST_CRITIC or TEST_PRIVATE to enable this test' unless $ENV{TEST_CRITIC} || $ENV{TEST_PRIVATE};
+    plan skip_all => 'set TEST_AUTHOR to enable this test' unless $ENV{TEST_AUTHOR};
 
     eval 'use Test::Perl::Critic 1.01';
     plan skip_all => 'Test::Perl::Critic 1.01 not installed' if $@;
