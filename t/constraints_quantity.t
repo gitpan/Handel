@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/constraints_quantity.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/constraints_quantity.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -29,7 +29,7 @@ ok(constraint_quantity(1),          'numeric quantity');
     ok(constraint_quantity(5),     'quantity <= max');
 
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         constraint_quantity(6);
 
         fail('no exception thrown');

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/base_create_instance.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/base_create_instance.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -50,7 +50,7 @@ $result->set_always('storage', $storage);
 ## throw exception when result is given
 {
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         my $instance = Handel::Base->create_instance;
 
         fail('no exception thrown');
@@ -66,7 +66,7 @@ $result->set_always('storage', $storage);
 ## throw exception when called as object method
 #{
 #    try {
-#        local $ENV{'LANG'} = 'en';
+#        local $ENV{'LANGUAGE'} = 'en';
 #        my $base = bless {}, 'Handel::Base';
 #        my $instance = $base->create_instance($result);
 #

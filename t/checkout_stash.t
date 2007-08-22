@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/checkout_stash.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/checkout_stash.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -67,7 +67,7 @@ sub run {
 ## test for exception when non-hashref is given
 {
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         my $stash = Handel::Checkout::Stash->new([]);
 
         fail('no exception thrown');

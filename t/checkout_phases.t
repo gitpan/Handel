@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/checkout_phases.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/checkout_phases.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -38,7 +38,7 @@ sub run {
     ## than an array reference
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             my $checkout = $subclass->new;
 
             $checkout->phases({'1234' => 1});
@@ -58,7 +58,7 @@ sub run {
     ## than an array reference in news' phases option
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             my $checkout = $subclass->new({phases => {'1234' => 1}});
 
             fail('no exception thrown');
@@ -74,7 +74,7 @@ sub run {
     ## Test for Handel::Exception::Constraint if new constant name already exists
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $subclass->add_phase('CHECKOUT_PHASE_INITIALIZE', 99);
 
             fail('no exception thrown');
@@ -90,7 +90,7 @@ sub run {
     ## Test for Handel::Exception::Constraint if new constant value already exists
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $subclass->add_phase('CUSTOM_CHECKOUT_PHASE', CHECKOUT_PHASE_INITIALIZE);
 
             fail('no exception thrown');
@@ -107,7 +107,7 @@ sub run {
     sub CUSTOM_CHECKOUT_PHASE_TEST {};
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $subclass->add_phase('CUSTOM_CHECKOUT_PHASE_TEST', 43, 1);
 
             fail('no exception thrown');

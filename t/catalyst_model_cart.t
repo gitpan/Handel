@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/catalyst_model_cart.t 1574 2007-06-30T04:31:38.958855Z claco  $
+# $Id: /local/Handel/trunk/t/catalyst_model_cart.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -82,7 +82,7 @@ BEGIN {
 ## throw exception when bogus cart_class is given
 {
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         my $model = Catalyst::Model::Handel::Cart->COMPONENT;
 
         fail('no exception thrown');

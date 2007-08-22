@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/cart_item_create.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/cart_item_create.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -39,6 +39,8 @@ sub run {
     ## test for Handel::Exception::Argument where first param is not a hashref
     {
         try {
+
+            local $ENV{'LANGUAGE'} = 'en';
             my $item = $subclass->create(sku => 'FOO');
 
             fail('no exception thrown');

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_check_constraints.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_check_constraints.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -19,7 +19,7 @@ isa_ok($storage, 'Handel::Storage');
 
 ## throw exception if no hash ref is passed
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->check_constraints;
 
     fail('no exception thrown');
@@ -44,7 +44,7 @@ $storage->constraints({
 
 ## throw exception if constraints fail
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->check_constraints($data);
 
     fail('no exception thrown');

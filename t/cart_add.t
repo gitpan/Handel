@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/cart_add.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/cart_add.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -42,7 +42,7 @@ sub run {
     ## or Handle::Cart::Item subclass
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             my $newitem = $subclass->add(id => '1234');
 
             fail('no exception thrown');
@@ -59,7 +59,7 @@ sub run {
     ## or Handle::Cart::Item subclass
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             my $fakeitem = bless {}, 'FakeItem';
             my $newitem = $subclass->add($fakeitem);
 

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_add_constraint.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_add_constraint.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -31,7 +31,7 @@ BEGIN {
     ## throw exception when no column is passed
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $storage->add_constraint(undef, second => sub{});
 
             fail('no exception thrown');
@@ -46,7 +46,7 @@ BEGIN {
     ## throw exception when no name is passed
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $storage->add_constraint('id', undef, sub{});
 
             fail('no exception thrown');
@@ -61,7 +61,7 @@ BEGIN {
     ## throw exception when no constraint is passed
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $storage->add_constraint('id', 'second' => undef);
 
             fail('no exception thrown');
@@ -76,7 +76,7 @@ BEGIN {
     ## throw exception when non-CODEREF is passed
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $storage->add_constraint('id', 'second' => []);
 
             fail('no exception thrown');

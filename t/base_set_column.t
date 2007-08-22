@@ -1,5 +1,5 @@
 #!/usr/bin/perl -wT
-# $Id: /local/Handel/trunk/t/base_set_column.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/base_set_column.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -72,7 +72,7 @@ $result->clear;
 ## throw exception when no column param is sent
 {
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         $base->set_column;
 
         fail('no exception thrown');
@@ -88,7 +88,7 @@ $result->clear;
 ## throw exception when column param is empty
 {
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         $base->set_column('');
 
         fail('no exception thrown');
@@ -104,7 +104,7 @@ $result->clear;
 ## throw exception as a class method
 {
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         Handel::Base->set_column;
 
         fail('no exception thrown');

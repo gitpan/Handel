@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/config.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/config.t 1831 2007-08-22T02:37:47.531290Z claco  $
 ## no critic (ProhibitPackageVars)
 use strict;
 use warnings;
@@ -101,7 +101,7 @@ is($Handel::ConfigReader::MOD_PERL, 0, 'MOD_PERL should be zero');
 ## throw exception when setting bogus config class
 {
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         Handel->config_class('Bogus');
 
         fail('no exception thrown');

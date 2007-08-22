@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/compat_order_new.t 1571 2007-06-26T03:16:35.362194Z claco  $
+# $Id: /local/Handel/trunk/t/compat_order_new.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -54,6 +54,8 @@ use_ok('Handel::Order');
 use_ok('Handel::Subclassing::Order');
 use_ok('Handel::Subclassing::OrderOnly');
 use_ok('Handel::Subclassing::Cart');
+
+local $ENV{'LANGUAGE'} = 'en';
 
 local $SIG{__WARN__} = sub {
     like(shift, qr/deprecated/);

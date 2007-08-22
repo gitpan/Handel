@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/cart_destroy.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/cart_destroy.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -40,7 +40,7 @@ sub run {
     ## Test for Handel::Exception::Argument where first param is not a hashref
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $subclass->destroy(id => '1234');
 
             fail('no exception thrown');

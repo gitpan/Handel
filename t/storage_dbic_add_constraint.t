@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_dbic_add_constraint.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_dbic_add_constraint.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -42,7 +42,7 @@ my $schema = $storage->schema_instance;
 is_deeply($schema->class($storage->schema_source)->constraints, {'id' => {'Check Id' => $sub}}, 'constraints are loaded');
 
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->add_constraint('name', second => sub{});
 
     fail('no exception thrown');

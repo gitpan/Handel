@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_dbic_default_values.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_dbic_default_values.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -96,7 +96,7 @@ my $storage = Handel::Storage::DBIC->new({
     ## throw exception when setting a default_values with open schema_instance
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $storage->default_values({
                 field => 'foo'
             });
@@ -113,7 +113,7 @@ my $storage = Handel::Storage::DBIC->new({
     ## throw exception when setting a bogus defaults class
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $storage->default_values_class('Funklebean');
 
             fail('no exception thrown');

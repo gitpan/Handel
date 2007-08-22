@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_dbic_delete_items.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_dbic_delete_items.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -53,7 +53,7 @@ is($storage->schema_instance->resultset('Items')->search->count, 4, 'have 4 item
 
 ## throw exception if no result is passed
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->delete_items;
 
     fail('no exception thrown');
@@ -67,7 +67,7 @@ try {
 
 ## throw exception if data isn't a hashref
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->delete_items($result, []);
 
     fail('no exception thrown');
@@ -81,7 +81,7 @@ try {
 
 ## throw exception when adding an item to something with incorrect relationship
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->item_relationship('bogus');
     $storage->delete_items($result, {
         id       => '99999999-9999-9999-9999-999999999999',
@@ -101,7 +101,7 @@ try {
 
 ## throw exception when adding an item with no defined relationship
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->item_relationship(undef);
     $storage->delete_items($result, {
         id       => '99999999-9999-9999-9999-999999999999',

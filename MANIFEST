@@ -70,6 +70,7 @@ lib/Handel/Iterator/DBIC.pm
 lib/Handel/Iterator/List.pm
 lib/Handel/Iterator/Results.pm
 lib/Handel/L10N.pm
+lib/Handel/L10N/bg.pm
 lib/Handel/L10N/en_us.pm
 lib/Handel/L10N/fr.pm
 lib/Handel/Manual.pod

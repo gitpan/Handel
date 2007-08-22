@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: /local/Handel/trunk/t/compat.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/compat.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -7,6 +7,7 @@ BEGIN {
     use lib 't/lib';
     use Handel::Test tests => 15;
 
+    local $ENV{'LANGUAGE'} = 'en'; 
     local $SIG{__WARN__} = sub {
         like(shift, qr/deprecated/);
     };

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_dbic_create.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_dbic_create.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -44,7 +44,7 @@ is(refaddr $result->{'storage'}, refaddr $storage, 'result storae is original st
 
 ## throw exception if no hash ref is passed
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->create;
 
     fail('no exception thrown');

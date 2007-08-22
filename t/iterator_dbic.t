@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/iterator_dbic.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/iterator_dbic.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -24,7 +24,7 @@ BEGIN {
 {
     my $data = bless {}, 'Handel::Iterator';
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         my $iterator = Handel::Iterator::DBIC->new({
             data => $data
         });
@@ -42,7 +42,7 @@ BEGIN {
 ## test for exception when non-blessed is given
 {
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         my $iterator = Handel::Iterator::DBIC->new({
             data => {}
         });
@@ -61,7 +61,7 @@ BEGIN {
 {
     my $data = bless {}, 'DBIx::Class::ResultSet';
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         my $iterator = Handel::Iterator::DBIC->new({
             data => $data
         });

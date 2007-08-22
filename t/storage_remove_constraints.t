@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_remove_constraints.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_remove_constraints.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -49,7 +49,7 @@ is_deeply($storage->constraints, {'id' => {'Check Id' => $sub, 'Check It Again' 
 
 ## throw exception when no column is specified
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->remove_constraints;
 
     fail('no exception thrown');

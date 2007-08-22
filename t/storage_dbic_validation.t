@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_dbic_validation.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_dbic_validation.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -56,7 +56,7 @@ my $storage = Handel::Storage::DBIC->new({
     my $cart;
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $cart = $schema->resultset('Carts')->create({
                 id => 1,
                 name => 'test'
@@ -79,7 +79,7 @@ my $storage = Handel::Storage::DBIC->new({
     ## throw exception when setting a validation with open schema_instance
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $storage->validation_profile([
                 field => {'do_field' => sub{}}
             ]);
@@ -96,7 +96,7 @@ my $storage = Handel::Storage::DBIC->new({
     ## throw exception when setting a bogus validation class
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $storage->validation_class('Funklebean');
 
             fail('no exception thrown');
@@ -125,7 +125,7 @@ my $storage = Handel::Storage::DBIC->new({
     ## throw exception when setting a bogus validation class
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $storage->validation_module('Funklebean');
 
             fail('no exception thrown');
@@ -141,7 +141,7 @@ my $storage = Handel::Storage::DBIC->new({
     ## throw_exception should put non blessed things in text
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $class->throw_exception('foo');
 
             fail('no exception thrown');
@@ -158,7 +158,7 @@ my $storage = Handel::Storage::DBIC->new({
         my $stuff = bless {-text => 'bar'}, 'Handel::Exception';
 
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $class->throw_exception($stuff);
 
             fail('no exception thrown');
@@ -202,7 +202,7 @@ my $storage = Handel::Storage::DBIC->new({
     my $item;
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $item = $schema->resultset('Items')->create({
                 id => 1,
                 cart => 1,

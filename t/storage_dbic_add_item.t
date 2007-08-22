@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_dbic_add_item.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_dbic_add_item.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -47,7 +47,7 @@ is($item->price, 2.22, 'got price');
 
 ## throw exception if no result is passed
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->add_item;
 
     fail('no exception thrown');
@@ -61,7 +61,7 @@ try {
 
 ## throw exception if no hash ref is passed
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->add_item($result);
 
     fail('no exception thrown');
@@ -75,7 +75,7 @@ try {
 
 ## throw exception when adding an item to something with incorrect relationship
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->add_item($item, {
         id       => '99999999-9999-9999-9999-999999999999',
         sku      => 'ABC-123',
@@ -94,7 +94,7 @@ try {
 
 ## throw exception when adding an item with no defined relationship
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->item_relationship(undef);
     $storage->add_item($item, {
         id       => '99999999-9999-9999-9999-999999999999',

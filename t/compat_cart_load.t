@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/compat_cart_load.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/compat_cart_load.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -19,6 +19,8 @@ BEGIN {
     use_ok('Handel::Subclassing::CartOnly');
     use_ok('Handel::Constants', qw(:cart :returnas));
     use_ok('Handel::Exception', ':try');
+
+    local $ENV{'LANGUAGE'} = 'en';
 
     local $SIG{__WARN__} = sub {
         like(shift, qr/deprecated/);

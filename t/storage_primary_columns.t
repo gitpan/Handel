@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_primary_columns.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_primary_columns.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -29,6 +29,8 @@ is_deeply([$storage->primary_columns], [qw/foo bar baz/], 'added primary columns
 ## throw exception when primary column doesn't exists in columns
 {
     try {
+
+        local $ENV{'LANGUAGE'} = 'en';
         $storage->primary_columns(qw/bar quix/);
 
         fail('no exception thrown');

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/compat_order_items.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/compat_order_items.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -19,6 +19,8 @@ BEGIN {
     use_ok('Handel::Subclassing::OrderOnly');
     use_ok('Handel::Constants', qw(:order :returnas));
     use_ok('Handel::Exception', ':try');
+
+    local $ENV{'LANGUAGE'} = 'en';
 
     local $SIG{__WARN__} = sub {
         like(shift, qr/deprecated/);
@@ -103,7 +105,7 @@ sub run {
         ## throw exception when filter isn't a hashref
         {
             try {
-                local $ENV{'LANG'} = 'en';
+                local $ENV{'LANGUAGE'} = 'en';
                 $order->items(['foo']);
 
                 fail('no exception thrown');

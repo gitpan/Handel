@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/checkout_messages.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/checkout_messages.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -28,7 +28,7 @@ sub run {
     ## test for Handel::Exception::Argument where message is not a scalar
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             my $checkout = $subclass->new({pluginpaths => 'Handel::LOADNOTHING'});
 
             $checkout->add_message([1, 2, 3]);
@@ -46,7 +46,7 @@ sub run {
     ## test for Handel::Exception::Argument where message is not a Handel::Checkout;:Message subclass
     {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             my $fake = bless {}, 'FakeModule';
             my $checkout = $subclass->new({pluginpaths => 'Handel::LOADNOTHING'});
 

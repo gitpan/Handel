@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/order_items.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/order_items.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -88,7 +88,7 @@ sub run {
         ## throw exception when options isn't a hashref
         {
             try {
-                local $ENV{'LANG'} = 'en';
+                local $ENV{'LANGUAGE'} = 'en';
                 $order->items({}, []);
 
                 fail('no exception thrown');
@@ -111,7 +111,7 @@ sub run {
         ## throw exception when filter isn't a hashref
         {
             try {
-                local $ENV{'LANG'} = 'en';
+                local $ENV{'LANGUAGE'} = 'en';
                 $order->items(['foo']);
 
                 fail('no exception thrown');

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_currency_columns.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_currency_columns.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -29,7 +29,7 @@ is_deeply([$storage->currency_columns], [qw/foo bar/], 'set currency columns');
 ## throw exception when primary column doesn't exists in columns
 {
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         $storage->currency_columns(qw/bar quix/);
 
         fail('no exception thrown');

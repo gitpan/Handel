@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/base_create_accessors.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/base_create_accessors.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -47,7 +47,7 @@ $Handel::Base::_storage = $storage;
 ## throw exception when storage returns no column accessors
 {
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         Handel::Base->create_accessors;
 
         fail('no exception thrown');
@@ -63,7 +63,7 @@ $Handel::Base::_storage = $storage;
 ## throw exception when storage returns no column accessors
 {
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         Handel::Base->create_accessors;
 
         fail('no exception thrown');
@@ -79,7 +79,7 @@ $Handel::Base::_storage = $storage;
 ## throw exception as an object method
 {
     try {
-        local $ENV{'LANG'} = 'en';
+        local $ENV{'LANGUAGE'} = 'en';
         my $base = bless {}, 'Handel::Base';
         $base->create_accessors;
 

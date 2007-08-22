@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_new.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_new.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -83,7 +83,7 @@ BEGIN {
 {
     foreach my $method (qw/add_item count_items create delete delete_items search search_items txn_begin txn_commit txn_rollback/) {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             Handel::Storage->$method;
     
             fail('no exception thrown');
@@ -102,7 +102,7 @@ BEGIN {
 
     foreach my $method (qw/delete discard_changes update/) {
         try {
-            local $ENV{'LANG'} = 'en';
+            local $ENV{'LANGUAGE'} = 'en';
             $result->$method;
     
             fail('no exception thrown');

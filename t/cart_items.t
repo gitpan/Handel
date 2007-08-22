@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/cart_items.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/cart_items.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -96,6 +96,7 @@ sub run {
             local $ENV{'HandelMaxQuantityAction'} = 'Exception';
 
             try {
+                local $ENV{'LANGUAGE'} = 'en';
                 $item2->quantity(6);
 
                 fail('no exception thrown');
@@ -121,7 +122,7 @@ sub run {
         ## throw exception when filter isn't a hashref
         {
             try {
-                local $ENV{'LANG'} = 'en';
+                local $ENV{'LANGUAGE'} = 'en';
                 $cart->items(['foo']);
 
                 fail('no exception thrown');
@@ -137,7 +138,7 @@ sub run {
         ## throw exception when options isn't a hashref
         {
             try {
-                local $ENV{'LANG'} = 'en';
+                local $ENV{'LANGUAGE'} = 'en';
                 $cart->items({}, []);
 
                 fail('no exception thrown');

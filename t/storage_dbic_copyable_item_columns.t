@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_dbic_copyable_item_columns.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_dbic_copyable_item_columns.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -45,7 +45,7 @@ is_deeply([sort $storage->copyable_item_columns], [qw/cart description price qua
 
 ## no item storage
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->item_storage_class(undef);
     $storage->item_storage(undef);
     $storage->copyable_item_columns;
@@ -61,7 +61,7 @@ try {
 
 ## no item relationship
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $storage->item_relationship(undef);
     $storage->copyable_item_columns;
 

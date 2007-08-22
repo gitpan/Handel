@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/storage_dbic_remove_columns.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/t/storage_dbic_remove_columns.t 1831 2007-08-22T02:37:47.531290Z claco  $
 use strict;
 use warnings;
 
@@ -61,7 +61,7 @@ ok(!$schema->source($item_storage->schema_source)->has_column('quantity'), 'quan
 
 ## dbic doesn't remove the accessor method, but it should throw and exception
 try {
-    local $ENV{'LANG'} = 'en';
+    local $ENV{'LANGUAGE'} = 'en';
     $cart->name;
 
     fail('no exception thrown');
