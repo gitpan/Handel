@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/lib/Module/Starter/Handel.pm 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/Handel/trunk/lib/Module/Starter/Handel.pm 1836 2007-08-23T02:15:31.625034Z claco  $
 package Module::Starter::Handel;
 use strict;
 use warnings;
@@ -668,8 +668,8 @@ Options:
 
 Example:
 
-    perl scripts/[% scriptname %] schema --default
-    perl scripts/[% scriptname %] schema --install --dsn=dbi:mysql:dbname=handel:host=localhost
+    perl script/[% scriptname %] schema --default
+    perl script/[% scriptname %] schema --install --dsn=dbi:mysql:dbname=handel:host=localhost
 
 =head1 AUTHOR
 

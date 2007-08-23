@@ -43,6 +43,7 @@ requires:
   SQL::Translator: 0.08
   Scalar::Util: 0
   Tie::Hash: 0
+  YAML: 0.65
   perl: 5.8.1
 tests: t/*.t
-version: 1.00004
+version: 1.00005

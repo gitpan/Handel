@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/Makefile.PL 1817 2007-08-07T02:13:22.261325Z claco  $
+# $Id: /local/Handel/trunk/Makefile.PL 1837 2007-08-23T02:26:11.202868Z claco  $
 use strict;
 use warnings FATAL => 'all';
 use inc::Module::Install 0.65;
@@ -70,11 +70,8 @@ requires 'SQL::Translator'          => '0.08';
 requires 'Getopt::Long';
 requires 'Pod::Usage';
 requires 'DBD::SQLite';
+requires 'YAML' => '0.65';
 build_requires 'Test::More' => '0.61';
-
-#feature 'Rose::DB::Object Support',
-#  -default                   => 0,
-#  'Handel::Storage::RDBO' => '1.00001';
 
 feature 'Catalyst Support',
   -default => 0,
