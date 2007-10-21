@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/demo/tt2/httpd.conf.include 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/trunk/demo/tt2/httpd.conf.include 1916 2007-06-24T15:35:46.298350Z claco  $
 # Don't forget to change DocumentRoot, ErrorLog, db_name
 # and 'use lib' to match your system setup!!!!!
 

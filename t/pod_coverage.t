@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/pod_coverage.t 1796 2007-07-21T02:28:17.957833Z claco  $
+# $Id: /local/CPAN/Handel/trunk/t/pod_coverage.t 1944 2007-07-21T02:27:09.400002Z claco  $
 use strict;
 use warnings;
 

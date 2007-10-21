@@ -1,4 +1,4 @@
-[%# $Id: /local/Handel/trunk/t/htdocs/tt2/order_fetch_as_array.tt2 1569 2007-06-24T15:35:46.298350Z claco  $ %]
+[%# $Id: /local/CPAN/Handel/trunk/t/htdocs/tt2/order_fetch_as_array.tt2 1916 2007-06-24T15:35:46.298350Z claco  $ %]
 [% USE horder  = Handel.Order %]
 <body>
     [% IF (order = horder.search.all) %]

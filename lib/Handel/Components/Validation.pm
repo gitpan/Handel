@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/lib/Handel/Components/Validation.pm 1576 2007-06-30T21:08:06.870163Z claco  $
+# $Id: /local/CPAN/Handel/trunk/lib/Handel/Components/Validation.pm 1988 2007-10-21T21:05:56.869869Z claco  $
 package Handel::Components::Validation;
 use strict;
 use warnings;
@@ -75,7 +75,7 @@ thrown containing the the result object returned from the validation module.
 =head2 validate
 
 Validates the data using the specified validation module/profile. If validation
-succeeds, the result object from the validaiton module is returned. If
+succeeds, the result object from the validation module is returned. If
 validation fails, a Handel:Exception::Validation will be thrown.
 
 =head2 throw_exception

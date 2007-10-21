@@ -18,7 +18,7 @@ requires:
   Class::Accessor::Grouped: 0.03
   Class::ISA: 0
   Class::Inspector: 0
-  Clone: 0
+  Clone: 0.28
   DBD::SQLite: 0
   DBIx::Class: 0.08002
   DBIx::Class::UUIDColumns: 0.02000
@@ -43,7 +43,6 @@ requires:
   SQL::Translator: 0.08
   Scalar::Util: 0
   Tie::Hash: 0
-  YAML: 0.65
   perl: 5.8.1
 tests: t/*.t
-version: 1.00005
+version: 1.00006

@@ -1,5 +1,5 @@
 #!/usr/bin/perl -wT
-# $Id: /local/Handel/trunk/t/base_set_column.t 1831 2007-08-22T02:37:47.531290Z claco  $
+# $Id: /local/CPAN/Handel/trunk/t/base_set_column.t 1963 2007-08-22T02:36:42.709186Z claco  $
 use strict;
 use warnings;
 

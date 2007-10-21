@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/Makefile.PL 1837 2007-08-23T02:26:11.202868Z claco  $
+# $Id: /local/CPAN/Handel/trunk/Makefile.PL 1988 2007-10-21T21:05:56.869869Z claco  $
 use strict;
 use warnings FATAL => 'all';
 use inc::Module::Install 0.65;
@@ -49,7 +49,7 @@ requires 'Data::Currency'           => '0.04002';
 requires 'Class::Accessor::Grouped' => '0.03';
 requires 'Class::ISA';
 requires 'Class::Inspector';
-requires 'Clone';
+requires 'Clone' => '0.28';
 requires 'Error'                    => '0.14';
 requires 'Locale::Maketext'         => '1.06';
 requires 'Module::Pluggable'        => '3.1';
@@ -70,13 +70,14 @@ requires 'SQL::Translator'          => '0.08';
 requires 'Getopt::Long';
 requires 'Pod::Usage';
 requires 'DBD::SQLite';
-requires 'YAML' => '0.65';
 build_requires 'Test::More' => '0.61';
 
 feature 'Catalyst Support',
   -default => 0,
   'Catalyst::Runtime' => '5.7007',
   'Catalyst::Devel' => '1.02',
+  'Catalyst::View::TT' => 0,
+  'YAML' => '0.65',
   'HTML::FillInForm' => '1.05';
 
 feature 'AxKit Support',

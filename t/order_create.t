@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/order_create.t 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/trunk/t/order_create.t 1988 2007-10-21T21:05:56.869869Z claco  $
 use strict;
 use warnings;
 
@@ -186,7 +186,7 @@ sub run {
     };
 
 SKIP: {
-    if (DBD::SQLite->VERSION eq '1.13') {
+    if (DBD::SQLite->VERSION eq '1.13' || DBD::SQLite->VERSION eq '1.14') {
         skip 'DBD::SQLite 1.13 wonky on some platforms', 2;
     };
 

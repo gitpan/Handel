@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/lib/Handel/Checkout/Plugin/MarkOrderSaved.pm 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/trunk/lib/Handel/Checkout/Plugin/MarkOrderSaved.pm 1916 2007-06-24T15:35:46.298350Z claco  $
 package Handel::Checkout::Plugin::MarkOrderSaved;
 use strict;
 use warnings;

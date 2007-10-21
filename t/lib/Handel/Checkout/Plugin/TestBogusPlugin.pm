@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/t/lib/Handel/Checkout/Plugin/TestBogusPlugin.pm 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/trunk/t/lib/Handel/Checkout/Plugin/TestBogusPlugin.pm 1916 2007-06-24T15:35:46.298350Z claco  $
 package Handel::Checkout::Plugin::TestBogusPlugin;
 use strict;
 use warnings;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: /local/Handel/trunk/demo/axkit/style/xsl/cart.xsl 1569 2007-06-24T15:35:46.298350Z claco  $ -->
+<!-- $Id: /local/CPAN/Handel/trunk/demo/axkit/style/xsl/cart.xsl 1916 2007-06-24T15:35:46.298350Z claco  $ -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" cdata-section-elements="CDATA" version="1.0">
 	<xsl:output method="xml" omit-xml-declaration="no" encoding="UTF-8"/>
 

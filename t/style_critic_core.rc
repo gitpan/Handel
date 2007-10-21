@@ -1,4 +1,4 @@
-# $Id: /local/Handel/trunk/t/style_critic_core.rc 1569 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/trunk/t/style_critic_core.rc 1988 2007-10-21T21:05:56.869869Z claco  $
 # Remember to Id keyword our files
 [Miscellanea::RequireRcsKeywords]
 keywords = Id
@@ -54,3 +54,5 @@ allow = $@
 
 # I agree, just not here.
 #[-ValuesAndExpressions::ProhibitMagicNumbers]
+[-Subroutines::RequireArgUnpacking]
+[-Subroutines::ProhibitManyArgs]

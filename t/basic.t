@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/basic.t 1571 2007-06-26T03:16:35.362194Z claco  $
+# $Id: /local/CPAN/Handel/trunk/t/basic.t 1920 2007-06-26T03:16:35.362194Z claco  $
 use strict;
 use warnings;
 

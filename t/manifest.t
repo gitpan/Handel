@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/Handel/trunk/t/manifest.t 1801 2007-07-21T03:52:38.516806Z claco  $
+# $Id: /local/CPAN/Handel/trunk/t/manifest.t 1988 2007-10-21T21:05:56.869869Z claco  $
 use strict;
 use warnings;
 
@@ -17,6 +17,6 @@ BEGIN {
 
 ok_manifest({
     exclude => ['/t/var', '/cover_db', '/t/conf', '/t/logs/', '/t/htdocs/index.html'],
-    filter  => [qr/\.svn/, qr/cover/, qr/\.tws/, qr/(SMOKE$|TEST$)/, qr/Build(\.PL|\.bat)?/],
+    filter  => [qr/\.kpf/, qr/\.svn/, qr/cover/, qr/\.tws/, qr/(SMOKE$|TEST$)/, qr/Build(\.PL|\.bat)?/],
     bool    => 'or'
 });

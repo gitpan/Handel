@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: /local/Handel/trunk/t/pod_spelling.t 1796 2007-07-21T02:28:17.957833Z claco  $
+# $Id: /local/CPAN/Handel/trunk/t/pod_spelling.t 1988 2007-10-21T21:05:56.869869Z claco  $
 use strict;
 use warnings;
 
@@ -20,6 +20,7 @@ add_stopwords(<DATA>);
 all_pod_files_spelling_ok();
 
 __DATA__
+MyApp
 createdb
 behaviour
 handel
