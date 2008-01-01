@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: /local/CPAN/Handel/trunk/t/module_starter.t 1916 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/t/module_starter.t 1043 2007-06-24T15:35:46.298350Z claco  $
 use strict;
 use warnings;
 

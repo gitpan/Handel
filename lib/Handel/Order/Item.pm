@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/trunk/lib/Handel/Order/Item.pm 1916 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/lib/Handel/Order/Item.pm 1043 2007-06-24T15:35:46.298350Z claco  $
 package Handel::Order::Item;
 use strict;
 use warnings;

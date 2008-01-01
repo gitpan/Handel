@@ -1,10 +1,10 @@
-# $Id: /local/CPAN/Handel/trunk/lib/Handel.pm 1986 2007-10-21T17:14:34.836781Z claco  $
+# $Id: /local/CPAN/Handel/lib/Handel.pm 1080 2008-01-01T21:25:34.059856Z claco  $
 package Handel;
 use strict;
 use warnings;
 use vars qw/$VERSION/;
 
-$VERSION = '1.00006';
+$VERSION = '1.00007';
 
 BEGIN {
     use base qw/Class::Accessor::Grouped/;

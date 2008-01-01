@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/trunk/Makefile.PL 1988 2007-10-21T21:05:56.869869Z claco  $
+# $Id: /local/CPAN/Handel/Makefile.PL 1078 2008-01-01T21:13:23.465843Z claco  $
 use strict;
 use warnings FATAL => 'all';
 use inc::Module::Install 0.65;
@@ -42,7 +42,7 @@ license 'perl';
 perl_version '5.008001';
 all_from 'lib/Handel.pm';
 
-requires 'DBIx::Class'              => '0.08002';
+requires 'DBIx::Class'              => '0.08008';
 requires 'DBIx::Class::UUIDColumns' => '0.02000';
 requires 'DBIx::Class::Validation'  => '0.02000';
 requires 'Data::Currency'           => '0.04002';

@@ -1,5 +1,5 @@
 ## no critic
-# $Id: /local/CPAN/Handel/trunk/lib/Handel/L10N/bg.pm 1963 2007-08-22T02:36:42.709186Z claco  $
+# $Id: /local/CPAN/Handel/lib/Handel/L10N/bg.pm 1056 2007-08-22T02:36:42.709186Z claco  $
 package Handel::L10N::bg;
 use strict;
 use warnings;

@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/CPAN/Handel/trunk/t/storage_iterator_class.t 1916 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/t/storage_iterator_class.t 1043 2007-06-24T15:35:46.298350Z claco  $
 use strict;
 use warnings;
 

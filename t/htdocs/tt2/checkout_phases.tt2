@@ -1,4 +1,4 @@
-[%# $Id: /local/CPAN/Handel/trunk/t/htdocs/tt2/checkout_phases.tt2 1916 2007-06-24T15:35:46.298350Z claco  $ %]
+[%# $Id: /local/CPAN/Handel/t/htdocs/tt2/checkout_phases.tt2 1043 2007-06-24T15:35:46.298350Z claco  $ %]
 [% USE hcheckout = Handel.Checkout %]
 
 <body>

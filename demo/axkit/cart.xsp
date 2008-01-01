@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: /local/CPAN/Handel/trunk/demo/axkit/cart.xsp 1916 2007-06-24T15:35:46.298350Z claco  $ -->
+<!-- $Id: /local/CPAN/Handel/demo/axkit/cart.xsp 1043 2007-06-24T15:35:46.298350Z claco  $ -->
 <?xml-stylesheet href="NULL" type="application/x-xsp"?>
 <?xml-stylesheet href="style/xsl/cart.xsl" type="text/xsl" media="all"?>
 <?xml-stylesheet href="style/xsl/to_xhtml.xsl" type="text/xsl" media="screen"?>

@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/trunk/lib/Module/Starter/Handel.pm 1966 2007-08-23T02:05:31.088429Z claco  $
+# $Id: /local/CPAN/Handel/lib/Module/Starter/Handel.pm 1058 2007-08-23T02:05:31.088429Z claco  $
 package Module::Starter::Handel;
 use strict;
 use warnings;

@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/trunk/lib/Handel/Iterator.pm 1916 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/lib/Handel/Iterator.pm 1043 2007-06-24T15:35:46.298350Z claco  $
 ## no critic (ProhibitAmbiguousNames, RequireFinalReturn)
 package Handel::Iterator;
 use strict;

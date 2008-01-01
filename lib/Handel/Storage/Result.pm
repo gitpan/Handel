@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/trunk/lib/Handel/Storage/Result.pm 1916 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/lib/Handel/Storage/Result.pm 1078 2008-01-01T21:13:23.465843Z claco  $
 ## no critic (RequireFinalReturn)
 package Handel::Storage::Result;
 use strict;
@@ -6,6 +6,8 @@ use warnings;
 
 BEGIN {
     use base qw/Class::Accessor::Grouped/;
+    use Scalar::Util ();
+
     __PACKAGE__->mk_group_accessors('simple', qw/storage_result storage/);
 };
 
@@ -14,11 +16,11 @@ sub can {
 };
 
 sub delete {
-    throw Handel::Exception::Virtual;
+    Handel::Exception::Virtual->throw;
 };
 
 sub discard_changes {
-    throw Handel::Exception::Virtual;
+    Handel::Exception::Virtual->throw;
 };
 
 sub has_column {
@@ -31,7 +33,7 @@ sub has_column {
 };
 
 sub update {
-    throw Handel::Exception::Virtual;
+    Handel::Exception::Virtual->throw;
 };
 
 sub add_item {
@@ -56,7 +58,7 @@ sub items {
 
 sub create_instance {
     my ($self, $result, $storage) = @_;
-    my $class = blessed $self ? blessed $self : $self;
+    my $class = Scalar::Util::blessed $self ? Scalar::Util::blessed $self : $self;
 
     return bless {
         storage_result => $result,

@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/trunk/t/lib/Handel/Subclassing/Order.pm 1916 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/t/lib/Handel/Subclassing/Order.pm 1043 2007-06-24T15:35:46.298350Z claco  $
 package Handel::Subclassing::Order;
 use strict;
 use warnings;

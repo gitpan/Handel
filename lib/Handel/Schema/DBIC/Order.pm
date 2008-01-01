@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/trunk/lib/Handel/Schema/DBIC/Order.pm 1916 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/lib/Handel/Schema/DBIC/Order.pm 1080 2008-01-01T21:25:34.059856Z claco  $
 package Handel::Schema::DBIC::Order;
 use strict;
 use warnings;
@@ -37,12 +37,18 @@ __PACKAGE__->add_columns(
     created => {
         data_type     => 'datetime',
         is_nullable   => 1,
-        default_value => undef
+        default_value => undef,
+        extra         => {
+            timezone  => 'UTC'
+        }
     },
     updated => {
         data_type     => 'datetime',
         is_nullable   => 1,
-        default_value => undef
+        default_value => undef,
+        extra         => {
+            timezone  => 'UTC'
+        }
     },
     comments => {
         data_type     => 'varchar',

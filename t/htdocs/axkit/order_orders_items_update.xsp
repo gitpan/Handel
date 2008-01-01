@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: /local/CPAN/Handel/trunk/t/htdocs/axkit/order_orders_items_update.xsp 1916 2007-06-24T15:35:46.298350Z claco  $ -->
+<!-- $Id: /local/CPAN/Handel/t/htdocs/axkit/order_orders_items_update.xsp 1043 2007-06-24T15:35:46.298350Z claco  $ -->
 <xsp:page
 	xmlns:xsp="http://apache.org/xsp/core/v1"
 	xmlns:order="http://today.icantfocus.com/CPAN/AxKit/XSP/Handel/Order"
