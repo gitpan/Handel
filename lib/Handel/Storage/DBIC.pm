@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Handel/Storage/DBIC.pm 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/lib/Handel/Storage/DBIC.pm 1156 2008-01-06T22:38:28.275134Z claco  $
 ## no critic (ProhibitExcessComplexity)
 package Handel::Storage::DBIC;
 use strict;
@@ -406,6 +406,12 @@ sub search {
 
     if ($filter) {
         $filter = $self->_migrate_wildcards($filter);
+
+        foreach my $key (keys %{$filter}) {
+            if ($key !~ /\./) {
+                $filter->{"me.$key"} = delete $filter->{$key};
+            };
+        };
     };
 
     my $resultset = $schema->resultset($source)->search($filter, @_);
@@ -438,6 +444,12 @@ sub search_items {
 
     if ($filter) {
         $filter = $self->_migrate_wildcards($filter);
+
+        foreach my $key (keys %{$filter}) {
+            if ($key !~ /\./) {
+                $filter->{"me.$key"} = delete $filter->{$key};
+            };
+        };
     };
 
     my $resultset = $storage_result->search_related($self->item_relationship, $filter, @_);
