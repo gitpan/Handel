@@ -46,4 +46,4 @@ requires:
   Tie::Hash: 0
   perl: 5.8.1
 tests: t/*.t
-version: 1.00008
+version: 1.00009
