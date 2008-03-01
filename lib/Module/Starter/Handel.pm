@@ -1,4 +1,5 @@
-# $Id: /local/CPAN/Handel/lib/Module/Starter/Handel.pm 1058 2007-08-23T02:05:31.088429Z claco  $
+## no critic (InputOutput::RequireCheckedSyscalls)
+# $Id: /local/CPAN/Handel/lib/Module/Starter/Handel.pm 1270 2008-03-01T20:06:24.746789Z claco  $
 package Module::Starter::Handel;
 use strict;
 use warnings;
@@ -9,6 +10,7 @@ BEGIN {
     use File::Path qw/mkpath/;
     use FileHandle;
     use Config;
+    use Carp;
 };
 
 =head1 NAME
@@ -106,6 +108,7 @@ sub create_distro {
     $setup =~ s/\[% startperl %\]/#!$Config{perlpath} -w/;
     $setup =~ s/\[% scriptname %\]/$options{'__setup_pl'}/g;
     FileHandle->new('>' . $options{'setup.pl'})->print($setup);
+
     chmod oct 700, $options{'setup.pl'};
     print 'Created ' . $options{'setup.pl'}, "\n";
 

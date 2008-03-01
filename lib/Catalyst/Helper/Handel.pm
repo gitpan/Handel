@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Catalyst/Helper/Handel.pm 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id: /local/CPAN/Handel/lib/Catalyst/Helper/Handel.pm 1270 2008-03-01T20:06:24.746789Z claco  $
 package Catalyst::Helper::Handel;
 use strict;
 use warnings;
@@ -57,6 +57,8 @@ sub mk_stuff {
 
     $helper->{'handel_auto_wire_models'} = 1;
     $self->SUPER::mk_stuff(@_);
+
+    warn "\n\aDon't forget to add Session, Session::Store::File and Session::State::Cookie to $base.pm!\n";
 
     return;
 };

@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/Makefile.PL 1078 2008-01-01T21:13:23.465843Z claco  $
+# $Id: /local/CPAN/Handel/Makefile.PL 1270 2008-03-01T20:06:24.746789Z claco  $
 use strict;
 use warnings FATAL => 'all';
 use inc::Module::Install 0.65;
@@ -77,6 +77,9 @@ feature 'Catalyst Support',
   'Catalyst::Runtime' => '5.7007',
   'Catalyst::Devel' => '1.02',
   'Catalyst::View::TT' => 0,
+  'Catalyst::Plugin::Session',
+  'Catalyst::Plugin::Session::Store::File',
+  'Catalyst::Plugin::Session::State::Cookie',
   'YAML' => '0.65',
   'HTML::FillInForm' => '1.05';
 
