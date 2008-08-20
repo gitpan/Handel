@@ -1,5 +1,5 @@
 #!perl
-# $Id: /local/CPAN/Handel/t/SMOKE.PL 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 use strict;
 use warnings FATAL => 'all';
 use lib qw(lib);

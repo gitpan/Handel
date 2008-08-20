@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: /local/CPAN/Handel/demo/axkit/style/xsl/to_xhtml.xsl 1043 2007-06-24T15:35:46.298350Z claco  $ -->
+<!-- $Id$ -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" cdata-section-elements="CDATA" version="1.0">
 	<xsl:output
 		method="xml"

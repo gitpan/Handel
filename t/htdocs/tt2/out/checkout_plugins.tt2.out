@@ -1,4 +1,4 @@
-<!-- $Id: /local/CPAN/Handel/t/htdocs/tt2/out/checkout_plugins.tt2.out 1043 2007-06-24T15:35:46.298350Z claco  $ -->
+<!-- $Id$ -->
 <body>
 	<plugins>
 		<plugin>Handel::TestPlugins::First</plugin>

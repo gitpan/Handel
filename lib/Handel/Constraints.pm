@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Handel/Constraints.pm 1270 2008-03-01T20:06:24.746789Z claco  $
+# $Id$
 package Handel::Constraints;
 use strict;
 use warnings;

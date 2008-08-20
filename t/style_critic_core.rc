@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/t/style_critic_core.rc 1270 2008-03-01T20:06:24.746789Z claco  $
+# $Id$
 # Remember to Id keyword our files
 [Miscellanea::RequireRcsKeywords]
 keywords = Id

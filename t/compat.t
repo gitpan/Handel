@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: /local/CPAN/Handel/t/compat.t 1056 2007-08-22T02:36:42.709186Z claco  $
+# $Id$
 use strict;
 use warnings;
 
@@ -12,9 +12,11 @@ BEGIN {
         like(shift, qr/deprecated/);
     };
     use_ok('Handel::Compat');
-    
+
     ## load Handel::Base for tests.
     ## in the wild, the superclasses already have it
+    ## eat C3 warnings in 5.10
+    local $SIG{__WARN__} = sub{};
     use_ok('Handel::Base');
     use_ok('Handel::Constraints', 'constraint_uuid');
     push @Handel::Compat::ISA, 'Handel::Base';

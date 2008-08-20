@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: /local/CPAN/Handel/t/htdocs/axkit/out/order_order_add_filtered.xsp.out 1043 2007-06-24T15:35:46.298350Z claco  $ -->
+<!-- $Id$ -->
 <body>
 	<order>
 		<count>0</count>

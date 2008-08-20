@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: /local/CPAN/Handel/script/handel.pl 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 use strict;
 use warnings;
 

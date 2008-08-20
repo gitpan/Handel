@@ -23,13 +23,11 @@ inc/Module/AutoInstall.pm
 inc/Module/Install.pm
 inc/Module/Install/AutoInstall.pm
 inc/Module/Install/Base.pm
-inc/Module/Install/Build.pm
 inc/Module/Install/Can.pm
 inc/Module/Install/Fetch.pm
 inc/Module/Install/Include.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
-inc/Module/Install/Scripts.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/AxKit/XSP/Handel/Cart.pm
@@ -484,6 +482,8 @@ t/lib/Handel/Checkout/Plugin/TestBogusPlugin.pm
 t/lib/Handel/Checkout/Plugin/TestPlugin.pm
 t/lib/Handel/Checkout/TestMessage.pm
 t/lib/Handel/OtherTestPlugins/Second.pm
+t/lib/Handel/StringPlugins/First.pm
+t/lib/Handel/StringPlugins/InitializeTotals.pm
 t/lib/Handel/Subclassing/Base1.pm
 t/lib/Handel/Subclassing/Base2.pm
 t/lib/Handel/Subclassing/Base3.pm

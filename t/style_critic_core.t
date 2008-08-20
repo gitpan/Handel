@@ -1,5 +1,5 @@
 #!perl -w
-# $Id: /local/CPAN/Handel/t/style_critic_core.t 1048 2007-07-21T02:27:09.400002Z claco  $
+# $Id$
 use strict;
 use warnings;
 

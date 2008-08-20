@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/Makefile.PL 1270 2008-03-01T20:06:24.746789Z claco  $
+# $Id$
 use strict;
 use warnings FATAL => 'all';
 use inc::Module::Install 0.65;
@@ -51,6 +51,7 @@ requires 'Class::ISA';
 requires 'Class::Inspector';
 requires 'Clone' => '0.28';
 requires 'Error'                    => '0.14';
+requires 'Carp';
 requires 'Locale::Maketext'         => '1.06';
 requires 'Module::Pluggable'        => '3.1';
 requires 'Module::Starter'          => '1.42';

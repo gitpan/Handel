@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/CPAN/Handel/t/style_no_tabs.t 1048 2007-07-21T02:27:09.400002Z claco  $
+# $Id$
 use strict;
 use warnings;
 use lib 't/lib';

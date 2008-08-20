@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/AxKit/XSP/Handel/Order.pm 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 ## no critic
 package AxKit::XSP::Handel::Order;
 use strict;

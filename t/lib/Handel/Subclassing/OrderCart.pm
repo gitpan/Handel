@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/t/lib/Handel/Subclassing/OrderCart.pm 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 package Handel::Subclassing::OrderCart;
 use strict;
 use warnings;

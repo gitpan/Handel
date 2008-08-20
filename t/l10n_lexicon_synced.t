@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/CPAN/Handel/t/l10n_lexicon_synced.t 1056 2007-08-22T02:36:42.709186Z claco  $
+# $Id$
 use strict;
 use warnings;
 

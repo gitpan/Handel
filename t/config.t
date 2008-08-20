@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/CPAN/Handel/t/config.t 1056 2007-08-22T02:36:42.709186Z claco  $
+# $Id$
 ## no critic (ProhibitPackageVars)
 use strict;
 use warnings;

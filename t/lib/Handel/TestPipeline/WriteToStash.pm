@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/t/lib/Handel/TestPipeline/WriteToStash.pm 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 package Handel::TestPipeline::WriteToStash;
 use strict;
 use warnings;

@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Catalyst/Helper/Handel.pm 1270 2008-03-01T20:06:24.746789Z claco  $
+# $Id$
 package Catalyst::Helper::Handel;
 use strict;
 use warnings;

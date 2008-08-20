@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/t/lib/Handel/TestPipeline/ValidateError.pm 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 package Handel::TestPipeline::ValidateError;
 use strict;
 use warnings;

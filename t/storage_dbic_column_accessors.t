@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/CPAN/Handel/t/storage_dbic_column_accessors.t 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 use strict;
 use warnings;
 

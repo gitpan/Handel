@@ -1,5 +1,5 @@
 ## no critic (InputOutput::RequireCheckedSyscalls)
-# $Id: /local/CPAN/Handel/lib/Module/Starter/Handel.pm 1270 2008-03-01T20:06:24.746789Z claco  $
+# $Id$
 package Module::Starter::Handel;
 use strict;
 use warnings;

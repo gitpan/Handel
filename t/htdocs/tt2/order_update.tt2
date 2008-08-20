@@ -1,4 +1,4 @@
-[%# $Id: /local/CPAN/Handel/t/htdocs/tt2/order_update.tt2 1043 2007-06-24T15:35:46.298350Z claco  $ %]
+[%# $Id$ %]
 [% USE horder  = Handel.Order %]
 <body>
     [% UNLESS (order = horder.create({

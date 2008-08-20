@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Catalyst/Helper/Controller/Handel/Checkout.pm 1058 2007-08-23T02:05:31.088429Z claco  $
+# $Id$
 ## no critic (ProhibitCaptureWithoutTest)
 package Catalyst::Helper::Controller::Handel::Checkout;
 use strict;

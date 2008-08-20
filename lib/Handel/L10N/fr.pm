@@ -1,5 +1,5 @@
 ## no critic
-# $Id: /local/CPAN/Handel/lib/Handel/L10N/fr.pm 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 package Handel::L10N::fr;
 use strict;
 use warnings;

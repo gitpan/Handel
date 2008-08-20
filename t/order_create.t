@@ -1,5 +1,5 @@
 #!perl -wT
-# $Id: /local/CPAN/Handel/t/order_create.t 1062 2007-10-21T21:05:53.813231Z claco  $
+# $Id$
 use strict;
 use warnings;
 

@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Handel/Components/Validation.pm 1062 2007-10-21T21:05:53.813231Z claco  $
+# $Id$
 package Handel::Components::Validation;
 use strict;
 use warnings;

@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Handel/Storage/Result.pm 1078 2008-01-01T21:13:23.465843Z claco  $
+# $Id$
 ## no critic (RequireFinalReturn)
 package Handel::Storage::Result;
 use strict;

@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Handel/Base.pm 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 package Handel::Base;
 use strict;
 use warnings;

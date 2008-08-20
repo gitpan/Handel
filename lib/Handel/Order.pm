@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Handel/Order.pm 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 package Handel::Order;
 use strict;
 use warnings;
@@ -66,7 +66,7 @@ sub create { ## no critic (ProhibitExcessComplexity)
     };
 
     if (defined $cart) {
-        if ($cart->can('shopper') && !defined $data->{'shopper'}) {
+        if ($cart->storage->has_column('shopper') && !defined $data->{'shopper'}) {
             $data->{'shopper'} = $cart->shopper;
         };
     };

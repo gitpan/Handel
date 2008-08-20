@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Catalyst/Helper/Handel/Scaffold.pm 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 ## no critic (ProhibitCaptureWithoutTest)
 package Catalyst::Helper::Handel::Scaffold;
 use strict;

@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Handel/Schema/DBIC/Order.pm 1080 2008-01-01T21:25:34.059856Z claco  $
+# $Id$
 package Handel::Schema::DBIC::Order;
 use strict;
 use warnings;

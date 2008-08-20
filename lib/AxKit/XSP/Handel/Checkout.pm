@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/AxKit/XSP/Handel/Checkout.pm 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 ## no critic
 package AxKit::XSP::Handel::Checkout;
 use strict;

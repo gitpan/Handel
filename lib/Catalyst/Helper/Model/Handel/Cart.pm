@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Catalyst/Helper/Model/Handel/Cart.pm 1043 2007-06-24T15:35:46.298350Z claco  $
+# $Id$
 package Catalyst::Helper::Model::Handel::Cart;
 use strict;
 use warnings;

@@ -1,4 +1,4 @@
-# $Id: /local/CPAN/Handel/lib/Handel/Cart.pm 1167 2008-01-10T04:20:50.380568Z claco  $
+# $Id$
 package Handel::Cart;
 use strict;
 use warnings;
