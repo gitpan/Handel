@@ -1,4 +1,6 @@
+.gitignore
 Changes
+CONTRIBUTORS
 demo/axkit/cart.xsp
 demo/axkit/httpd.conf.include
 demo/axkit/includes/footer.xml
@@ -28,6 +30,7 @@ inc/Module/Install/Fetch.pm
 inc/Module/Install/Include.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
+inc/Module/Install/Scripts.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/AxKit/XSP/Handel/Cart.pm
@@ -69,6 +72,7 @@ lib/Handel/Iterator/List.pm
 lib/Handel/Iterator/Results.pm
 lib/Handel/L10N.pm
 lib/Handel/L10N/bg.pm
+lib/Handel/L10N/de.pm
 lib/Handel/L10N/en_us.pm
 lib/Handel/L10N/fr.pm
 lib/Handel/Manual.pod

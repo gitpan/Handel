@@ -4,8 +4,8 @@ NAME
 SYNOPSIS
         use Handel;
         Handel->config_class('My::ConfigReader');
-        
-    my $config = Handel->config;
+    
+        my $config = Handel->config;
         # $config->isa('My::ConfigReader')
 
 DESCRIPTION
@@ -36,4 +36,3 @@ AUTHOR
         CPAN ID: CLACO
         claco@chrislaco.com
         http://today.icantfocus.com/blog/
-

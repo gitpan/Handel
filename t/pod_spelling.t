@@ -1,5 +1,4 @@
 #!perl -w
-# $Id$
 use strict;
 use warnings;
 
@@ -176,3 +175,4 @@ DBIx-Class-current
 XPath
 xpath
 INI
+deutsch

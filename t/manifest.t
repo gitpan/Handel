@@ -1,5 +1,4 @@
-#!perl -wT
-# $Id$
+#!perl -w
 use strict;
 use warnings;
 
@@ -16,7 +15,7 @@ BEGIN {
 };
 
 ok_manifest({
-    exclude => ['/t/var', '/cover_db', '/t/conf', '/t/logs/', '/t/htdocs/index.html'],
-    filter  => [qr/\.kpf/, qr/\.svn/, qr/cover/, qr/\.tws/, qr/(SMOKE$|TEST$)/, qr/Build(\.PL|\.bat)?/],
+    exclude => ['/t/var', '/cover_db', '/inc', '/t/conf', '/t/logs/', '/t/htdocs/index.html'],
+    filter  => [qr/\.kpf/, qr/\.git/, qr/\.svn/, qr/cover/, qr/\.tws/, qr/(SMOKE$|TEST$)/, qr/Build(\.PL|\.bat)?/],
     bool    => 'or'
 });

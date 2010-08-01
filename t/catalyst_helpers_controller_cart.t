@@ -1,5 +1,4 @@
 #!perl -w
-# $Id$
 use strict;
 use warnings;
 
@@ -22,9 +21,9 @@ BEGIN {
     plan(skip_all =>
         'Test::File 1.10 not installed') if $@;
 
-    eval 'use Test::File::Contents 0.02';
+    eval 'use Test::File::Contents 0.05';
     plan(skip_all =>
-        'Test::File::Contents 0.02 not installed') if $@;
+        'Test::File::Contents 0.05 not installed') if $@;
 
     plan tests => 128;
 

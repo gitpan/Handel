@@ -1,5 +1,4 @@
-#!perl -wT
-# $Id$
+#!perl -w
 use strict;
 use warnings;
 
@@ -11,7 +10,7 @@ BEGIN {
     if($@) {
         plan skip_all => 'Module::Find not installed';
     } else {
-        plan tests => 199;
+        plan tests => 265;
         setmoduledirs('lib');
     };
 
