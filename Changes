@@ -1,5 +1,11 @@
 Revision history for Perl module Handel
 
+1.00013 Sun Aug 8 17:07:36 2010
+	- Fixed live currency conversion compat tests to be author only
+	- Fixed decimal comparison under -Duselongdouble compiled Perls
+	- Fixed issue with Storage::Result::can aborting when UNIVERSAL::isa and
+		Class::XSAccessors are both loaded.
+
 1.00012 Sun Aug 1 13:40:04 2010
     - Upgraded to Test::File::Contents 0.05 (LESTERM)
     - Fixed: timzone in extra => {} is deprecated, its now directly on the
